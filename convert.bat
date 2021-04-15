@@ -1,1 +1,0 @@
-"..\..\68000 utils\srec\srec_cat" demo.run -o demo.bin
