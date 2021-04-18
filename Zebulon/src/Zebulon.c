@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 void printhelp ()
 {
@@ -11,6 +12,9 @@ void printhelp ()
 void main (void)
 {
 	const char* version = "Zebulon V1.1\n\r";
+
+	char* p = (char*) malloc (100);
+	printf ("%x",(int) p);
 
 	printf (version);
 	printf ("type help for help\n\r");
