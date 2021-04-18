@@ -38,42 +38,80 @@ int puts (const char* s)
 	}
 }
 
-
-
-void printhex (int i)
+void bin2hex (int num, char* buf)
 {
-	int j = i;
-
- 	char result [9];
-  	const char* LUT = "0123456789ABCDEF";
-
-	result [8] = '\0';
-
-	for (int l = 0; l < 8; l++)
+	int w = num;
+	const char* LUT = "0123456789ABCDEF";
+	for (int i = 0; i < 8; i++)
 	{
-		result [7 - l] = LUT [j & 0xF];
-		j = j >> 4;
+		buf [7 - i] = LUT [w & 0xF];
+		w = w >> 4;
 	}
 
-	puts (result);
+	buf [8] = '\0';
 }
 
+void bin2dec (int num, char* buf)
+{
+	int w = num;
+	const char* LUT = "0123456789";
 
+	int i = 0;
+	while (w > 0)
+	{
+		buf [i++] = LUT [w % 10];
+		w = w / 10;
+	}
+	buf[i] = '\0';
+
+	for (int j = 0; j < i/2; j++)
+	{
+		char temp = buf [j];
+		buf [j] = buf [i - j - 1];
+		buf [i - j - 1] = temp;
+	}
+}
 
 int printf (const char* format, ...)
 {	
 	va_list ap;
 	va_start (ap, format);
 
-	int a = (int) &format;
-	printhex (a);
+	char ch;
+	while ((ch = *format++) != '\0')
+    {
+		if (ch == '%')
+		{
+			if (*format == 'x')
+			{
+				puts ("0x");
+				int i = va_arg (ap, int);
+				char buf [9];
+				bin2hex (i, buf);
+				puts (buf);
+			}
+			else if (*format == 'd')
+			{
+				int i = va_arg (ap, int);
+				char buf [11];
+				bin2dec (i, buf);
+				puts (buf);
+			}
+			else if (*format == 's')
+			{
+				char* s = va_arg (ap, char*);
+				puts (s);
+			}
+			else if (*format == '%')
+				__putch ('%');
 
-	printhex ((int) ap);
+			format++;
+		}
+		else
+		  __putch (ch);
+	}
 
-	int i = va_arg (ap, int);
-	printhex (i);
-
-	int j = va_arg (ap, int);
-	printhex (j);
+	va_end (ap);
 }
+
 
