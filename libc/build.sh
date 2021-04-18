@@ -4,9 +4,9 @@ then
     mkdir bld
 fi
 
-if [ ! -d "obj" ] 
+if [ ! -d "bld/obj" ] 
 then
-    mkdir obj
+    mkdir bld/obj
 fi
 
 pushd bld/obj
