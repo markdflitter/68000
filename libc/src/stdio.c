@@ -1,14 +1,10 @@
 #include "../include/stdio.h"
 #include "../include/libgloss.h"
 
-int puts (char* s)
+int getchar(void)
 {
-	while (*s != 0)
-	{
-		__putch (*s++);
-	}
+	return  __getch ();
 }
-
 
 char* gets (char* s)
 {
@@ -19,7 +15,7 @@ char* gets (char* s)
 		__putch (c);
 
  		if (c == '\r')
- 			return buf;
+ 			break;
 
  		*buf++ = c;
  	}
@@ -27,3 +23,17 @@ char* gets (char* s)
 	return buf;
 }
 
+
+int putchar (int c)
+{
+	__putch ((char) c);
+}
+
+
+int puts (const char* s)
+{
+	while (*s != 0)
+	{
+		__putch (*s++);
+	}
+}
