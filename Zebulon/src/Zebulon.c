@@ -12,6 +12,17 @@ void main (void)
 {
 	char* version = "Zebulon V1.1\n\r";
 
+	int i = 0x12345678;
+	printhex (i);
+
+	int j = 0xABCDEFAB;
+	printhex (j);
+
+
+	printf ("%d",i,j);
+
+	return ;
+
 	puts (version);
 	puts ("type help for help\r\n");
 

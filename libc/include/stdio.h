@@ -1,3 +1,5 @@
+#include "stdarg.h"
+
 #define NULL 0
 
 
@@ -7,3 +9,4 @@ char* gets (char* str);
 int putchar (int c);
 int puts (const char* s);
 
+int printf (const char* format, ...);
