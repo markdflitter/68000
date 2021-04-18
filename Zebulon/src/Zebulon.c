@@ -10,17 +10,15 @@ void printhelp ()
 
 void main (void)
 {
-	char* version = "Zebulon V1.1\n\r";
+	const char* version = "Zebulon V1.1\n\r";
 
 	printf (version);
 	printf ("type help for help\n\r");
 
 	char buf [21];
-	int length;
 	int exit = 0;
 	while (!exit)
 	{
-		length = 0;
 		printf ("$ ");
 		char* p = gets (buf);
 		*p = '\0';
