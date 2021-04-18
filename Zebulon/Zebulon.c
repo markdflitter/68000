@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -23,7 +25,7 @@ void putch (char c)
 	*txa = c;
 }
 
-void puts (char* s)
+void mfputs (char* s)
 {
 	while (*s != 0)
 	{
@@ -44,7 +46,7 @@ char getch ()
 	return *rxa;
 }
 
-void gets (char* buf, int limit, int* length)
+void mfgets (char* buf, int limit, int* length)
 {
 	for (;;)
 	{
@@ -62,43 +64,19 @@ void gets (char* buf, int limit, int* length)
 	}
 }
 
-int strlen (char* s)
-{
-	int result = 0;
-	while (*s++ != '\0')
-		result++;
-	return result;
-}
-
-int strcmp (char* s1, char* s2)
-{
-	if (strlen (s1) != strlen (s2))
-		return FALSE;
-
-	while (*s1 != '\0')
-	{
-		if (*s1 != *s2) 
-			return FALSE;
-		s1++;
-		s2++;
-	}
-
-	return TRUE;
-}
-
 void printhelp ()
 {
-	puts ("exit\t - exit to monitor\n\r");
-	puts ("version\t - print version\n\r");
-	puts ("help\t - print this help\n\r");
+	mfputs ("exit\t - exit to monitor\n\r");
+	mfputs ("version\t - print version\n\r");
+	mfputs ("help\t - print this help\n\r");
 }
 
 void main (void)
 {
 	char* version = "Zebulon V1.0\n\r";
 
-	puts (version);
-	puts ("type help for help\r\n");
+	mfputs (version);
+	mfputs ("type help for help\r\n");
 
 	char buf [21];
 	int length;
@@ -106,15 +84,14 @@ void main (void)
 	while (!exit)
 	{
 		length = 0;
-		puts ("$ ");
-		gets (buf, 20, &length);
+		mfputs ("$ ");
+		mfgets (buf, 20, &length);
 		buf [length] = '\0';
-		puts ("\n\r");
+		mfputs ("\n\r");
 
 		if (strcmp (buf, "exit")) exit = TRUE;
 		if (strcmp (buf, "version")) puts (version);
 		if (strcmp (buf, "help")) printhelp();
 	}
-
 }
 

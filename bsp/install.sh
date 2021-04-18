@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cp bld/bsp.a /usr/local/crossgcc/lib
+cp bld/libbsp.a /usr/local/crossgcc/lib
 
