@@ -43,7 +43,7 @@ rather than the below (which misses one)
 	dop we need to rebuild the make file after changing versions?  Maybe - it certainyl didn;t work without that!
 
 ../gcc-9.3.0/configure --target=$TARGET --prefix=$PREFIX --with-pkgversion=20210414_m68k_xgcc --disable-gcov --disable-multilib --disable-threads --disable-tls --disable-tm-clone-registry --with-cpu=68000 -enable-languages=c --disable-libsanitizer --disable-libssp --disable-libquadmath --disable-libgomp --disable-decimal-float --without-headers --with-newlib
-
+,c++
 from http://jefftranter.blogspot.com/2017/05/building-68000-single-board-computer-c.html
 m68k-elf-objcopy -I coff-m68k -O srec a.out demo.run
 https://binutils.sourceware.narkive.com/cuK6SQmV/the-problem-of-m68k-elf-objcopy
