@@ -10,7 +10,7 @@ void printhelp ()
 
 void main (void)
 {
-	char* version = "Zebulon V1.0\n\r";
+	char* version = "Zebulon V1.1\n\r";
 
 	puts (version);
 	puts ("type help for help\r\n");
@@ -26,9 +26,9 @@ void main (void)
 		*p = '\0';
 		puts ("\n\r");
 
-		if (strcmp (buf, "exit")) exit = 1;
-		if (strcmp (buf, "version")) puts (version);
-		if (strcmp (buf, "help")) printhelp();
+		if (strcmp (buf, "exit") == 0) exit = 1;
+		if (strcmp (buf, "version") == 0) puts (version);
+		if (strcmp (buf, "help") == 0) printhelp();
 	}
 }
 
