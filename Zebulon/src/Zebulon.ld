@@ -5,7 +5,16 @@ MEMORY
 
 SECTIONS
 {
-	. = 0x200000;
-}
+	.text :
+	{
+		*(.text*)
+	} > RAM
 
-__end = . ;
+	.bss (NOLOAD) :
+	{
+		*(.bss)
+	    *(COMMON)
+	} > RAM
+
+	__end = . ;
+}

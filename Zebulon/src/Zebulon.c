@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 
 void printhelp ()
 {
@@ -12,9 +11,6 @@ void printhelp ()
 void main (void)
 {
 	const char* version = "Zebulon V1.1\n\r";
-
-	char* p = (char*) malloc (100);
-	printf ("%x",(int) p);
 
 	printf (version);
 	printf ("type help for help\n\r");
@@ -29,8 +25,16 @@ void main (void)
 		printf ("\n\r");
 
 		if (strcmp (buf, "exit") == 0) exit = 1;
-		if (strcmp (buf, "version") == 0) printf (version);
-		if (strcmp (buf, "help") == 0) printhelp();
+		if (strcmp (buf, "version") == 0) 
+		{
+			puts ("version\n\r");
+			printf (version);
+		}
+		if (strcmp (buf, "help") == 0) 
+		{
+			puts ("help\n\r");
+			printhelp();
+		}
 	}
 }
 
