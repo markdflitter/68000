@@ -27,6 +27,7 @@ char* gets (char* s)
 int putchar (int c)
 {
 	__putch ((char) c);
+	return 0;
 }
 
 
@@ -36,6 +37,7 @@ int puts (const char* s)
 	{
 		__putch (*s++);
 	}
+	return 0;
 }
 
 void bin2hex (int num, char* buf)
@@ -112,6 +114,7 @@ int printf (const char* format, ...)
 	}
 
 	va_end (ap);
+	return 0;
 }
 
 

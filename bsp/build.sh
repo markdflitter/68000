@@ -11,7 +11,7 @@ fi
 
 pushd bld/obj
 
-m68k-elf-gcc ../../src/bsp.c -I/usr/local/crossgcc/include -c -g -march=68000 -nostartfiles -nostdlib
+m68k-elf-g++ ../../src/bsp.c -I/usr/local/crossgcc/include -c -g -march=68000 -nostartfiles -nostdlib
 
 popd
 m68k-elf-ar -rcs bld/libbsp.a bld/obj/bsp.o

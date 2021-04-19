@@ -1,6 +1,6 @@
 #include "../include/string.h"
 
- int strlen (char* s)
+ int strlen (const char* s)
  {
 	int result = 0;
 
@@ -11,7 +11,7 @@
 }
 
 
-int strcmp (char* s1, char* s2)
+int strcmp (const char* s1, const char* s2)
 {
  	while ((*s1 != '\0') && (*s2 != '\0') && (*s1 == *s2))
 	{
