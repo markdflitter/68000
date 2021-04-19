@@ -1,15 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-class c
-{
-public:
-  c (const char* s) : _s (s) {}
-  void p () {printf (_s);}
-private:
-  const char* _s;
-};
-
 void printhelp ()
 {
 	printf ("exit\t - exit to monitor\n\r");
@@ -20,9 +11,6 @@ void printhelp ()
 int main ()
 {
 	const char* version = "Zebulon V1.2\n\r";
-	c C (version);
-	C.p ();
-
 
 	printf ("%s",version);
 	printf ("type help for help\n\r");
