@@ -1,6 +1,17 @@
 #include <stdio.h>
 #include <string.h>
 
+class C {
+public:
+	C (const char* s) : _s (s) {printf ("C::C called\n\r");}
+	void print () {printf ("%s\n\r",_s);}
+ private:
+ 	const char* _s;
+ };
+  
+ C c1 ("hello");
+ C c2 ("bye");
+
 void printhelp ()
 {
 	printf ("exit\t - exit to monitor\n\r");
@@ -14,6 +25,9 @@ int main ()
 
 	printf ("%s",version);
 	printf ("type help for help\n\r");
+
+	c1.print ();
+	c2.print ();
 
 	char buf [21];
 	int exit = 0;
