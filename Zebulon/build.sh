@@ -12,7 +12,7 @@ fi
 pushd bld/obj
 
 
-m68k-elf-g++ ../../src/Zebulon.cpp -v -o Zebulon.out -march=68000 -nostdlib -I/usr/local/crossgcc/include -L/usr/local/crossgcc/lib -lc -lbsp -lgcc -Wl,--script=../../src/Zebulon.ld -Wl,--print-map -Wl,--entry=main
+m68k-elf-g++ ../../src/Zebulon.cpp -v -o Zebulon.out -march=68000 -nostdlib -I/usr/local/crossgcc/include -L/usr/local/crossgcc/lib -lc -lbsp -Wl,--whole-archive -lstart -Wl,--no-whole-archive -lgcc -Wl,--script=../../src/Zebulon.ld -Wl,--print-map -Wl,--entry=__main
 
 m68k-elf-objcopy -O srec Zebulon.out ../Zebulon.S68
 

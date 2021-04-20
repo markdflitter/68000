@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
+extern int __main (void);
+
 class C {
 public:
 	C (const char* s) : _s (s) {printf ("C::C called\n\r");}
