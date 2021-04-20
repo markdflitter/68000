@@ -12,30 +12,26 @@ typedef void (*f) (void);
 void call_static_constructors ()
 {
 	char** start = &__ctors_begin;
-	printf ("%x\n\r",start);
 
     char** end = &__ctors_end;
-    printf ("%x\n\r",end);
 
     while (start != end)
     {
         char* fp = *start;
-        printf ("%x\n\r",fp);
         ((f) fp)();
         start += 1;
     }
-    printf ("return\n\r");
 }
 
 extern "C" int __main (void)
 {
 	__init ();	
-	printf ("%s", "bsp initialsed");
+	printf ("%s", "bsp initialised\n\r");
 
-	printf ("%s", "calling static constructors");
+	printf ("%s", "calling static constructors\n\r");
   	call_static_constructors ();
 
-	printf ("%s", "handing off to main()");
+	printf ("%s", "handing off to main()\n\r");
 	return main ();
 }
 

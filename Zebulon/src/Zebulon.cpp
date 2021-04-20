@@ -5,7 +5,7 @@ extern int __main (void);
 
 class C {
 public:
-	C (const char* s) : _s (s) {printf ("C::C called\n\r");}
+	C (const char* s) : _s (s) {}
 	void print () {printf ("%s\n\r",_s);}
  private:
  	const char* _s;
