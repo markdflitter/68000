@@ -1,4 +1,10 @@
 #include <libgloss.h>
+#include <libgloss_start.h>
+
+void __init ()
+{
+}
+
 
 #define TXA 0xC00007
 #define SRA 0xC00003
