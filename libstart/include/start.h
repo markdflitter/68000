@@ -1,1 +1,1 @@
-int __main (void);
+extern "C" int __main (void);

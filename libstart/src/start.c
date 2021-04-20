@@ -27,7 +27,7 @@ void call_static_constructors ()
     printf ("return\n\r");
 }
 
-int __main (void)
+extern "C" int __main (void)
 {
 	__init ();	
 	printf ("%s", "bsp initialsed");
