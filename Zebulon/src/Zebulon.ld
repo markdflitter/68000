@@ -10,23 +10,12 @@ SECTIONS
 		*(.text*)
 	} > RAM
 
-	.rodata :
-	{
-		*(.rodata)
-	} > RAM
-
-	.ehframe :
-	{
-		*(.ehframe)
-	} > RAM
-
-
-	__ctors_begin = . ;
 	.ctors :
 	{
+		__ctors_begin = . ;
 		*(.ctors*)
+		__ctors_end = . ;
 	} > RAM
-	__ctors_end = . ;
 	
 	.bss (NOLOAD) :
 	{
