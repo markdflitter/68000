@@ -19,8 +19,10 @@ SECTIONS
 	
 	.bss (NOLOAD) :
 	{
+		__bss_begin = . ;
 		*(.bss)
 	    *(COMMON)
+		__bss_end = . ;
 	} > RAM
 
 	__end = . ;

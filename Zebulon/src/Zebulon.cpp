@@ -10,9 +10,12 @@ public:
  private:
  	const char* _s;
  };
+
+static int i = 0;
+static int j = 1;
   
- C c1 ("helloMark");
- C c2 ("byeMark");
+C c1 ("helloMark");
+C c2 ("byeMark");
 
 void printhelp ()
 {
@@ -30,6 +33,8 @@ int main ()
 
 	c1.print ();
 	c2.print ();
+
+	printf ("%x\n\r%x\n\r",i,j);
 
 	char buf [21];
 	int exit = 0;
