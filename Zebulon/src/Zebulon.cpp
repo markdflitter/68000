@@ -11,8 +11,8 @@ public:
  	const char* _s;
  };
   
- C c1 ("hello");
- C c2 ("bye");
+ C c1 ("helloMark");
+ C c2 ("byeMark");
 
 void printhelp ()
 {

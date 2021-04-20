@@ -4,23 +4,15 @@
 
 extern int main (void);
 
-extern char* __ctors_begin;
-extern char* __ctors_end;
-
 typedef void (*f) (void);
- 
+
+extern f __ctors_begin;
+extern f __ctors_end;
+
 void call_static_constructors ()
 {
-	char** start = &__ctors_begin;
-
-    char** end = &__ctors_end;
-
-    while (start != end)
-    {
-        char* fp = *start;
-        ((f) fp)();
-        start += 1;
-    }
+	for (f* cur = &__ctors_begin; cur != &__ctors_end; cur++)
+		(*cur)();
 }
 
 extern "C" int __main (void)
