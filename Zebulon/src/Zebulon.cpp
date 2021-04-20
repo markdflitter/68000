@@ -34,7 +34,7 @@ int main ()
 	c1.print ();
 	c2.print ();
 
-	printf ("%x\n\r%x\n\r",i,j);
+	printf ("%d\n\r%d\n\r",i,j);
 
 	char buf [21];
 	int exit = 0;

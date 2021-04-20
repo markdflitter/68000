@@ -55,6 +55,13 @@ void bin2hex (int num, char* buf)
 
 void bin2dec (int num, char* buf)
 {
+	if (num == 0)
+	{
+		buf [0] = '0';
+		buf [1] = '\0';
+		return ;
+	}
+
 	int w = num;
 	const char* LUT = "0123456789";
 
