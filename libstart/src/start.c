@@ -35,7 +35,7 @@ extern "C" int __main (void)
 	printf ("%s", "calling static constructors\n\r");
   	call_static_constructors ();
 
-	printf ("%s", "handing off to main()\n\r");
+	printf ("%s", "handing off to main()\n\r\n\r");
 	return main ();
 }
 
