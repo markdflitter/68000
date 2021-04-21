@@ -48,6 +48,10 @@ int main ()
 	test ();
 	test ();
 
+	//C* c4 = new C ("blobby");
+	//c4->print ();
+	//delete c4;
+
 	char buf [21];
 	int exit = 0;
 	while (!exit)

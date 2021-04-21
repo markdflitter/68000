@@ -11,3 +11,8 @@ void  __cxa_guard_release (cxa_guard* g)
 {
 
 }
+
+void  __cxa_guard_abort (cxa_guard* g)
+{
+
+}

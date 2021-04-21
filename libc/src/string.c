@@ -1,7 +1,30 @@
 #include "../include/string.h"
 
- size_t strlen (const char* s)
- {
+
+
+void* memset (void* ptr, int value, size_t num)
+{
+	unsigned char* p = (unsigned char*) ptr;
+
+	while (num--)
+		*p++ = (unsigned char) value;
+
+	return ptr;
+}
+
+void* memcpy (void* destination, const void* source, size_t num)
+{
+	unsigned char* d = (unsigned char*) destination;
+	const unsigned char* s = (unsigned char*) source;
+
+	while (num--)
+		*d++  = *s++;
+
+	return destination;
+}
+
+size_t strlen (const char* s)
+{
 	size_t result = 0;
 
  	while (*s++ != '\0')
@@ -9,7 +32,6 @@
 
 	return result;
 }
-
 
 int strcmp (const char* s1, const char* s2)
 {

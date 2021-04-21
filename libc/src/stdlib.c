@@ -18,3 +18,12 @@ void free (void* ptr)
 }
 
 
+void abort (void)
+{
+ 	asm ("move.l 4,%a0");
+ 	asm ("jmp (%a0)");
+
+	while (1)
+		;
+}
+
