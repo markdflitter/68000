@@ -7,6 +7,7 @@ class C {
 public:
 	C (const char* s) : _s (s) {}
 	void print () {printf ("%s\n\r",_s);}
+	void set (const char*s) {_s = s;}
  private:
  	const char* _s;
  };
@@ -16,6 +17,14 @@ static int j = 1;
   
 C c1 ("helloMark");
 C c2 ("byeMark");
+
+void test ()
+{
+	static C c3 ("hiho");
+	c3.print ();
+	c3.set ("hohi");
+}
+
 
 void printhelp ()
 {
@@ -35,6 +44,9 @@ int main ()
 	c2.print ();
 
 	printf ("%d\n\r%d\n\r",i,j);
+
+	test ();
+	test ();
 
 	char buf [21];
 	int exit = 0;
