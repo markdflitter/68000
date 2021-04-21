@@ -5,7 +5,7 @@ extern int __main (void);
 
 class C {
 public:
-	C (const char* s) : _s (s) {}
+	C (const char* s) : _s (s) {printf ("%s","helloworld\n\r");}
 	void print () {printf ("%s\n\r",_s);}
 	void set (const char*s) {_s = s;}
  private:

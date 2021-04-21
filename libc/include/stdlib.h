@@ -1,5 +1,4 @@
+#include "size_t.h"
 
-typedef  unsigned int size_t;
-
-void* malloc (size_t size);
-void free (void* ptr);
+extern "C" void* malloc (size_t size);
+extern "C" void free (void* ptr);

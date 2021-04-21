@@ -1,8 +1,8 @@
 #include "../include/string.h"
 
- int strlen (const char* s)
+ size_t strlen (const char* s)
  {
-	int result = 0;
+	size_t result = 0;
 
  	while (*s++ != '\0')
  		result++;
