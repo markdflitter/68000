@@ -1,7 +1,14 @@
 #include <stdio.h>
 #include <string.h>
+//#include <stdlib.h>
 
-extern int __main (void);
+//extern int __main (void);
+
+//void* operator new (size_t b)
+//{
+//  return malloc (b);
+//}
+
 
 class C {
 public:
@@ -48,9 +55,9 @@ int main ()
 	test ();
 	test ();
 
-	//C* c4 = new C ("blobby");
-	//c4->print ();
-	//delete c4;
+	C* c4 = new C ("blobby");
+	c4->print ();
+	delete c4;
 
 	char buf [21];
 	int exit = 0;
