@@ -1,6 +1,38 @@
 #include <stdio.h>
 #include <string.h>
 
+
+class C
+{
+public:
+	C () : i (4) {printf ("ctor\n\r");} 
+	static C& singleton () {return _singleton;}
+	void print () {printf ("%d\n\r",i);}
+private:
+	static C _singleton;
+	int i;
+};
+
+C C::_singleton;
+
+class iAnimal 
+{
+public:
+ 	virtual void noise () = 0;
+};
+
+class Cat : public iAnimal
+{
+public:
+	virtual void noise () {printf ("%s", "miaow");}
+};
+
+class Dog : public iAnimal
+{
+public:
+	virtual void noise () {printf ("%s", "woof");}
+};
+
 void printhelp (void)
 {
 	printf ("exit\t - exit to monitor\n\r");
@@ -10,6 +42,14 @@ void printhelp (void)
 
 int main ()
 {
+	C::singleton ().print ();
+
+	//iAnimal* a1 = new Cat ();
+	//a1->noise ();
+
+	//a1 = new Dog ();
+	//a1->noise ();
+
 	const char* version = "Zebulon V1.2\n\r";
 
 	printf ("%s",version);
