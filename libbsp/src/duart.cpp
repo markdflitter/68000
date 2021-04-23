@@ -14,7 +14,6 @@ bool duart::uart::space_to_send () const
 
 void duart::uart::write_char (char c)
 {
-	printf ("%x",&(_rm->tx));
 	while (!space_to_send ())
 		;
 	
@@ -41,7 +40,6 @@ duart::duart (unsigned int base_address) :
 	_a (base_address),
 	_b (base_address + 16)
 {
-	printf ("%s", "intialise duart\n\r");
 	_uart [0] = &_a;
 	_uart [1] = &_b;
 }

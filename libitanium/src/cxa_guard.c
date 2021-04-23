@@ -1,4 +1,5 @@
 #include "../include/cxa_guard.h"
+#include <stdio.h>
 
 int __cxa_guard_acquire (cxa_guard* g)
 {

@@ -5,6 +5,8 @@
 void __cxa_pure_virtual ()
 {
 	printf ("pure virtual function called\n\r");
-	abort ();
+
+	for (;;)
+		;
 }
 

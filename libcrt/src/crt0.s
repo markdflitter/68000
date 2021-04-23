@@ -7,7 +7,7 @@ start:
 
 			JSR __main
 
-			MOVE.B #5,0xE00001
+			MOVE.B #9,0xE00001
 
 			MOVE.L 4,%A0
 			JMP (%A0)

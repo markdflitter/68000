@@ -2,6 +2,7 @@
 #include <string.h>
 
 
+/*
 class C
 {
 public:
@@ -32,6 +33,7 @@ class Dog : public iAnimal
 public:
 	virtual void noise () {printf ("%s", "woof");}
 };
+*/
 
 void printhelp (void)
 {
@@ -42,7 +44,7 @@ void printhelp (void)
 
 int main ()
 {
-	C::singleton ().print ();
+	//C::singleton ().print ();
 
 	//iAnimal* a1 = new Cat ();
 	//a1->noise ();

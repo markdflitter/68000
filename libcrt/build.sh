@@ -1,4 +1,6 @@
 #!/bin/bash
+rm -rf bld
+
 if [ ! -d "bld" ] 
 then
     mkdir bld

@@ -1,6 +1,8 @@
 #include <libgloss.h>
 #include <libgloss_start.h>
 #include "../include/duart.h"
+#include <stdio.h>
+
 
 duart& the_duart ()
 {

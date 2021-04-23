@@ -26,15 +26,18 @@ void call_static_constructors ()
 
 extern "C" int __main (void)
 {
-	__init ();	
+	asm ("MOVE.B #5,0xE00001");
+	clear_bss();
+	asm ("MOVE.B #6,0xE00001");
+	
+	__init ();
+	asm ("MOVE.B #7,0xE00001");
 	printf ("%s", "bsp initialised\n\r");
-
-	printf ("%s", "clearing bss\n\r");
- 	clear_bss();
 
 	printf ("%s", "calling static constructors\n\r");
   	call_static_constructors ();
-
+	asm ("MOVE.B #8,0xE00001");
+	
 	printf ("%s", "handing off to main()\n\r\n\r");
 	return main ();
 }
