@@ -1,4 +1,5 @@
 #!/bin/bash
 
-cp bld/libcpp.a /usr/local/crossgcc/lib
+rm /usr/local/crossgcc/lib/libcpp.a
 
+cp bld/libcpp.a /usr/local/crossgcc/lib

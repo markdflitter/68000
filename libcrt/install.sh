@@ -1,4 +1,5 @@
 #!/bin/bash
 
-cp bld/libcrt.a /usr/local/crossgcc/lib
+rm /usr/local/crossgcc/lib/libcrt.a
 
+cp bld/libcrt.a /usr/local/crossgcc/lib
