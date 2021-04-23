@@ -1,25 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
-class iAnimal 
-{
-public:
- 	virtual void noise () = 0;
-};
-
-class Cat : public iAnimal
-{
-public:
-	virtual void noise () {printf ("%s\n\r", "miaow");}
-};
-
-class Dog : public iAnimal
-{
-public:
-	virtual void noise () {printf ("%s\n\r", "woof");}
-};
-
 void printhelp (void)
 {
 	printf ("exit\t - exit to monitor\n\r");
@@ -29,13 +10,6 @@ void printhelp (void)
 
 int main ()
 {
-	iAnimal* a1 = new Cat ();
-	a1->noise ();
-
-	a1 = new Dog ();
-	a1->noise ();
-
-
 	const char* version = "Zebulon V1.2\n\r";
 
 	printf ("%s",version);
