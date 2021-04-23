@@ -2,20 +2,6 @@
 #include <string.h>
 
 
-/*
-class C
-{
-public:
-	C () : i (4) {printf ("ctor\n\r");} 
-	static C& singleton () {return _singleton;}
-	void print () {printf ("%d\n\r",i);}
-private:
-	static C _singleton;
-	int i;
-};
-
-C C::_singleton;
-
 class iAnimal 
 {
 public:
@@ -25,15 +11,14 @@ public:
 class Cat : public iAnimal
 {
 public:
-	virtual void noise () {printf ("%s", "miaow");}
+	virtual void noise () {printf ("%s\n\r", "miaow");}
 };
 
 class Dog : public iAnimal
 {
 public:
-	virtual void noise () {printf ("%s", "woof");}
+	virtual void noise () {printf ("%s\n\r", "woof");}
 };
-*/
 
 void printhelp (void)
 {
@@ -44,13 +29,12 @@ void printhelp (void)
 
 int main ()
 {
-	//C::singleton ().print ();
+	iAnimal* a1 = new Cat ();
+	a1->noise ();
 
-	//iAnimal* a1 = new Cat ();
-	//a1->noise ();
+	a1 = new Dog ();
+	a1->noise ();
 
-	//a1 = new Dog ();
-	//a1->noise ();
 
 	const char* version = "Zebulon V1.2\n\r";
 
