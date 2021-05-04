@@ -1,16 +1,26 @@
 #include <stdio.h>
 #include <string.h>
+#include <ide.h>
 
 void printhelp (void)
 {
 	printf ("exit\t - exit to monitor\n\r");
 	printf ("version\t - print version\n\r");
 	printf ("help\t - print this help\n\r");
+	printf ("ident\t - ident the disk\n\r");
 }
+
+void ident ()
+{
+	ide i;
+	char s = i.read_status ();
+	printf ("status %x\n\r",s);
+}
+
 
 int main ()
 {
-	const char* version = "Zebulon V1.2\n\r";
+	const char* version = "Zebulon V1.3\n\r";
 
 	printf ("%s",version);
 	printf ("type help for help\n\r");
@@ -26,7 +36,8 @@ int main ()
 
 		if (strcmp (buf, "exit") == 0) exit = 1;
 		if (strcmp (buf, "version") == 0) printf ("%s",version);
-		if (strcmp (buf, "help") == 0) printhelp();
+		if (strcmp (buf, "help") == 0) printhelp ();
+		if (strcmp (buf, "ident") == 0) ident ();
 	}
 
 	return 0;

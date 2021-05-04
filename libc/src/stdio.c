@@ -93,7 +93,6 @@ int printf (const char* format, ...)
 		{
 			if (*format == 'x')
 			{
-				puts ("0x");
 				int i = va_arg (ap, int);
 				char buf [9];
 				bin2hex (i, buf);
@@ -110,6 +109,11 @@ int printf (const char* format, ...)
 			{
 				char* s = va_arg (ap, char*);
 				puts (s);
+			}
+			else if (*format == 'c')
+			{
+				char c = (char) va_arg (ap, int);
+				__putch (c);
 			}
 			else if (*format == '%')
 				__putch ('%');
