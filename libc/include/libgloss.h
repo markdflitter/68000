@@ -1,2 +1,2 @@
-void __putch (char c);
-char __getch ();
+extern "C" void __putch (char c);
+extern "C" char __getch ();

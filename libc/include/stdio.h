@@ -3,10 +3,10 @@
 #define NULL 0
 
 
-int getchar(void);
-char* gets (char* str);
+extern "C" int getchar(void);
+extern "C" char* gets (char* str);
 
-int putchar (int c);
-int puts (const char* s);
+extern "C" int putchar (int c);
+extern "C" int puts (const char* s);
 
-int printf (const char* format, ...);
+extern "C" int printf (const char* format, ...);
