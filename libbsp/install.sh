@@ -1,7 +1,20 @@
 #!/bin/bash
 
-#rm /usr/local/crossgcc/lib/libbsp.a
-#rm /usr/local/crossgcc/include/ide.h
+ROOT_PATH=/usr/local/crossgcc
+LIB=lib
+LIB_PATH=$ROOT_PATH/$LIB
+INCLUDE=include
+INCLUDE_PATH=$ROOT_PATH/$INCLUDE
 
-cp include/ide.h /usr/local/crossgcc/include
-cp bld/libbsp.a /usr/local/crossgcc/lib
+FILE_PATH=$LIB_PATH/libbsp.a
+if [ -f $FILE_PATH ]; then
+	rm $FILE_PATH
+fi
+
+FILE_PATH=$INCLUDE_PATH/ide.h
+if [ -f $FILE_PATH ]; then
+	rm $FILE_PATH
+fi
+
+cp include/ide.h $INCLUDE_PATH
+cp bld/libbsp.a $LIB_PATH

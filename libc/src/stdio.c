@@ -53,7 +53,7 @@ void bin2hex (int num, char* buf)
 	buf [8] = '\0';
 }
 
-void bin2dec (int num, char* buf)
+void bin2dec (unsigned int num, char* buf)
 {
 	if (num == 0)
 	{
@@ -62,11 +62,11 @@ void bin2dec (int num, char* buf)
 		return ;
 	}
 
-	int w = num;
+	unsigned int w = num;
 	const char* LUT = "0123456789";
 
 	int i = 0;
-	while (w > 0)
+	while (w != 0)
 	{
 		buf [i++] = LUT [w % 10];
 		w = w / 10;
@@ -100,7 +100,7 @@ int printf (const char* format, ...)
 			}
 			else if (*format == 'd')
 			{
-				int i = va_arg (ap, int);
+				unsigned int i = va_arg (ap, unsigned int);
 				char buf [11];
 				bin2dec (i, buf);
 				puts (buf);

@@ -12,9 +12,15 @@ void printhelp (void)
 
 void ident ()
 {
+	char buf [513];
+
 	ide i;
-	char s = i.read_status ();
-	printf ("status %x\n\r",s);
+	i.ident (buf);
+//	buf [512] = '\0';
+	
+//	printf ("ident\n\r");
+//	for (int i = 0; i < 512; i++)
+//		printf("%c\n\r",buf[i]);
 }
 
 

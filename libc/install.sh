@@ -1,17 +1,50 @@
 #!/bin/bash
 
-rm /usr/local/crossgcc/include/size_t.h
-rm /usr/local/crossgcc/include/stdarg.h
-rm /usr/local/crossgcc/include/string.h
-rm /usr/local/crossgcc/include/stdlib.h
-rm /usr/local/crossgcc/include/stdio.h
-rm /usr/local/crossgcc/include/libgloss.h
-rm /usr/local/crossgcc/lib/libc.a
+ROOT_PATH=/usr/local/crossgcc
+LIB=lib
+LIB_PATH=$ROOT_PATH/$LIB
+INCLUDE=include
+INCLUDE_PATH=$ROOT_PATH/$INCLUDE
 
-cp include/size_t.h /usr/local/crossgcc/include
-cp include/stdarg.h /usr/local/crossgcc/include
-cp include/string.h /usr/local/crossgcc/include
-cp include/stdlib.h /usr/local/crossgcc/include
-cp include/stdio.h /usr/local/crossgcc/include
-cp include/libgloss.h /usr/local/crossgcc/include
-cp bld/libc.a /usr/local/crossgcc/lib
+FILE_PATH=$INCLUDE_PATH/size_t.h
+if [ -f $FILE_PATH ]; then
+	rm $FILE_PATH
+fi
+
+FILE_PATH=$INCLUDE_PATH/stdarg.h
+if [ -f $FILE_PATH ]; then
+	rm $FILE_PATH
+fi
+
+FILE_PATH=$INCLUDE_PATH/string.h
+if [ -f $FILE_PATH ]; then
+	rm $FILE_PATH
+fi
+
+FILE_PATH=$INCLUDE_PATH/stdlib.h
+if [ -f $FILE_PATH ]; then
+	rm $FILE_PATH
+fi
+
+FILE_PATH=$INCLUDE_PATH/stdio.h
+if [ -f $FILE_PATH ]; then
+	rm $FILE_PATH
+fi
+
+FILE_PATH=$INCLUDE_PATH/libgloss.h
+if [ -f $FILE_PATH ]; then
+	rm $FILE_PATH
+fi
+
+FILE_PATH=$LIB_PATH/libc.a
+if [ -f $FILE_PATH ]; then
+	rm $FILE_PATH
+fi
+
+cp include/size_t.h $INCLUDE_PATH
+cp include/stdarg.h $INCLUDE_PATH
+cp include/string.h $INCLUDE_PATH
+cp include/stdlib.h $INCLUDE_PATH
+cp include/stdio.h $INCLUDE_PATH
+cp include/libgloss.h $INCLUDE_PATH
+cp bld/libc.a $LIB_PATH
