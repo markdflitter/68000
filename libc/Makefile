@@ -12,7 +12,7 @@ INSTALL_DIR := /usr/local/crossgcc
 INSTALL_LIB_DIR := ${INSTALL_DIR}/lib
 INSTALL_INCLUDE_DIR := ${INSTALL_DIR}/include
 
-LIB := libc.a
+LIB := $(notdir $(CURDIR)).a
 BLD := $(addprefix ${BLD_DIR}/, ${LIB})
 SRC_HEADERS := $(wildcard ${INCLUDE_DIR}/*.h)
 SRC_FILES := $(wildcard ${SRC_DIR}/*.c)
@@ -26,8 +26,6 @@ all: directories lib install
 directories: ${OBJ_DIR}
 
 ${OBJ_DIR}:
-	@echo ${TARGET_HEADERS}
-	
 	@${MKDIR} ${OBJ_DIR}
 
 lib : ${BLD}
