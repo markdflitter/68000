@@ -30,17 +30,17 @@ TOP_LEVEL_TARGET := Zebulon
 DEPENDENCIES := libcrt libstart libcpp libitanium libc libbsp
 
 #current build target
-OUTPUT := $(notdir $(CURDIR))
-ifeq (,$(findstring lib,$(CURDIR)))
-	INTERMEDIATE_OBJECT := $(addprefix $(OBJECT_DIRECTORY), $(addsuffix .out, $(OUTPUT)))
-	TYPED_BUILD_TARGET := $(OUTPUT).S68
+BUILD_TARGET := $(notdir $(CURDIR))
+ifeq (,$(findstring lib,$(BUILD_TARGET)))
+	INTERMEDIATE_OBJECT := $(addprefix $(OBJECT_DIRECTORY), $(addsuffix .out, $(BUILD_TARGET)))
+	TYPED_BUILD_TARGET := $(BUILD_TARGET).S68
 	INSTALLED_TARGET := $(addprefix ../../../Projects/68000/, $(TYPED_BUILD_TARGET))
 else
-	TYPED_BUILD_TARGET := $(OUTPUT).a
+	TYPED_BUILD_TARGET := $(BUILD_TARGET).a
 	INSTALLED_TARGET := $(addprefix $(INSTALLED_LIB_DIRECTORY)/, $(TYPED_BUILD_TARGET))
 endif
 
-BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(OUTPUT))
+BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(BUILD_TARGET))
 TYPED_BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(TYPED_BUILD_TARGET))
 
 #find the source files and which object files they produce
