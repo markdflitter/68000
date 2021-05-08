@@ -1,70 +1,122 @@
+#directories
+SUB_DIRECTORIES := $(wildcard */.)
+SUB_MAKEFILES := $(addsuffix /Makefile, $(SUB_DIRECTORIES))
+INSTALL_DIRECTORY := /usr/local/crossgcc
+INSTALLED_LIB_DIRECTORY := $(INSTALL_DIRECTORY)/lib
+INSTALLED_INCLUDE_DIRECTORY := $(INSTALL_DIRECTORY)/include
+
+SRC_DIRECTORY := src
+SRC_INCLUDE_DIRECTORY := include
+BUILD_DIRECTORY := bld
+OBJECT_DIRECTORY := $(BUILD_DIRECTORY)/obj
+
+#commands
 MKDIR := mkdir -p
+CP := cp
+RM := rm -rf
 CC := m68k-elf-g++
-CFLAGS := -c -g -march=68000 -nostartfiles -nostdlib
+CFLAGS := -c -g -march=68000 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
 AS := m68k-elf-as
 ASFLAGS := -m68000
 AR := m68k-elf-ar
 ARFLAGS := -rcs
+OBJCOPY := m68k-elf-objcopy 
+OBJCOPY_FLAGS := -O srec
 
-INCLUDE_DIR := include
-SRC_DIR := src
-BLD_DIR := bld
-OBJ_DIR := ${BLD_DIR}/obj
-INSTALL_DIR := /usr/local/crossgcc
-INSTALL_LIB_DIR := ${INSTALL_DIR}/lib
-INSTALL_INCLUDE_DIR := ${INSTALL_DIR}/include
+LINK_LINE := -lgcc -lcpp -lbsp -lc -lbsp -lgcc -Wl,--whole-archive -litanium -lcrt -lstart -Wl,--no-whole-archive 
 
-LIB_DIRS := $(wildcard lib*)
-LIB_DIRS_MAKEFILES := $(addsuffix /Makefile, ${LIB_DIRS})
-LIB := $(notdir $(CURDIR)).a
-BLD := $(addprefix ${BLD_DIR}/, ${LIB})
-SRC_HEADERS := $(wildcard ${INCLUDE_DIR}/*.h)
-SRC_FILES := $(wildcard ${SRC_DIR}/*.c ${SRC_DIR}/*.cpp ${SRC_DIR}/*.s)
-OBJ_FILES := ${SRC_FILES}
-OBJ_FILES := ${OBJ_FILES:${SRC_DIR}/%.c=%.o}
-OBJ_FILES := ${OBJ_FILES:${SRC_DIR}/%.cpp=%.o}
-OBJ_FILES := ${OBJ_FILES:${SRC_DIR}/%.s=%.o}
-OBJ_FILES := $(addprefix ${OBJ_DIR}/, ${OBJ_FILES})
-TARGET_LIB := ${INSTALL_LIB_DIR}/${LIB}
-TARGET_HEADERS := $(addprefix ${INSTALL_INCLUDE_DIR}/, $(notdir ${SRC_HEADERS}))
+#top level build targets
+TOP_LEVEL_TARGET := Zebulon
+DEPENDENCIES := libcrt libstart libcpp libitanium libc libbsp
+
+#find the source files and which object files they produce
+SRC_FILES := $(wildcard $(SRC_DIRECTORY)/*.c $(SRC_DIRECTORY)/*.cpp $(SRC_DIRECTORY)/*.s)
+
+#current build target
+BUILD_TARGET := $(notdir $(CURDIR))
+ifeq (,$(findstring lib,$(BUILD_TARGET)))
+	INTERMEDIATE_OBJECT := $(addprefix $(OBJECT_DIRECTORY), $(addsuffix .out, $(BUILD_TARGET)))
+	TYPED_BUILD_TARGET := $(BUILD_TARGET).S68
+	INSTALLED_TARGET := $(addprefix ../../../Projects/68000/, $(TYPED_BUILD_TARGET))
+
+	LINK_FILES := $(wildcard $(SRC_DIRECTORY)/*.ld)
+else
+	TYPED_BUILD_TARGET := $(BUILD_TARGET).a
+	INSTALLED_TARGET := $(addprefix $(INSTALLED_LIB_DIRECTORY)/, $(TYPED_BUILD_TARGET))
+
+	HEADER_FILES := $(wildcard $(SRC_INCLUDE_DIRECTORY)/*.h)
+	INSTALLED_HEADER_FILES := $(addprefix $(INSTALLED_INCLUDE_DIRECTORY)/, $(notdir $(HEADER_FILES)))
+
+	OBJECT_FILES := $(SRC_FILES)
+	OBJECT_FILES := $(OBJECT_FILES:$(SRC_DIRECTORY)/%.c=%.o)
+	OBJECT_FILES := $(OBJECT_FILES:$(SRC_DIRECTORY)/%.cpp=%.o)
+	OBJECT_FILES := $(OBJECT_FILES:$(SRC_DIRECTORY)/%.s=%.o)
+	OBJECT_FILES := $(addprefix $(OBJECT_DIRECTORY)/, $(OBJECT_FILES))
+endif
+BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(BUILD_TARGET))
+TYPED_BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(TYPED_BUILD_TARGET))
 
 .DEFAULT_GOAL := all
-.PHONY : all make directories lib clean install
 
-make: ${LIB_DIRS_MAKEFILES}
+#top level rules
+.PHONY: make $(TOP_LEVEL_TARGET) build_dependencies clean_dependencies
 
-%/Makefile : Makefile
-	@cp Makefile $@
+make: $(SUB_MAKEFILES)
 
-all: directories lib install
-directories: ${OBJ_DIR}
+%/Makefile: Makefile
+	$(CP) Makefile $@
 
-${OBJ_DIR}:
-	@${MKDIR} ${OBJ_DIR}
+all: $(TOP_LEVEL_TARGET)
+	make -C $(TOP_LEVEL_TARGET) _all
 
-lib : ${BLD}
+$(TOP_LEVEL_TARGET): build_dependencies
 
-${BLD} : ${OBJ_FILES}
-	${AR} ${ARFLAGS} $@ ${OBJ_FILES}
+build_dependencies:
+	$(foreach file, $(DEPENDENCIES), make -C $(file) _all;)
 
-${OBJ_DIR}/%.o : ${SRC_DIR}/%.c
-	${CC} $< -o $@ -I ${INSTALL_INCLUDE_DIR} ${CFLAGS}
+clean: clean_dependencies
+	make -C $(TOP_LEVEL_TARGET) _clean
 
-${OBJ_DIR}/%.o : ${SRC_DIR}/%.cpp
-	${CC} $< -o $@ -I ${INSTALL_INCLUDE_DIR} ${CFLAGS}
+clean_dependencies:
+	$(foreach file, $(DEPENDENCIES), make -C $(file) _clean;)
 
-${OBJ_DIR}/%.o : ${SRC_DIR}/%.s
-	${AS} $< -o $@ ${ASFLAGS}
+#sub level rules
+.PHONY: _all _create_build_directories _build_and_install
 
-install: ${TARGET_LIB} ${TARGET_HEADERS}
+_all: _create_build_directories _build_and_install
 
-${INSTALL_INCLUDE_DIR}/%.h : ${INCLUDE_DIR}/%.h
-	rm -f $@
-	cp $< $@
+_create_build_directories: $(OBJECT_DIRECTORY)
 
-${INSTALL_LIB_DIR}/%.a : ${BLD_DIR}/%.a
-	rm -f $@
-	cp $< $@
+$(OBJECT_DIRECTORY):
+	@$(MKDIR) $@
 
-clean:
-	@rm -rf ${BLD_DIR}
+_build_and_install: $(INSTALLED_HEADER_FILES) $(INSTALLED_TARGET)
+
+$(INSTALLED_INCLUDE_DIRECTORY)/%.h: $(SRC_INCLUDE_DIRECTORY)/%.h
+	$(RM) $@
+	$(CP) $^ $@
+
+$(INSTALLED_TARGET): $(TYPED_BUILD_TARGET)
+	$(RM) $@
+	$(CP) $^ $@
+
+$(BUILD_TARGET).a: $(OBJECT_FILES)
+	$(AR) $(ARFLAGS) $@ $(OBJECT_FILES)
+
+$(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.c
+	$(CC) $< -o $@ $(CFLAGS)
+
+$(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.cpp
+	$(CC) $< -o $@ -I $(INSTALLED_INCLUDE_DIRECTORY) $(CFLAGS)
+
+$(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.s
+	$(AS) $< -o $@ $(ASFLAGS)
+
+$(BUILD_TARGET).S68: $(INTERMEDIATE_OBJECT)
+	$(OBJCOPY) $(OBJCOPY_FLAGS) $^ $@
+
+$(INTERMEDIATE_OBJECT): $(LINK_FILES)
+	$(CC) $(SRC_FILES) -o $(INTERMEDIATE_OBJECT) $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINK_FILES)
+
+_clean:
+	$(RM) $(BUILD_DIRECTORY)
