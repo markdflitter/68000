@@ -31,17 +31,17 @@ DEPENDENCIES := libcrt libstart libcpp libitanium libc libbsp
 
 #current build target
 OUTPUT := $(notdir $(CURDIR))
-OUTPUT_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(OUTPUT))
 ifeq (,$(findstring lib,$(CURDIR)))
-	INTERMEDIATE_OBJECT := $(addsuffix .out, $(OUTPUT_TARGET))
-	BUILD_TARGET := $(OUTPUT).S68
-	INSTALLED_TARGET := $(addprefix ../../../Projects/68000/, $(BUILD_TARGET))
+	INTERMEDIATE_OBJECT := $(addprefix $(OBJECT_DIRECTORY), $(addsuffix .out, $(OUTPUT)))
+	TYPED_BUILD_TARGET := $(OUTPUT).S68
+	INSTALLED_TARGET := $(addprefix ../../../Projects/68000/, $(TYPED_BUILD_TARGET))
 else
-	BUILD_TARGET := $(OUTPUT).a
-	INSTALLED_TARGET := $(addprefix $(INSTALLED_LIB_DIRECTORY)/, $(BUILD_TARGET))
+	TYPED_BUILD_TARGET := $(OUTPUT).a
+	INSTALLED_TARGET := $(addprefix $(INSTALLED_LIB_DIRECTORY)/, $(TYPED_BUILD_TARGET))
 endif
 
-BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(BUILD_TARGET))
+BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(OUTPUT))
+TYPED_BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(TYPED_BUILD_TARGET))
 
 #find the source files and which object files they produce
 HEADER_FILES := $(wildcard $(SRC_INCLUDE_DIRECTORY)/*.h)
@@ -94,11 +94,11 @@ $(INSTALLED_INCLUDE_DIRECTORY)/%.h: $(SRC_INCLUDE_DIRECTORY)/%.h
 	$(RM) $@
 	$(CP) $^ $@
 
-$(INSTALLED_TARGET): $(BUILD_TARGET)
+$(INSTALLED_TARGET): $(TYPED_BUILD_TARGET)
 	$(RM) $@
 	$(CP) $^ $@
 
-$(OUTPUT_TARGET).a: $(OBJECT_FILES)
+$(BUILD_TARGET).a: $(OBJECT_FILES)
 	$(AR) $(ARFLAGS) $@ $(OBJECT_FILES)
 
 $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.c
@@ -110,7 +110,7 @@ $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.cpp
 $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.s
 	$(AS) $< -o $@ $(ASFLAGS)
 
-$(OUTPUT_TARGET).S68: $(INTERMEDIATE_OBJECT)
+$(BUILD_TARGET).S68: $(INTERMEDIATE_OBJECT)
 	$(OBJCOPY) $(OBJCOPY_FLAGS) $^ $@
 
 $(INTERMEDIATE_OBJECT): $(LINK_FILES)
