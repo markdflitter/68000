@@ -30,26 +30,25 @@ TOP_LEVEL_TARGET := Zebulon
 DEPENDENCIES := libcrt libstart libcpp libitanium libc libbsp
 
 #current build target
-CURRENT_DIRECTORY := $(notdir $(CURDIR))
-OUTPUT := $(CURRENT_DIRECTORY)
+OUTPUT := $(notdir $(CURDIR))
 OUTPUT_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(OUTPUT))
-OUTPUT_OBJECT := $(addsuffix .out, $(OUTPUT_TARGET))
-ifeq (,$(findstring lib,$(CURRENT_DIRECTORY)))
-	TARGET := $(OUTPUT).S68
-	INSTALLED_TARGET := $(addprefix ../../../Projects/68000/, $(TARGET))
+ifeq (,$(findstring lib,$(CURDIR)))
+	INTERMEDIATE_OBJECT := $(addsuffix .out, $(OUTPUT_TARGET))
+	BUILD_TARGET := $(OUTPUT).S68
+	INSTALLED_TARGET := $(addprefix ../../../Projects/68000/, $(BUILD_TARGET))
 else
-	TARGET := $(OUTPUT).a
-	INSTALLED_TARGET := $(addprefix $(INSTALLED_LIB_DIRECTORY)/, $(TARGET))
+	BUILD_TARGET := $(OUTPUT).a
+	INSTALLED_TARGET := $(addprefix $(INSTALLED_LIB_DIRECTORY)/, $(BUILD_TARGET))
 endif
 
-BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(TARGET))
+BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(BUILD_TARGET))
 
 #find the source files and which object files they produce
 HEADER_FILES := $(wildcard $(SRC_INCLUDE_DIRECTORY)/*.h)
 INSTALLED_HEADER_FILES := $(addprefix $(INSTALLED_INCLUDE_DIRECTORY)/, $(notdir $(HEADER_FILES)))
 SRC_FILES := $(wildcard $(SRC_DIRECTORY)/*.c $(SRC_DIRECTORY)/*.cpp $(SRC_DIRECTORY)/*.s)
 LINKER_FILES := $(wildcard $(SRC_DIRECTORY)/*.ld)
-OOBJECT_FILES := $(SRC_FILES)
+OBJECT_FILES := $(SRC_FILES)
 OBJECT_FILES := $(OBJECT_FILES:$(SRC_DIRECTORY)/%.c=%.o)
 OBJECT_FILES := $(OBJECT_FILES:$(SRC_DIRECTORY)/%.cpp=%.o)
 OBJECT_FILES := $(OBJECT_FILES:$(SRC_DIRECTORY)/%.s=%.o)
@@ -111,11 +110,11 @@ $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.cpp
 $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.s
 	$(AS) $< -o $@ $(ASFLAGS)
 
-$(OUTPUT_TARGET).S68: $(OUTPUT_OBJECT)
+$(OUTPUT_TARGET).S68: $(INTERMEDIATE_OBJECT)
 	$(OBJCOPY) $(OBJCOPY_FLAGS) $^ $@
 
-$(OUTPUT_OBJECT): $(LINKER_FILES)
-	$(CC) $(SRC_FILES) -o $(OUTPUT_OBJECT) $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINKER_FILES)
+$(INTERMEDIATE_OBJECT): $(LINKER_FILES)
+	$(CC) $(SRC_FILES) -o $(INTERMEDIATE_OBJECT) $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINKER_FILES)
 
 _clean:
 	$(RM) $(BUILD_DIRECTORY)
