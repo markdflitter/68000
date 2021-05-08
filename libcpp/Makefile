@@ -15,7 +15,9 @@ MKDIR := mkdir -p
 CP := cp
 RM := rm -rf
 CC := m68k-elf-g++
-CFLAGS := -c -g -march=68000 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
+LIBCFLAGS := -c -g -march=68000 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
+CFLAGS := -march=68000 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
+
 AS := m68k-elf-as
 ASFLAGS := -m68000
 AR := m68k-elf-ar
@@ -23,7 +25,7 @@ ARFLAGS := -rcs
 OBJCOPY := m68k-elf-objcopy 
 OBJCOPY_FLAGS := -O srec
 
-LINK_LINE := -lgcc -lcpp -lbsp -lc -lbsp -lgcc -Wl,--whole-archive -litanium -lcrt -lstart -Wl,--no-whole-archive 
+LINK_LINE := -lgcc -lcpp -lbsp -lc -lbsp -lgcc -Wl,--whole-archive -litanium -lcrt -lstart -Wl,--no-whole-archive
 
 #top level build targets
 TOP_LEVEL_TARGET := Zebulon
@@ -35,9 +37,9 @@ SRC_FILES := $(wildcard $(SRC_DIRECTORY)/*.c $(SRC_DIRECTORY)/*.cpp $(SRC_DIRECT
 #current build target
 BUILD_TARGET := $(notdir $(CURDIR))
 ifeq (,$(findstring lib,$(BUILD_TARGET)))
-	INTERMEDIATE_OBJECT := $(addprefix $(OBJECT_DIRECTORY), $(addsuffix .out, $(BUILD_TARGET)))
+	INTERMEDIATE_OBJECT := $(addprefix $(OBJECT_DIRECTORY)/, $(addsuffix .out, $(BUILD_TARGET)))
 	TYPED_BUILD_TARGET := $(BUILD_TARGET).S68
-	INSTALLED_TARGET := $(addprefix ../../../Projects/68000/$(BUILD_TARGET)/, $(TYPED_BUILD_TARGET))
+ 	INSTALLED_TARGET := $(addprefix ../../../Projects/68000/$(BUILD_TARGET)/, $(TYPED_BUILD_TARGET))
 
 	LINK_FILES := $(wildcard $(SRC_DIRECTORY)/*.ld)
 else
@@ -80,6 +82,10 @@ clean: clean_dependencies
 clean_dependencies:
 	$(foreach file, $(DEPENDENCIES), make -C $(file) _clean;)
 
+copy:
+	stty 115200 -F /dev/ttyS1
+	cat $(TOP_LEVEL_TARGET)/$(BUILD_DIRECTORY)/$(TOP_LEVEL_TARGET).S68 > /dev/ttyS1
+
 #sub level rules
 .PHONY: _all _create_build_directories _build_and_install
 
@@ -104,10 +110,10 @@ $(BUILD_TARGET).a: $(OBJECT_FILES)
 	$(AR) $(ARFLAGS) $@ $(OBJECT_FILES)
 
 $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.c
-	$(CC) $< -o $@ $(CFLAGS)
+	$(CC) $< -o $@ $(LIBCFLAGS)
 
 $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.cpp
-	$(CC) $< -o $@ -I $(INSTALLED_INCLUDE_DIRECTORY) $(CFLAGS)
+	$(CC) $< -o $@ -I $(INSTALLED_INCLUDE_DIRECTORY) $(LIBCFLAGS)
 
 $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.s
 	$(AS) $< -o $@ $(ASFLAGS)
