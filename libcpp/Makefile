@@ -37,7 +37,7 @@ BUILD_TARGET := $(notdir $(CURDIR))
 ifeq (,$(findstring lib,$(BUILD_TARGET)))
 	INTERMEDIATE_OBJECT := $(addprefix $(OBJECT_DIRECTORY), $(addsuffix .out, $(BUILD_TARGET)))
 	TYPED_BUILD_TARGET := $(BUILD_TARGET).S68
-	INSTALLED_TARGET := $(addprefix ../../../Projects/68000/, $(TYPED_BUILD_TARGET))
+	INSTALLED_TARGET := $(addprefix ../../../Projects/68000/$(BUILD_TARGET)/, $(TYPED_BUILD_TARGET))
 
 	LINK_FILES := $(wildcard $(SRC_DIRECTORY)/*.ld)
 else
