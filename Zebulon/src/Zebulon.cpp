@@ -16,19 +16,13 @@ void ident ()
 
 	ide i;
 	i.ident (buf);
-//	buf [512] = '\0';
-	
-//	printf ("ident\n\r");
-//	for (int i = 0; i < 512; i++)
-//		printf("%c\n\r",buf[i]);
 }
 
 
 int main ()
 {
-	const char* version = "Zebulon V1.8\n\r";
-
-	printf ("%s",version);
+	const char* version = "Zebulon V1.9";
+	printf ("%s\n\r",version);
 	printf ("type help for help\n\r");
 
 	char buf [21];
