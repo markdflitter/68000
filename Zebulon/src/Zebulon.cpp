@@ -26,7 +26,7 @@ void ident ()
 
 int main ()
 {
-	const char* version = "Zebulon V1.6\n\r";
+	const char* version = "Zebulon V1.8\n\r";
 
 	printf ("%s",version);
 	printf ("type help for help\n\r");
