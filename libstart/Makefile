@@ -39,7 +39,6 @@ BUILD_TARGET := $(notdir $(CURDIR))
 ifeq (,$(findstring lib,$(BUILD_TARGET)))
 	INTERMEDIATE_OBJECT := $(addprefix $(OBJECT_DIRECTORY)/, $(addsuffix .out, $(BUILD_TARGET)))
 	TYPED_BUILD_TARGET := $(BUILD_TARGET).S68
- 	INSTALLED_TARGET := $(addprefix ../../../Projects/68000/$(BUILD_TARGET)/, $(TYPED_BUILD_TARGET))
 
 	LINK_FILES := $(wildcard $(SRC_DIRECTORY)/*.ld)
 else
@@ -74,7 +73,7 @@ all: $(TOP_LEVEL_TARGET)
 $(TOP_LEVEL_TARGET): build_dependencies
 
 build_dependencies:
-	$(foreach file, $(DEPENDENCIES), make -C $(file) _all;)
+	$(foreach file, $(DEPENDENCIES), make -C $(file) _all && make -C $(file) _install;)
 
 clean: clean_dependencies
 	make -C $(TOP_LEVEL_TARGET) _clean
@@ -87,24 +86,16 @@ copy:
 	cat $(TOP_LEVEL_TARGET)/$(BUILD_DIRECTORY)/$(TOP_LEVEL_TARGET).S68 > /dev/ttyS1
 
 #sub level rules
-.PHONY: _all _create_build_directories _build_and_install
+.PHONY: _all _create_build_directories _build _install
 
-_all: _create_build_directories _build_and_install
+_all: _create_build_directories _build
 
 _create_build_directories: $(OBJECT_DIRECTORY)
 
 $(OBJECT_DIRECTORY):
 	@$(MKDIR) $@
 
-_build_and_install: $(INSTALLED_HEADER_FILES) $(INSTALLED_TARGET)
-
-$(INSTALLED_INCLUDE_DIRECTORY)/%.h: $(SRC_INCLUDE_DIRECTORY)/%.h
-	$(RM) $@
-	$(CP) $^ $@
-
-$(INSTALLED_TARGET): $(TYPED_BUILD_TARGET)
-	$(RM) $@
-	$(CP) $^ $@
+_build: $(TYPED_BUILD_TARGET)
 
 $(BUILD_TARGET).a: $(OBJECT_FILES)
 	$(AR) $(ARFLAGS) $@ $(OBJECT_FILES)
@@ -123,6 +114,17 @@ $(BUILD_TARGET).S68: $(INTERMEDIATE_OBJECT)
 
 $(INTERMEDIATE_OBJECT): $(LINK_FILES)
 	$(CC) $(SRC_FILES) -o $(INTERMEDIATE_OBJECT) $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINK_FILES)
+
+_install: $(INSTALLED_HEADER_FILES) $(INSTALLED_TARGET)
+
+$(INSTALLED_INCLUDE_DIRECTORY)/%.h: $(SRC_INCLUDE_DIRECTORY)/%.h
+	$(RM) $@
+	$(CP) $^ $@
+
+$(INSTALLED_TARGET): $(TYPED_BUILD_TARGET)
+	$(RM) $@
+	$(CP) $^ $@
+
 
 _clean:
 	$(RM) $(BUILD_DIRECTORY)
