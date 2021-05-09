@@ -25,6 +25,11 @@ ARFLAGS := -rcs
 OBJCOPY := m68k-elf-objcopy 
 OBJCOPY_FLAGS := -O srec
 
+STTY := stty
+TTY := /dev/ttyS1
+BAUD := 115200
+CAT := cat
+
 LINK_LINE := -lgcc -lcpp -lbsp -lc -lbsp -lgcc -Wl,--whole-archive -litanium -lcrt -lstart -Wl,--no-whole-archive
 
 #top level build targets
@@ -67,6 +72,9 @@ make: $(SUB_MAKEFILES)
 %/Makefile: Makefile
 	$(CP) Makefile $@
 
+copy:
+	make -C $(TOP_LEVEL_TARGET) _copy
+
 all: $(TOP_LEVEL_TARGET)
 	make -C $(TOP_LEVEL_TARGET) _all
 
@@ -80,10 +88,6 @@ clean: clean_dependencies
 
 clean_dependencies:
 	$(foreach file, $(DEPENDENCIES), make -C $(file) _clean;)
-
-copy:
-	stty 115200 -F /dev/ttyS1
-	cat $(TOP_LEVEL_TARGET)/$(BUILD_DIRECTORY)/$(TOP_LEVEL_TARGET).S68 > /dev/ttyS1
 
 #sub level rules
 .PHONY: _all _create_build_directories _build _install
@@ -125,6 +129,8 @@ $(INSTALLED_TARGET): $(TYPED_BUILD_TARGET)
 	$(RM) $@
 	$(CP) $^ $@
 
+_copy: $(TYPED_BUILD_TARGET) 
+	$(STTY) $(BAUD) -F $(TTY) && $(CAT) $^ > $(TTY)
 
 _clean:
 	$(RM) $(BUILD_DIRECTORY)
