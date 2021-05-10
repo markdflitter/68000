@@ -42,7 +42,6 @@ SRC_FILES := $(wildcard $(SRC_DIRECTORY)/*.c $(SRC_DIRECTORY)/*.cpp $(SRC_DIRECT
 #current build target
 BUILD_TARGET := $(notdir $(CURDIR))
 ifeq (,$(findstring lib,$(BUILD_TARGET)))
-	INTERMEDIATE_OBJECT := $(addprefix $(OBJECT_DIRECTORY)/, $(addsuffix .out, $(BUILD_TARGET)))
 	TYPED_BUILD_TARGET := $(BUILD_TARGET).S68
 
 	LINK_FILES := $(wildcard $(SRC_DIRECTORY)/*.ld)
@@ -101,7 +100,7 @@ $(OBJECT_DIRECTORY):
 
 _build: $(TYPED_BUILD_TARGET)
 
-$(BUILD_TARGET).a: $(OBJECT_FILES)
+%.a: $(OBJECT_FILES)
 	$(AR) $(ARFLAGS) $@ $(OBJECT_FILES)
 
 $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.c
@@ -113,11 +112,11 @@ $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.cpp
 $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.s
 	$(AS) $< -o $@ $(ASFLAGS)
 
-$(BUILD_TARGET).S68: $(INTERMEDIATE_OBJECT)
+%.S68: %.out
 	$(OBJCOPY) $(OBJCOPY_FLAGS) $^ $@
 
-$(INTERMEDIATE_OBJECT): $(LINK_FILES) $(SRC_FILES)
-	$(CC) $(SRC_FILES) -o $(INTERMEDIATE_OBJECT) $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINK_FILES)
+%.out: $(LINK_FILES) $(SRC_FILES)
+	$(CC) $(SRC_FILES) -o $@ $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINK_FILES)
 
 _install: $(INSTALLED_HEADER_FILES) $(INSTALLED_TARGET)
 
