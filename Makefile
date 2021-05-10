@@ -42,12 +42,12 @@ SRC_FILES := $(wildcard $(SRC_DIRECTORY)/*.c $(SRC_DIRECTORY)/*.cpp $(SRC_DIRECT
 #current build target
 BUILD_TARGET := $(notdir $(CURDIR))
 ifeq (,$(findstring lib,$(BUILD_TARGET)))
-	TYPED_BUILD_TARGET := $(BUILD_TARGET).S68
+	BUILD_TARGET := $(BUILD_TARGET).S68
 
 	LINK_FILES := $(wildcard $(SRC_DIRECTORY)/*.ld)
 else
-	TYPED_BUILD_TARGET := $(BUILD_TARGET).a
-	INSTALLED_TARGET := $(addprefix $(INSTALLED_LIB_DIRECTORY)/, $(TYPED_BUILD_TARGET))
+	BUILD_TARGET := $(BUILD_TARGET).a
+	INSTALLED_TARGET := $(addprefix $(INSTALLED_LIB_DIRECTORY)/, $(BUILD_TARGET))
 
 	HEADER_FILES := $(wildcard $(SRC_INCLUDE_DIRECTORY)/*.h)
 	INSTALLED_HEADER_FILES := $(addprefix $(INSTALLED_INCLUDE_DIRECTORY)/, $(notdir $(HEADER_FILES)))
@@ -59,7 +59,6 @@ else
 	OBJECT_FILES := $(addprefix $(OBJECT_DIRECTORY)/, $(OBJECT_FILES))
 endif
 BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(BUILD_TARGET))
-TYPED_BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(TYPED_BUILD_TARGET))
 
 .DEFAULT_GOAL := all
 
@@ -98,7 +97,7 @@ _create_build_directories: $(OBJECT_DIRECTORY)
 $(OBJECT_DIRECTORY):
 	@$(MKDIR) $@
 
-_build: $(TYPED_BUILD_TARGET)
+_build: $(BUILD_TARGET)
 
 %.a: $(OBJECT_FILES)
 	$(AR) $(ARFLAGS) $@ $(OBJECT_FILES)
@@ -124,11 +123,11 @@ $(INSTALLED_INCLUDE_DIRECTORY)/%.h: $(SRC_INCLUDE_DIRECTORY)/%.h
 	$(RM) $@
 	$(CP) $^ $@
 
-$(INSTALLED_TARGET): $(TYPED_BUILD_TARGET)
+$(INSTALLED_TARGET): $(BUILD_TARGET)
 	$(RM) $@
 	$(CP) $^ $@
 
-_copy: $(TYPED_BUILD_TARGET) 
+_copy: $(BUILD_TARGET) 
 	$(STTY) $(BAUD) -F $(TTY) && $(CAT) $^ > $(TTY)
 
 _clean:
