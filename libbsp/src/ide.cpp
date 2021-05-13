@@ -12,9 +12,9 @@ char ide::read_status() const
 {
 	printf ("ide::read_status\n\r");
 	printf ("0x%x\n\r",&(_rm->command));	
-
-	unsigned char result =  _rm->command;	
-
+	
+	unsigned char result = _rm->command;
+	
 	printf ("0x%x\n\r",result);
 
 	return result;
@@ -22,23 +22,21 @@ char ide::read_status() const
 
 void ide::ident (char* buf)
 {
-	//wait_ready ();
+	wait_ready ();
 
 	//printf ("device select address 0x%x\n\r",&(_rm->device_select));
-	unsigned char device_select = _rm->device_select;
-	printf ("device_select 0x%x\n\r",device_select);
-	_rm->device_select = 0xE0;
+	//unsigned char device_select = _rm->device_select;
+	//printf ("device_select 0x%x\n\r",device_select);
+	_rm->device_select = 0xE8;
 	for (int i =  0; i < 10; i++)
 		printf ("wait...\n\r");
-	device_select = _rm->device_select;
+	unsigned char device_select = _rm->device_select;
 	printf ("device_select 0x%x\n\r",device_select);
 
+	//return ;
 	unsigned char status = _rm->command;
 	printf ("status 0x%x\n\r", status);
 
-
-	return ;
-	printf ("ide::ident\n\r");
 	send_command (0xEC);
 	printf ("sent command\n\r");
 
@@ -52,8 +50,8 @@ void ide::ident (char* buf)
 	for (int i = 0; i < 256; i++)
 	{
 		printf (".");	
-	    short v = _rm->data;
-		printf ("%x",v);
+	    unsigned short v = _rm->data;
+		printf ("%x\n\r",v);
 		*buf++ = (char) v;
 		v = v >> 8;
 		*buf++ = (char) v;
