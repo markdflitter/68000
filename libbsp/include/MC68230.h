@@ -3,9 +3,30 @@ class MC68230
 public:
 	MC68230 (unsigned int base_address = 0xA00000);
 
-	inline void set_port_c_direction (unsigned char directions)
+	
+	inline void set_port_a_direction (unsigned char direction)
 	{
-		_rm->port_c_data_direction = directions;
+		_rm->port_a_data_direction = direction;
+	}
+
+	inline void set_port_c_direction (unsigned char direction)
+	{
+		_rm->port_c_data_direction = direction;
+	}
+
+	inline unsigned char read_port_a ()
+	{	
+		return _rm->port_a_data;
+	}
+
+	inline void write_port_a (unsigned char value)
+	{	
+		_rm->port_a_data = value;
+	}
+
+	inline unsigned char read_port_c ()
+	{	
+		return _rm->port_c_data;
 	}
 
 	inline void write_port_c (unsigned char value)
