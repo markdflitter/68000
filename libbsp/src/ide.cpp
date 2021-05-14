@@ -1,76 +1,67 @@
 #include "../include/ide.h"
 #include <stdio.h>
 
+ide::register_access::register_access (MC68230& controller, unsigned char reg)
+	: _controller (controller), _reg (reg)
+{
+	_controller.set_port_c_direction (0xFF);
+	reset ();
+}
+		
+unsigned char ide::register_access::read ()
+{
+	setup ();
+	pulse (eRead);
+	reset ();
+	return 0;
+}
+
+void ide::register_access::setup ()
+{
+	unsigned char v1 = eCS | eWrite;
+	unsigned char v2 = _reg | eWrite;
+	unsigned char* p = (unsigned char*) 0xA00019;
+
+	*p = v1;
+	*p = v2;
+
+//	_controller.write_port_c (eCS | eWrite);
+//	_controller.write_port_c (_reg | eWrite);
+}
+
+void ide::register_access::reset ()
+{
+	_controller.write_port_c (eCS | eRead | eWrite);
+}
+
+void ide::register_access::pulse (unsigned char pin)
+{
+	_controller.write_port_c (_reg | pin | eWrite);
+	_controller.write_port_c (_reg | eWrite);
+}
+
 ide::ide (unsigned int base_address)
-	:_rm ((ide_register_map*) base_address)
+	: _controller (base_address)
 {
-	printf ("ide::ide %x\n\r",base_address);	
+}
+
+void ide::test ()
+{
+	unsigned char ds = read_register (eDeviceSelect);
+	printf ("device select = %x\n\r",ds);
 }
 
 
-char ide::read_status() const
+unsigned char ide::read_register (unsigned char reg)
 {
-	printf ("ide::read_status\n\r");
-	printf ("0x%x\n\r",&(_rm->command));	
-	
-	unsigned char result = _rm->command;
-	
-	printf ("0x%x\n\r",result);
-
-	return result;
+	return access_register (reg).read ();
 }
 
-void ide::ident (char* buf)
+ide::register_access ide::access_register (unsigned char reg)
 {
-	wait_ready ();
-
-	//printf ("device select address 0x%x\n\r",&(_rm->device_select));
-	//unsigned char device_select = _rm->device_select;
-	//printf ("device_select 0x%x\n\r",device_select);
-	_rm->device_select = 0xE8;
-	for (int i =  0; i < 10; i++)
-		printf ("wait...\n\r");
-	unsigned char device_select = _rm->device_select;
-	printf ("device_select 0x%x\n\r",device_select);
-
-	//return ;
-	unsigned char status = _rm->command;
-	printf ("status 0x%x\n\r", status);
-
-	send_command (0xEC);
-	printf ("sent command\n\r");
-
-	wait_ready ();
-	printf ("wait for DRQ\n\r");
-
-	while ((read_status() & 0x8) == 0)
-		printf ("dum-de-dum\n\r");
-	
-	printf ("got ident\n\r");
-	for (int i = 0; i < 256; i++)
-	{
-		printf (".");	
-	    unsigned short v = _rm->data;
-		printf ("%x\n\r",v);
-		*buf++ = (char) v;
-		v = v >> 8;
-		*buf++ = (char) v;
-	}
+	return register_access (_controller, reg);
 }
 
-void ide::send_command (char command)
-{
-	printf ("ide::send_command\n\r");
-	wait_ready ();
-	printf ("sending command\n\r");
-	_rm->command = command;
-}
 
-void ide::wait_ready () const
-{
-	printf ("ide::wait_ready\n\r");
-	while ((read_status() & _ready) == 0)
-		printf ("not ready\n\r");
-	while ((read_status() & 0x80) == 1)
-		printf ("busy\n\r");
-}
+
+

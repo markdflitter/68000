@@ -1,30 +1,34 @@
+#include "MC68230.h"
+
 class ide
 {
 public:
 	ide (unsigned int base_address = 0xA00000);
 
-	char read_status() const;
-	void ident (char* buf);
+	void test ();
 private:
-	struct __attribute__((__packed__)) ide_register_map
-	{
-		volatile unsigned short data;
-		unsigned char _1 [1];
-		volatile unsigned char error;
-			
-		unsigned char _2 [9];
+	MC68230 _controller;
 
-		volatile unsigned char device_select;
-		unsigned char _3 [1];
-		volatile unsigned char command;
+	enum eRegisters {eDeviceSelect = 0x6};
+	unsigned char read_register (unsigned char reg);
+
+	class register_access {
+	public:
+		register_access (MC68230& controller, unsigned char reg);
+		
+		unsigned char read ();
+	private:
+		inline void setup ();
+		inline void reset ();
+
+
+		enum ePin {eCS = 0x8, eWrite = 0x10, eRead = 0x20};
+		inline void pulse (unsigned char pin);
+
+		unsigned char _reg;
+		MC68230& _controller;
 	};
 
-	enum command {_ident = 0xEC};
-	void send_command (char command);
-
-	enum status {_ready = 0x40};
-	void wait_ready () const;
-
-	ide_register_map* _rm;
+	register_access access_register (unsigned char reg);
 };
 

@@ -3,8 +3,15 @@ class MC68230
 public:
 	MC68230 (unsigned int base_address = 0xA00000);
 
-	void set_port_c_direction (unsigned char directions);
-	void write_port_c (unsigned char value);
+	inline void set_port_c_direction (unsigned char directions)
+	{
+		_rm->port_c_data_direction = directions;
+	}
+
+	inline void write_port_c (unsigned char value)
+	{	
+		_rm->port_c_data = value;
+	}
 private:
 	struct __attribute__((__packed__)) register_map
 	{
