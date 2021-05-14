@@ -18,15 +18,8 @@ unsigned char ide::register_access::read ()
 
 void ide::register_access::setup ()
 {
-	unsigned char v1 = eCS | eWrite;
-	unsigned char v2 = _reg | eWrite;
-	unsigned char* p = (unsigned char*) 0xA00019;
-
-	*p = v1;
-	*p = v2;
-
-//	_controller.write_port_c (eCS | eWrite);
-//	_controller.write_port_c (_reg | eWrite);
+	_controller.write_port_c (eCS | eWrite);
+	_controller.write_port_c (_reg | eWrite);
 }
 
 void ide::register_access::reset ()
