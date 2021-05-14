@@ -6,6 +6,8 @@ public:
 	ide (unsigned int base_address = 0xA00000);
 
 	void test ();
+	void test1 ();
+	void test2 ();
 private:
 	MC68230 _controller;
 

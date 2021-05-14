@@ -9,6 +9,8 @@ ide::register_access::register_access (MC68230& controller, unsigned char reg)
 		
 unsigned char ide::register_access::read ()
 {
+	_controller.set_port_a_direction (0x0);
+	
 	setup (eRead);
 	pulse (eRead);
 	unsigned char result = _controller.read_port_a ();
@@ -18,6 +20,8 @@ unsigned char ide::register_access::read ()
 
 void ide::register_access::write (unsigned char value)
 {
+	_controller.set_port_a_direction (0xFF);
+
 	setup (eWrite);
 	pulse (eWrite);
 	_controller.write_port_a (value);
@@ -70,6 +74,8 @@ void ide::register_access::write_state ()
 ide::ide (unsigned int base_address)
 	: _controller (base_address)
 {
+	_controller.set_general_control (0x0);
+	_controller.set_port_a_control (0x40);
 	_controller.set_port_c_direction (0xFF);
 }
 
@@ -79,14 +85,18 @@ void ide::test ()
 		unsigned char ds = read_register (eDeviceSelect);
 		printf ("device select = %x\n\r",ds);
 	}
-
-	write_register (eDeviceSelect, 0xE0);
-
-	{
-		unsigned char ds = read_register (eDeviceSelect);
-		printf ("device select = %x\n\r",ds);
-	}
 }
+
+void ide::test1 ()
+{
+	write_register (eDeviceSelect, 0x00);
+}
+
+void ide::test2 ()
+{
+	write_register (eDeviceSelect, 0xFF);
+}
+
 
 unsigned char ide::read_register (unsigned char reg)
 {

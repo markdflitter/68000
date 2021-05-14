@@ -15,6 +15,19 @@ void test()
 	i.test ();
 }
 
+void test1()
+{
+	ide i;
+	i.test1 ();
+}
+
+void test2()
+{
+	ide i;
+	i.test2 ();
+}
+
+
 int main ()
 {
 	const char* version = "Zebulon V1.9";
@@ -34,6 +47,8 @@ int main ()
 		if (strcmp (buf, "version") == 0) printf ("%s",version);
 		if (strcmp (buf, "help") == 0) printhelp ();
 		if (strcmp (buf, "test") == 0) test ();
+		if (strcmp (buf, "test1") == 0) test1 ();
+		if (strcmp (buf, "test2") == 0) test2 ();
 	}
 
 	return 0;
