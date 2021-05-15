@@ -20,15 +20,18 @@ private:
 		unsigned char read ();
 		void write (unsigned char value);
 	private:
-		void negate (unsigned char bits);
-		void assert (unsigned char bits);
-		void write_state ();
-
 		void reset ();
-		void setup (unsigned char pin);
+		void set_address ();
+	
+		enum eChipSelect {eCS = 0x8};
+
+		enum eStrobe {eWrite = 0x10, eRead = 0x20};		
+		enum eState {eAssert, eNegate};
+		void set_strobe (eStrobe strobe, eState state);
 		
-		enum ePin {eCS = 0x8, eWrite = 0x10, eRead = 0x20};
-		void pulse (unsigned char pin);
+		void negate_bits (unsigned char bits);
+		void assert_bits (unsigned char bits);
+		void write_state ();
 
 		unsigned char _reg;
 		unsigned char _state;

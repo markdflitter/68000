@@ -11,11 +11,13 @@ unsigned char ide::register_access::read ()
 {
 	_controller.set_port_a_direction (0x0);
 	
-	setup (eRead);
-	pulse (eRead);
+	set_address ();
+	set_strobe (eRead, eNegate);
+
 	unsigned char result = _controller.read_port_a ();
-	assert (eCS | eRead | eWrite);
-	write_state ();
+
+	set_strobe (eRead, eAssert);
+	
 	reset ();
 	return result;
 }
@@ -24,41 +26,46 @@ void ide::register_access::write (unsigned char value)
 {
 	_controller.set_port_a_direction (0xFF);
 
-	setup (eWrite);
+	set_address ();
+
 	_controller.write_port_a (value);
-	pulse (eWrite);
-	assert (eCS | eRead | eWrite);
-	write_state ();
+
+	set_strobe (eWrite, eNegate);
+	set_strobe (eWrite, eAssert);
+
 	reset ();
 }
 
 
 void ide::register_access::reset ()
 {
-	negate (0xFF);
-	assert (eCS | eRead | eWrite);
+	negate_bits (0xFF);
+	assert_bits (eCS | eRead | eWrite);
 	write_state ();
 }
 
-void ide::register_access::setup (unsigned char pin)
+void ide::register_access::set_address ()
 {
-	negate (eCS);
-	assert (_reg);
+	negate_bits (eCS);
+	assert_bits (_reg);
 	write_state ();
 }
 
-void ide::register_access::pulse (unsigned char pin)
+void ide::register_access::set_strobe (eStrobe strobe, eState state)
 {
-	negate (pin);
+	if (state == eAssert)
+		assert_bits (strobe);
+	else
+		negate_bits (strobe);
 	write_state ();
 }
 
-void ide::register_access::negate (unsigned char bits)
+void ide::register_access::negate_bits (unsigned char bits)
 {
 	_state = _state & ~bits;
 }
 
-void ide::register_access::assert (unsigned char bits)
+void ide::register_access::assert_bits (unsigned char bits)
 {
 	_state = _state | bits;
 }
@@ -75,6 +82,22 @@ ide::ide (unsigned int base_address)
 	_controller.set_general_control (0x0);
 	_controller.set_port_a_control (0x40);
 	_controller.set_port_c_direction (0xFF);
+}
+
+unsigned char ide::read_register (unsigned char reg)
+{
+	return access_register (reg).read ();
+}
+
+void ide::write_register (unsigned char reg, unsigned char value)
+{
+	return access_register (reg).write (value);
+}
+
+
+ide::register_access ide::access_register (unsigned char reg)
+{
+	return register_access (_controller, reg);
 }
 
 void ide::test ()
@@ -106,18 +129,3 @@ void ide::test ()
 //	}
 }
 
-unsigned char ide::read_register (unsigned char reg)
-{
-	return access_register (reg).read ();
-}
-
-void ide::write_register (unsigned char reg, unsigned char value)
-{
-	return access_register (reg).write (value);
-}
-
-
-ide::register_access ide::access_register (unsigned char reg)
-{
-	return register_access (_controller, reg);
-}
