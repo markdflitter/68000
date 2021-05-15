@@ -283,20 +283,28 @@ bool ide::ident (disk_info& result)
 	memcpy (&(result.firmware_revision), &(response [23]), 2 * 4);
 	memcpy (&(result.model_number), &(response [27]), 2 * 20);
 
-	result.double_word_io = response [48];
+	result.max_rw_sectors_per_interrupt = response [47] & 0xFF;
+	
+	result.double_word_io = response [48] & 0x1;
 	result.capabilities = response [49];
-	result.PIO_mode = response [51];
-	result.DMA_mode = response [52];
+	result.DMA_supported = result.capabilities & 0x100;
+	result.LBA_supported = result.capabilities & 0x200;
+	result.PIO_mode = response [51] >> 8;
+	result.DMA_mode = response [52] >> 8;
 
+	result.current_valid = response [53] & 0x1;
 	result.num_current_cylinders = response [54];
 	result.num_current_heads = response [55];
 	result.num_current_sectors_per_track = response [56];
 	memcpy (&(result.current_capacity_in_sectors), &(response [57]), 2 * 2);
-	
+	result.current_rw_sectors_per_interrupt = response [59] & 0xFF;
 	memcpy (&(result.total_num_of_user_sectors), &(response [60]), 2 * 2);
-	result.singleword_DMA = response [62];
-	result.multiword_DMA = response [63];
-
+			
+	result.singleword_DMA_modes_supported = response [62] & 0xFF;
+	result.singleword_DMA_modes_active = response [62] >> 8;
+	result.multiword_DMA_modes_supported = response [63] & 0xFF;
+	result.multiword_DMA_modes_active = response [63] >> 8;
+	
 	return true;	
 }
 

@@ -19,40 +19,54 @@ void ident ()
 		printf ("model number\t\t\t\t: %s\n\r",info.model_number);
 		printf ("serial number\t\t\t\t: %s\n\r",info.serial_number);
 		printf ("firmware revision\t\t\t: %s\n\r",info.firmware_revision);
+		printf ("\n\r");
 
 		if (info.fixed_drive) printf ("fixed drive\n\r");
 		if (info.removeable_cartridge_drive) printf ("removeable cartridge drive\n\r");
 		if (info.hard_sectored) printf ("hard sectored\n\r");
 		if (info.soft_sectored) printf ("soft sectored\n\r");
+		if (info.LBA_supported) printf ("LBA supported\n\r");
+		if (info.DMA_supported) printf ("DMA supported\n\r");
 		if (info.not_MFM_encoded) printf ("not MFM encoded\n\r");
 		if (info.head_switch_time_15uS) printf ("head switch time > 15uS\n\r");
 		if (info.transfer_rate_lt_5Mbs) printf ("disk transfer rate < 5Mbs\n\r");
 		if (info.transfer_rate_lt_10Mbs) printf ("disk transfer rate > 5Mbs buyt <- 10Mbs\n\r");
 		if (info.transfer_rate_gt_10Mbs) printf ("disk transfer rate > 10Mbs\n\r");
+		if (info.double_word_io) printf ("can perform double word io\n\r");
 		if (info.spindle_motor_control_option_implemented) printf ("spindle motor control option implemented\n\r");
 		if (info.data_strobe_offset_option_available) printf ("data strobe offset option availabe\n\r");
 		if (info.track_offset_option_available) printf ("track offset option available\n\r");
 		if (info.format_speed_tolerance_gap_required) printf ("format speed tolerance gap required\n\r");
+		printf ("\n\r");
+
 		printf ("number of cylinders\t\t\t: %d\n\r",info.num_cylinders);
 		printf ("number of heads\t\t\t\t: %d\n\r",info.num_heads);
 		printf ("bytes per track\t\t\t\t: %d\n\r",info.num_bytes_per_track);
 		printf ("bytes per sector\t\t\t: %d\n\r",info.num_bytes_per_sector);
 		printf ("sectors per track\t\t\t: %d\n\r",info.num_sectors_per_track);
+		printf ("\n\r");
+
 		printf ("buffer type\t\t\t\t: %x\n\r",info.buffer_type);
 		printf ("buffer size\t\t\t\t: %d\n\r",info.buffer_size);
 		printf ("number of ECC bytes\t\t\t: %d\n\r",info.num_ECC_bytes);
-		printf ("double word io\t\t\t\t: %x\n\r",info.double_word_io);
-		printf ("capabilities\t\t\t\t: %x\n\r",info.capabilities);
+		printf ("max rw sectors per interrupt\t\t: %x\n\r",info.max_rw_sectors_per_interrupt);
+		printf ("\n\r");
+
 		printf ("PIO mode\t\t\t\t: %d\n\r",info.PIO_mode);
-		printf ("DMA mode\t\t\t\t: %d\n\r",info.DMA_mode);
+		printf ("DMA mode\t\t\t\t: %d\n\r",info.DMA_mode);	
+		printf ("\n\r");
+
 		printf ("number of current cylinders\t\t: %d\n\r",info.num_current_cylinders);
 		printf ("number of current heads\t\t\t: %d\n\r",info.num_current_heads);
 		printf ("number of current sectors per track\t: %d\n\r",info.num_current_sectors_per_track);
 		printf ("current capacity in sectors\t\t: %d\n\r",info.current_capacity_in_sectors);
-		
 		printf ("total number of user sectors\t\t: %d\n\r",info.total_num_of_user_sectors);
-		printf ("singleword DMA\t\t\t\t: %d\n\r",info.singleword_DMA);
-		printf ("multiword DMA\t\t\t\t: %d\n\r",info.multiword_DMA);
+		printf ("\n\r");
+		
+		printf ("single word DMA modes supported\t\t: %d\n\r",info.singleword_DMA_modes_supported);
+		printf ("single word DMA modes active\t\t: %d\n\r",info.singleword_DMA_modes_active);
+		printf ("multi word DMA modes supported\t\t: %d\n\r",info.multiword_DMA_modes_supported);
+		printf ("multi word DMA modes active\t\t: %d\n\r",info.multiword_DMA_modes_active);
 	}
 	else
 		printf ("ERROR: ident failed\n\r");

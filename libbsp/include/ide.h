@@ -33,17 +33,24 @@ public:
 		unsigned short num_ECC_bytes;
 		unsigned short firmware_revision [8];
 		unsigned char model_number[40];
-		unsigned short double_word_io;
+		unsigned short max_rw_sectors_per_interrupt;
+		bool double_word_io;
 		unsigned short capabilities;
+		bool LBA_supported;
+		bool DMA_supported;
 		unsigned short PIO_mode;
 		unsigned short DMA_mode;
+		bool current_valid;
 		unsigned short num_current_cylinders;
 		unsigned short num_current_heads;
 		unsigned short num_current_sectors_per_track;
 		unsigned int current_capacity_in_sectors;
 		unsigned int total_num_of_user_sectors;
-		unsigned short singleword_DMA;
-		unsigned short multiword_DMA;
+		unsigned short current_rw_sectors_per_interrupt;
+		unsigned char singleword_DMA_modes_supported;
+		unsigned char singleword_DMA_modes_active;
+		unsigned char multiword_DMA_modes_supported;
+		unsigned char multiword_DMA_modes_active;
 	};
 
 	bool ident (disk_info& result);
