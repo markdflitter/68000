@@ -1,6 +1,14 @@
 #include "../include/ide.h"
 #include <stdio.h>
 
+const unsigned char DRIVE_SELECT_REGISTER = 0x6;
+const unsigned char STATUS_REGISTER = 0x7;
+const unsigned char COMMAND_REGISTER = 0x7;
+
+const unsigned char CHIP_SELECT_0 = 0x8; 
+const unsigned char WRITE_STROBE = 0x10;
+const unsigned char READ_STROBE = 0x20;
+
 ide::register_access::register_access (MC68230& controller, unsigned char reg)
 	: _controller (controller), _reg (reg)
 {
@@ -9,14 +17,14 @@ ide::register_access::register_access (MC68230& controller, unsigned char reg)
 
 unsigned char ide::register_access::read ()
 {
-	_controller.set_port_a_direction (0x0);
+	_controller.set_port_a_direction (MC68230::in);
 	
 	set_address ();
-	set_strobe (eRead, eNegate);
+	set_strobe (READ_STROBE, negate);
 
 	unsigned char result = _controller.read_port_a ();
 
-	set_strobe (eRead, eAssert);
+	set_strobe (READ_STROBE, assert);
 	
 	reset ();
 	return result;
@@ -24,14 +32,14 @@ unsigned char ide::register_access::read ()
 
 void ide::register_access::write (unsigned char value)
 {
-	_controller.set_port_a_direction (0xFF);
+	_controller.set_port_a_direction (MC68230::out);
 
 	set_address ();
 
 	_controller.write_port_a (value);
 
-	set_strobe (eWrite, eNegate);
-	set_strobe (eWrite, eAssert);
+	set_strobe (WRITE_STROBE, negate);
+	set_strobe (WRITE_STROBE, assert);
 
 	reset ();
 }
@@ -40,20 +48,20 @@ void ide::register_access::write (unsigned char value)
 void ide::register_access::reset ()
 {
 	negate_bits (0xFF);
-	assert_bits (eCS | eRead | eWrite);
+	assert_bits (CHIP_SELECT_0 | READ_STROBE | WRITE_STROBE);
 	write_state ();
 }
 
 void ide::register_access::set_address ()
 {
-	negate_bits (eCS);
+	negate_bits (CHIP_SELECT_0);
 	assert_bits (_reg);
 	write_state ();
 }
 
-void ide::register_access::set_strobe (eStrobe strobe, eState state)
+void ide::register_access::set_strobe (unsigned char strobe, eState state)
 {
-	if (state == eAssert)
+	if (state == assert)
 		assert_bits (strobe);
 	else
 		negate_bits (strobe);
@@ -81,7 +89,7 @@ ide::ide (unsigned int base_address)
 {
 	_controller.set_general_control (0x0);
 	_controller.set_port_a_control (0x40);
-	_controller.set_port_c_direction (0xFF);
+	_controller.set_port_c_direction (MC68230::out);
 }
 
 unsigned char ide::read_register (unsigned char reg)
@@ -107,25 +115,10 @@ void ide::test ()
 	for (int j = 0; j < 10; j++)
 		printf ("waiting...\n\r");
 
-	write_register (0x4, 0xAB);
-
-	printf ("0x%x\n\r",read_register (0x4));
-
-
-	//write_register (0x7, 0xE0);
-
-
 	for (unsigned char i = 0; i < 8; i++)
 	{
 		unsigned char ds = read_register (i);
 		printf ("reg %d = %x\n\r",i, ds);
 	}
-
-//	write_register (eBlockAddress0_7, 0x87654321);
-
-//	{
-//		unsigned char ds = read_register (eBlockAddress0_7);
-//		printf ("device select = %x\n\r",ds);
-//	}
 }
 

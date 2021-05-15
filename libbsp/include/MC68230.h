@@ -13,12 +13,13 @@ public:
 		_rm->port_a_control = control;
 	}
 
-	inline void set_port_a_direction (unsigned char direction)
+	enum eDirection {in = 0x0, out = 0xFF}; 
+	inline void set_port_a_direction (eDirection direction)
 	{
 		_rm->port_a_data_direction = direction;
 	}
 
-	inline void set_port_c_direction (unsigned char direction)
+	inline void set_port_c_direction (eDirection direction)
 	{
 		_rm->port_c_data_direction = direction;
 	}
