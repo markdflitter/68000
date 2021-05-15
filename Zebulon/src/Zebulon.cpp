@@ -9,22 +9,10 @@ void printhelp (void)
 	printf ("help\t - print this help\n\r");
 }
 
-void test()
+void disk_test ()
 {
 	ide i;
 	i.test ();
-}
-
-void test1()
-{
-	ide i;
-	i.test1 ();
-}
-
-void test2()
-{
-	ide i;
-	i.test2 ();
 }
 
 
@@ -46,9 +34,7 @@ int main ()
 		if (strcmp (buf, "exit") == 0) exit = 1;
 		if (strcmp (buf, "version") == 0) printf ("%s",version);
 		if (strcmp (buf, "help") == 0) printhelp ();
-		if (strcmp (buf, "test") == 0) test ();
-		if (strcmp (buf, "test1") == 0) test1 ();
-		if (strcmp (buf, "test2") == 0) test2 ();
+		if (strcmp (buf, "disk") == 0) disk_test ();
 	}
 
 	return 0;

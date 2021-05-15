@@ -6,7 +6,7 @@ ide::register_access::register_access (MC68230& controller, unsigned char reg)
 {
 	reset ();
 }
-		
+
 unsigned char ide::register_access::read ()
 {
 	_controller.set_port_a_direction (0x0);
@@ -14,6 +14,8 @@ unsigned char ide::register_access::read ()
 	setup (eRead);
 	pulse (eRead);
 	unsigned char result = _controller.read_port_a ();
+	assert (eCS | eRead | eWrite);
+	write_state ();
 	reset ();
 	return result;
 }
@@ -23,8 +25,10 @@ void ide::register_access::write (unsigned char value)
 	_controller.set_port_a_direction (0xFF);
 
 	setup (eWrite);
-	pulse (eWrite);
 	_controller.write_port_a (value);
+	pulse (eWrite);
+	assert (eCS | eRead | eWrite);
+	write_state ();
 	reset ();
 }
 
@@ -38,9 +42,6 @@ void ide::register_access::reset ()
 
 void ide::register_access::setup (unsigned char pin)
 {
-	negate (pin);
-	write_state ();
-
 	negate (eCS);
 	assert (_reg);
 	write_state ();
@@ -48,9 +49,6 @@ void ide::register_access::setup (unsigned char pin)
 
 void ide::register_access::pulse (unsigned char pin)
 {
-	assert (pin);
-	write_state ();
-
 	negate (pin);
 	write_state ();
 }
@@ -81,22 +79,32 @@ ide::ide (unsigned int base_address)
 
 void ide::test ()
 {
+	write_register (0x6, 0xE0);
+
+	for (int j = 0; j < 10; j++)
+		printf ("waiting...\n\r");
+
+	write_register (0x4, 0xAB);
+
+	printf ("0x%x\n\r",read_register (0x4));
+
+
+	//write_register (0x7, 0xE0);
+
+
+	for (unsigned char i = 0; i < 8; i++)
 	{
-		unsigned char ds = read_register (eDeviceSelect);
-		printf ("device select = %x\n\r",ds);
+		unsigned char ds = read_register (i);
+		printf ("reg %d = %x\n\r",i, ds);
 	}
-}
 
-void ide::test1 ()
-{
-	write_register (eDeviceSelect, 0x00);
-}
+//	write_register (eBlockAddress0_7, 0x87654321);
 
-void ide::test2 ()
-{
-	write_register (eDeviceSelect, 0xFF);
+//	{
+//		unsigned char ds = read_register (eBlockAddress0_7);
+//		printf ("device select = %x\n\r",ds);
+//	}
 }
-
 
 unsigned char ide::read_register (unsigned char reg)
 {

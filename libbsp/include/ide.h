@@ -6,12 +6,10 @@ public:
 	ide (unsigned int base_address = 0xA00000);
 
 	void test ();
-	void test1 ();
-	void test2 ();
 private:
 	MC68230 _controller;
 
-	enum eRegisters {eDeviceSelect = 0x6};
+	enum eRegisters {eBlockAddress0_7 = 0x3, eDeviceSelect = 0x6};
 	unsigned char read_register (unsigned char reg);
 	void write_register (unsigned char reg, unsigned char value);
 
