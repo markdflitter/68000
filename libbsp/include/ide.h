@@ -12,6 +12,9 @@ private:
 	unsigned char read_register (unsigned char reg);
 	void write_register (unsigned char reg, unsigned char value);
 
+	unsigned short read_data ();
+	void write_data (unsigned short value);
+		
 	bool has_error ();
 	void print_error ();
 
@@ -30,8 +33,11 @@ private:
 	public:
 		register_access (MC68230& controller, unsigned char reg);
 		
-		unsigned char read ();
-		void write (unsigned char value);
+		unsigned char read8 ();
+		void write8 (unsigned char value);
+	
+		unsigned short read16 ();
+		void write16 (unsigned short value);
 	private:
 		void reset ();
 		void set_address ();

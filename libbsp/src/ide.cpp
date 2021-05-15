@@ -39,14 +39,14 @@ ide::register_access::register_access (MC68230& controller, unsigned char reg)
 	reset ();
 }
 
-unsigned char ide::register_access::read ()
+unsigned char ide::register_access::read8 ()
 {
-	_controller.set_port_a_direction (MC68230::in);
+	_controller.set_port_b_direction (MC68230::in);
 	
 	set_address ();
 	set_strobe (READ_STROBE, negate);
 
-	unsigned char result = _controller.read_port_a ();
+	unsigned char result = _controller.read_port_b ();
 
 	set_strobe (READ_STROBE, assert);
 	
@@ -54,13 +54,13 @@ unsigned char ide::register_access::read ()
 	return result;
 }
 
-void ide::register_access::write (unsigned char value)
+void ide::register_access::write8 (unsigned char value)
 {
-	_controller.set_port_a_direction (MC68230::out);
+	_controller.set_port_b_direction (MC68230::out);
 
 	set_address ();
 
-	_controller.write_port_a (value);
+	_controller.write_port_b (value);
 
 	set_strobe (WRITE_STROBE, negate);
 	set_strobe (WRITE_STROBE, assert);
@@ -68,6 +68,42 @@ void ide::register_access::write (unsigned char value)
 	reset ();
 }
 
+unsigned short ide::register_access::read16 ()
+{
+	_controller.set_port_b_direction (MC68230::in);
+	_controller.set_port_a_direction (MC68230::in);
+			
+	set_address ();
+	set_strobe (READ_STROBE, negate);
+
+	unsigned char lsb = _controller.read_port_b ();
+	unsigned char msb = _controller.read_port_a ();
+
+	set_strobe (READ_STROBE, assert);
+
+	unsigned short result = msb;
+	result = result << 8;
+	result = result | lsb;
+
+	reset ();
+	return result;
+}
+
+void ide::register_access::write16 (unsigned short value)
+{
+	_controller.set_port_b_direction (MC68230::out);
+	_controller.set_port_a_direction (MC68230::out);
+	
+	set_address ();
+
+	_controller.write_port_b (value & 0xFF);
+	_controller.write_port_a (value >> 8);
+
+	set_strobe (WRITE_STROBE, negate);
+	set_strobe (WRITE_STROBE, assert);
+
+	reset ();
+}
 
 void ide::register_access::reset ()
 {
@@ -113,19 +149,29 @@ ide::ide (unsigned int base_address)
 {
 	_controller.set_general_control (0x0);
 	_controller.set_port_a_control (0x40);
+	_controller.set_port_b_control (0x40);
 	_controller.set_port_c_direction (MC68230::out);
 }
 
 unsigned char ide::read_register (unsigned char reg)
 {
-	return access_register (reg).read ();
+	return access_register (reg).read8 ();
 }
 
 void ide::write_register (unsigned char reg, unsigned char value)
 {
-	return access_register (reg).write (value);
+	return access_register (reg).write8 (value);
 }
 
+unsigned short ide::read_data ()
+{
+	return access_register (DATA_REGISTER).read16 ();
+}
+
+void ide::write_data (unsigned short value)
+{
+	return access_register (DATA_REGISTER).write16 (value);
+}
 
 bool ide::has_error ()
 {
@@ -188,17 +234,7 @@ ide::register_access ide::access_register (unsigned char reg)
 void ide::ident ()
 {
 	write_register (DRIVE_SELECT_REGISTER, MASTER);
-	
-	for (int j = 0; j < 10; j++)
-		printf ("waiting...\n\r");
-
 	wait (DRDY);
-
-	for (unsigned char i = 0; i < 8; i++)
-	{
-		unsigned char ds = read_register (i);
-		printf ("reg %d = %x\n\r",i, ds);
-	}
 
 	send_command (IDENT_COMMAND);
 	wait_not (BUSY);
@@ -212,8 +248,12 @@ void ide::ident ()
 
 	for (int i = 0; i < 256; i++)
 	{
-		unsigned char data = read_register (DATA_REGISTER);
-		printf ("%c\n\r",data);
+		unsigned short data = read_data ();
+		unsigned char c1 = data & 0xFF;
+		unsigned char c2 = data >> 8;
+
+		printf ("%c\n\r",c2);
+		printf ("%c\n\r",c1);
 	}
 }
 

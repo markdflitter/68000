@@ -3,6 +3,8 @@ class MC68230
 public:
 	MC68230 (unsigned int base_address = 0xA00000);
 
+	enum eDirection {in = 0x0, out = 0xFF}; 
+
 	inline void set_general_control (unsigned char control)
 	{
 		_rm->port_general_control = control;
@@ -13,10 +15,19 @@ public:
 		_rm->port_a_control = control;
 	}
 
-	enum eDirection {in = 0x0, out = 0xFF}; 
 	inline void set_port_a_direction (eDirection direction)
 	{
 		_rm->port_a_data_direction = direction;
+	}
+
+	inline void set_port_b_control (unsigned char control)
+	{
+		_rm->port_b_control = control;
+	}
+
+	inline void set_port_b_direction (eDirection direction)
+	{
+		_rm->port_b_data_direction = direction;
 	}
 
 	inline void set_port_c_direction (eDirection direction)
@@ -32,6 +43,16 @@ public:
 	inline void write_port_a (unsigned char value)
 	{	
 		_rm->port_a_data = value;
+	}
+
+	inline unsigned char read_port_b ()
+	{	
+		return _rm->port_b_data;
+	}
+
+	inline void write_port_b (unsigned char value)
+	{	
+		_rm->port_b_data = value;
 	}
 
 	inline unsigned char read_port_c ()
