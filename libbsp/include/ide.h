@@ -5,12 +5,26 @@ class ide
 public:
 	ide (unsigned int base_address = 0xA00000);
 
-	void test ();
+	void ident ();
 private:
 	MC68230 _controller;
 
 	unsigned char read_register (unsigned char reg);
 	void write_register (unsigned char reg, unsigned char value);
+
+	bool has_error ();
+	void print_error ();
+
+	void wait (unsigned char what);
+	void wait_not (unsigned char what);
+
+	void wait_drive_ready ();
+	void wait_not_busy ();
+	void wait_drq ();
+
+	unsigned char read_status ();
+
+	void send_command (unsigned char command);
 
 	class register_access {
 	public:
