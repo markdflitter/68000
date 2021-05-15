@@ -19,8 +19,20 @@ void ident ()
 		printf ("model number\t\t\t\t: %s\n\r",info.model_number);
 		printf ("serial number\t\t\t\t: %s\n\r",info.serial_number);
 		printf ("firmware revision\t\t\t: %s\n\r",info.firmware_revision);
-	
-		printf ("general\t\t\t\t\t: %x\n\r",info.general);
+
+		if (info.fixed_drive) printf ("fixed drive\n\r");
+		if (info.removeable_cartridge_drive) printf ("removeable cartridge drive\n\r");
+		if (info.hard_sectored) printf ("hard sectored\n\r");
+		if (info.soft_sectored) printf ("soft sectored\n\r");
+		if (info.not_MFM_encoded) printf ("not MFM encoded\n\r");
+		if (info.head_switch_time_15uS) printf ("head switch time > 15uS\n\r");
+		if (info.transfer_rate_lt_5Mbs) printf ("disk transfer rate < 5Mbs\n\r");
+		if (info.transfer_rate_lt_10Mbs) printf ("disk transfer rate > 5Mbs buyt <- 10Mbs\n\r");
+		if (info.transfer_rate_gt_10Mbs) printf ("disk transfer rate > 10Mbs\n\r");
+		if (info.spindle_motor_control_option_implemented) printf ("spindle motor control option implemented\n\r");
+		if (info.data_strobe_offset_option_available) printf ("data strobe offset option availabe\n\r");
+		if (info.track_offset_option_available) printf ("track offset option available\n\r");
+		if (info.format_speed_tolerance_gap_required) printf ("format speed tolerance gap required\n\r");
 		printf ("number of cylinders\t\t\t: %d\n\r",info.num_cylinders);
 		printf ("number of heads\t\t\t\t: %d\n\r",info.num_heads);
 		printf ("bytes per track\t\t\t\t: %d\n\r",info.num_bytes_per_track);

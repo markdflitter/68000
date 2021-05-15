@@ -7,6 +7,21 @@ public:
 
 	struct disk_info {
 		unsigned short general;
+		bool hard_sectored;
+		bool soft_sectored;
+		bool not_MFM_encoded;
+		bool head_switch_time_15uS;
+		bool spindle_motor_control_option_implemented;
+		bool fixed_drive;
+		bool removeable_cartridge_drive;
+		bool transfer_rate_lt_5Mbs;
+		bool transfer_rate_lt_10Mbs;
+		bool transfer_rate_gt_10Mbs;
+		bool rotational_speed_tolerance;
+		bool data_strobe_offset_option_available;
+		bool track_offset_option_available;
+		bool format_speed_tolerance_gap_required;
+
 		unsigned short num_cylinders;
 		unsigned short num_heads;
 		unsigned short num_bytes_per_track;
@@ -29,7 +44,7 @@ public:
 		unsigned int total_num_of_user_sectors;
 		unsigned short singleword_DMA;
 		unsigned short multiword_DMA;
-};
+	};
 
 	bool ident (disk_info& result);
 private:

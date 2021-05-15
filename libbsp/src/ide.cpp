@@ -255,6 +255,21 @@ bool ide::ident (disk_info& result)
 	}
 
 	result.general = response [0];
+	result.hard_sectored = result.general & 0x2;
+	result.soft_sectored = result.general & 0x4;
+	result.not_MFM_encoded = result.general & 0x8;
+	result.head_switch_time_15uS = result.general & 0x10;
+	result.spindle_motor_control_option_implemented = result.general & 0x20;
+	result.fixed_drive = result.general & 0x40;
+	result.removeable_cartridge_drive = result.general & 0x80;
+	result.transfer_rate_lt_5Mbs = result.general & 0x100;
+	result.transfer_rate_lt_10Mbs = result.general & 0x200;
+	result.transfer_rate_gt_10Mbs = result.general & 0x400;
+	result.rotational_speed_tolerance = result.general & 0x800;
+	result.data_strobe_offset_option_available = result.general & 0x1000;
+	result.track_offset_option_available = result.general & 0x2000;
+	result.format_speed_tolerance_gap_required = result.general & 0x4000;
+
 	result.num_cylinders = response [1];
 	result.num_heads = response [3];
 	result.num_bytes_per_track = response [4];
