@@ -5,7 +5,33 @@ class ide
 public:
 	ide (unsigned int base_address = 0xA00000);
 
-	void ident ();
+	struct disk_info {
+		unsigned short general;
+		unsigned short num_cylinders;
+		unsigned short num_heads;
+		unsigned short num_bytes_per_track;
+		unsigned short num_bytes_per_sector;
+		unsigned short num_sectors_per_track;
+		unsigned char serial_number [20];
+		unsigned short buffer_type;
+		unsigned short buffer_size;
+		unsigned short num_ECC_bytes;
+		unsigned short firmware_revision [8];
+		unsigned char model_number[40];
+		unsigned short double_word_io;
+		unsigned short capabilities;
+		unsigned short PIO_mode;
+		unsigned short DMA_mode;
+		unsigned short num_current_cylinders;
+		unsigned short num_current_heads;
+		unsigned short num_current_sectors_per_track;
+		unsigned int current_capacity_in_sectors;
+		unsigned int total_num_of_user_sectors;
+		unsigned short singleword_DMA;
+		unsigned short multiword_DMA;
+};
+
+	bool ident (disk_info& result);
 private:
 	MC68230 _controller;
 

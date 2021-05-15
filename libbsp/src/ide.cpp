@@ -1,5 +1,6 @@
 #include "../include/ide.h"
 #include <stdio.h>
+#include <string.h>
 
 const unsigned char IDENT_COMMAND = 0xEC;
 
@@ -231,7 +232,7 @@ ide::register_access ide::access_register (unsigned char reg)
 	return register_access (_controller, reg);
 }
 
-void ide::ident ()
+bool ide::ident (disk_info& result)
 {
 	write_register (DRIVE_SELECT_REGISTER, MASTER);
 	wait (DRDY);
@@ -242,18 +243,45 @@ void ide::ident ()
 	if (has_error ())
 	{
 		print_error ();
-		return ;
+		return false;
 	}
 	wait (DRQ);
 
+	unsigned short response [256];
 	for (int i = 0; i < 256; i++)
 	{
 		unsigned short data = read_data ();
-		unsigned char c1 = data & 0xFF;
-		unsigned char c2 = data >> 8;
-
-		printf ("%c\n\r",c2);
-		printf ("%c\n\r",c1);
+		response [i] = data;
 	}
+
+	result.general = response [0];
+	result.num_cylinders = response [1];
+	result.num_heads = response [3];
+	result.num_bytes_per_track = response [4];
+	result.num_bytes_per_sector = response [5];
+	result.num_sectors_per_track = response [6];
+	memcpy (&(result.serial_number), &(response [10]), 2 * 10);
+
+	result.buffer_type = response [20];
+	result.buffer_size = response [21];
+	result.num_ECC_bytes = response [22];
+	memcpy (&(result.firmware_revision), &(response [23]), 2 * 4);
+	memcpy (&(result.model_number), &(response [27]), 2 * 20);
+
+	result.double_word_io = response [48];
+	result.capabilities = response [49];
+	result.PIO_mode = response [51];
+	result.DMA_mode = response [52];
+
+	result.num_current_cylinders = response [54];
+	result.num_current_heads = response [55];
+	result.num_current_sectors_per_track = response [56];
+	memcpy (&(result.current_capacity_in_sectors), &(response [57]), 2 * 2);
+	
+	memcpy (&(result.total_num_of_user_sectors), &(response [60]), 2 * 2);
+	result.singleword_DMA = response [62];
+	result.multiword_DMA = response [63];
+
+	return true;	
 }
 
