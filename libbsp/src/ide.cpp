@@ -2,10 +2,17 @@
 #include <stdio.h>
 #include <string.h>
 
+const unsigned char READ_SECTORS_WITH_RETRY = 0x20;
+const unsigned char WRITE_SECTORS_WITH_RETRY = 0x30;
 const unsigned char IDENT_COMMAND = 0xEC;
 
 const unsigned char DATA_REGISTER = 0x0;
 const unsigned char ERROR_REGISTER = 0x1;
+const unsigned char SECTOR_COUNT_REGISTER = 0x2;
+const unsigned char LBA_0_REGISTER = 0x3;
+const unsigned char LBA_1_REGISTER = 0x4;
+const unsigned char LBA_2_REGISTER = 0x5;
+const unsigned char LBA_3_REGISTER = 0x6;
 const unsigned char DRIVE_SELECT_REGISTER = 0x6;
 const unsigned char STATUS_REGISTER = 0x7;
 const unsigned char COMMAND_REGISTER = 0x7;
@@ -306,5 +313,67 @@ bool ide::ident (disk_info& result)
 	result.multiword_DMA_modes_active = response [63] >> 8;
 	
 	return true;	
+}
+
+void ide::set_lba (unsigned long lba)
+{
+	write_register (SECTOR_COUNT_REGISTER, 1);
+	write_register (LBA_0_REGISTER, lba & 0xFF);
+	write_register (LBA_1_REGISTER, (lba & 0xFF00) >> 8);
+	write_register (LBA_2_REGISTER, (lba & 0xFF0000) >> 16);
+	write_register (LBA_3_REGISTER, MASTER | ((lba & 0x0F000000) >> 24));
+}
+
+
+bool ide::write (unsigned long lba, unsigned char data [512])
+{
+	set_lba (lba);
+
+	send_command (WRITE_SECTORS_WITH_RETRY);
+
+	wait_not (BUSY);
+
+	if (has_error ())
+	{
+		print_error ();
+		return false;
+	}
+
+	wait (DRQ);
+
+	for (int i = 0; i < 512; i = i + 2)
+	{
+		unsigned short w;
+		memcpy (&w, &(data [i]), 2);
+
+		write_data (w);
+	}
+
+	return true;
+}
+
+bool ide::read (unsigned long lba, unsigned char data [512])
+{
+	set_lba (lba);
+
+	send_command (READ_SECTORS_WITH_RETRY);
+
+	wait_not (BUSY);
+
+	if (has_error ())
+	{
+		print_error ();
+		return false;
+	}
+
+	wait (DRQ);
+
+	for (int i = 0; i < 512; i = i + 2)
+	{
+		unsigned short w = read_data ();
+		memcpy (&(data [i]),&w, 2);
+	}
+
+	return true;
 }
 

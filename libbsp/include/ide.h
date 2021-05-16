@@ -54,6 +54,9 @@ public:
 	};
 
 	bool ident (disk_info& result);
+
+	bool write (unsigned long lba, unsigned char data [512]);
+	bool read (unsigned long lba, unsigned char data [512]);
 private:
 	MC68230 _controller;
 
@@ -76,6 +79,8 @@ private:
 	unsigned char read_status ();
 
 	void send_command (unsigned char command);
+
+	void set_lba (unsigned long lba);
 
 	class register_access {
 	public:

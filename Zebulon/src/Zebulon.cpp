@@ -8,6 +8,8 @@ void printhelp (void)
 	printf ("version\t - print version\n\r");
 	printf ("help\t - print this help\n\r");
 	printf ("ident\t - ident the disk\n\r");
+	printf ("write\t - write data to disk\n\r");
+	printf ("read\t - read data from disk\n\r");
 }
 
 void ident ()
@@ -72,6 +74,26 @@ void ident ()
 		printf ("ERROR: ident failed\n\r");
 }
 
+const unsigned long lba = 512;
+
+void write ()
+{
+	unsigned char data [512] = "The house stood on a slight rise just on the edge of the village. It stood on its own and looked out over a broad spread of West Country farmland. Not a remarkable house by any means—it was about thirty years old, squattish, squarish, made of brick, and had four windows set in the front of a size and proportion which more or less exactly failed to please the eye.  The only person for whom the house was in any way special was Arthur Dent, and that was only because it happened to be the one he lived in.";
+	
+	ide i;
+	i.write (lba, data);
+}
+
+
+void read ()
+{
+	unsigned char data [512];
+	
+	ide i;
+	i.read (lba, data);
+
+	printf ("%s\n\r",data);
+}
 
 int main ()
 {
@@ -92,7 +114,9 @@ int main ()
 		if (strcmp (buf, "version") == 0) printf ("%s",version);
 		if (strcmp (buf, "help") == 0) printhelp ();
 		if (strcmp (buf, "ident") == 0) ident ();
-	}
+		if (strcmp (buf, "read") == 0) read ();
+		if (strcmp (buf, "write") == 0) write ();
+		}
 
 	return 0;
 }
