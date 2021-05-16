@@ -1,7 +1,5 @@
 #include "../include/string.h"
 
-
-
 void* memset (void* ptr, int value, size_t num)
 {
 	unsigned char* p = (unsigned char*) ptr;

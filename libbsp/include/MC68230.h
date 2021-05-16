@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 class MC68230
 {
 public:
@@ -7,63 +9,78 @@ public:
 
 	inline void set_general_control (unsigned char control)
 	{
-		_rm->port_general_control = control;
+		write (&_rm->port_general_control, control);
 	}
 
 	inline void set_port_a_control (unsigned char control)
 	{
-		_rm->port_a_control = control;
+		write (&_rm->port_a_control, control);
 	}
 
 	inline void set_port_a_direction (eDirection direction)
 	{
-		_rm->port_a_data_direction = direction;
+		write (&_rm->port_a_data_direction, direction);
 	}
 
 	inline void set_port_b_control (unsigned char control)
 	{
-		_rm->port_b_control = control;
+		write (&_rm->port_b_control, control);
 	}
 
 	inline void set_port_b_direction (eDirection direction)
 	{
-		_rm->port_b_data_direction = direction;
+		write (&_rm->port_b_data_direction, direction);
 	}
 
 	inline void set_port_c_direction (eDirection direction)
 	{
-		_rm->port_c_data_direction = direction;
+		write (&_rm->port_c_data_direction, direction);
 	}
 
 	inline unsigned char read_port_a ()
 	{	
-		return _rm->port_a_data;
+		return read (&_rm->port_a_data);
 	}
 
 	inline void write_port_a (unsigned char value)
 	{	
-		_rm->port_a_data = value;
+		write (&_rm->port_a_data, value);
 	}
 
 	inline unsigned char read_port_b ()
 	{	
-		return _rm->port_b_data;
+		return read (&_rm->port_b_data);
 	}
 
 	inline void write_port_b (unsigned char value)
 	{	
-		_rm->port_b_data = value;
+		write (&_rm->port_b_data, value);
 	}
 
 	inline unsigned char read_port_c ()
 	{	
-		return _rm->port_c_data;
+		return read (&_rm->port_c_data);
 	}
 
 	inline void write_port_c (unsigned char value)
 	{	
-		_rm->port_c_data = value;
+		write (&_rm->port_c_data, value);
 	}
+
+	inline void write (volatile unsigned char* address, unsigned char value)
+	{
+		//printf ("write 0x%x to 0x%x\n\r", value, address);
+		*address = value;
+	}
+
+	inline unsigned char read (volatile unsigned char* address)
+	{
+		unsigned char value = *address;
+		//printf ("read 0x%x from 0x%x\n\r", value, address);
+		return value;
+	}
+
+
 private:
 	struct __attribute__((__packed__)) register_map
 	{

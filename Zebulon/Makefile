@@ -114,7 +114,8 @@ $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.s
 %.S68: %.out
 	$(OBJCOPY) $(OBJCOPY_FLAGS) $^ $@
 
-%.out: $(LINK_FILES) $(SRC_FILES)
+.PRECIOUS: %.out
+%.out : $(LINK_FILES) $(SRC_FILES)
 	$(CC) $(SRC_FILES) -o $@ $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINK_FILES)
 
 _install: $(INSTALLED_HEADER_FILES) $(INSTALLED_TARGET)

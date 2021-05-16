@@ -5,8 +5,10 @@ MEMORY
 
 SECTIONS
 {
+
 	.text :
 	{
+		__begin = . ;
 		*(.text*)
 	} > RAM
 

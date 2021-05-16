@@ -10,6 +10,7 @@ void printhelp (void)
 	printf ("ident\t - ident the disk\n\r");
 	printf ("write\t - write data to disk\n\r");
 	printf ("read\t - read data from disk\n\r");
+	printf ("save\t - save code to disk\n\r");
 }
 
 void ident ()
@@ -95,10 +96,61 @@ void read ()
 	printf ("%s\n\r",data);
 }
 
+
+extern char* __begin;
+extern char* __end;
+extern char* start;
+
+void save ()
+{
+	ide i;
+
+	const int startBlock = 513;
+	int curBlock = startBlock;
+
+
+	static char* begin = (char*) &__begin;
+	static char* end = (char*) &__end;
+	static char* entry = (char*) &start;
+
+	printf ("start 0x%x end 0x%x entry 0x%x\n\r", begin, end, entry);
+
+	size_t length = end - begin;
+	size_t numBlocks = (length / 512) + 1;
+
+	printf ("%d bytes, which is %d blocks\n\r", length, numBlocks);
+
+	for (int b = 0; b < length;)
+	{
+		printf ("b %d\n\r", b);
+
+		unsigned char block [512];
+		if (b == 0)
+		{
+			memcpy (&block, &begin, 4);
+			memcpy (&block [4], &end, 4);
+			memcpy (&block [8], &entry, 4);
+			memcpy (&block [12], begin, 500);
+			b += 500;
+		}
+		else
+		{
+			memcpy (&block, begin + b, 512);
+			b += 512;
+		}
+
+		printf ("writing block %d\n\r", curBlock);
+		i.write (curBlock, block);
+		curBlock++;
+	}
+}
+
+
 int main ()
 {
 	const char* version = "Zebulon V1.9";
 	printf ("%s\n\r",version);
+
 	printf ("type help for help\n\r");
 
 	char buf [21];
@@ -116,7 +168,8 @@ int main ()
 		if (strcmp (buf, "ident") == 0) ident ();
 		if (strcmp (buf, "read") == 0) read ();
 		if (strcmp (buf, "write") == 0) write ();
-		}
+		if (strcmp (buf, "save") == 0) save ();
+	}
 
 	return 0;
 }
