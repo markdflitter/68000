@@ -52,7 +52,7 @@ public:
 		unsigned char multiword_DMA_modes_supported;
 		unsigned char multiword_DMA_modes_active;
 	};
-
+	
 	bool ident (disk_info& result);
 
 	bool write (unsigned long lba, unsigned char data [512]);

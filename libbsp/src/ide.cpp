@@ -327,6 +327,9 @@ void ide::set_lba (unsigned long lba)
 
 bool ide::write (unsigned long lba, unsigned char data [512])
 {
+	write_register (DRIVE_SELECT_REGISTER, MASTER);
+	wait (DRDY);
+
 	set_lba (lba);
 
 	send_command (WRITE_SECTORS_WITH_RETRY);
@@ -354,6 +357,9 @@ bool ide::write (unsigned long lba, unsigned char data [512])
 
 bool ide::read (unsigned long lba, unsigned char data [512])
 {
+	write_register (DRIVE_SELECT_REGISTER, MASTER);
+	wait (DRDY);
+
 	set_lba (lba);
 
 	send_command (READ_SECTORS_WITH_RETRY);
