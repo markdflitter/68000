@@ -37,7 +37,7 @@ public:
 		write (&m_registers->port_c_data_direction, direction);
 	}
 
-	inline unsigned char readPortA ()
+	inline unsigned char readPortA () const
 	{	
 		return read (&m_registers->port_a_data);
 	}
@@ -47,7 +47,7 @@ public:
 		write (&m_registers->port_a_data, value);
 	}
 
-	inline unsigned char readPortB ()
+	inline unsigned char readPortB () const
 	{	
 		return read (&m_registers->port_b_data);
 	}
@@ -57,7 +57,7 @@ public:
 		write (&m_registers->port_b_data, value);
 	}
 
-	inline unsigned char readPortC ()
+	inline unsigned char readPortC () const
 	{	
 		return read (&m_registers->port_c_data);
 	}
@@ -73,7 +73,7 @@ public:
 		*address = value;
 	}
 
-	inline unsigned char read (volatile unsigned char* address)
+	inline unsigned char read (volatile unsigned char* address) const
 	{
 		unsigned char value = *address;
 		//printf ("read 0x%x from 0x%x\n\r", value, address);
