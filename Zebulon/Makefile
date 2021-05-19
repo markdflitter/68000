@@ -15,11 +15,11 @@ MKDIR := mkdir -p
 CP := cp
 RM := rm -rf
 CC := m68k-elf-g++
-LIBCFLAGS := -c -g -march=68000 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
-CFLAGS := -march=68000 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
+LIBCFLAGS := -c -g -march=68010 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
+CFLAGS := -march=68010 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
 
 AS := m68k-elf-as
-ASFLAGS := -m68000
+ASFLAGS := -m68010
 AR := m68k-elf-ar
 ARFLAGS := -rcs
 OBJCOPY := m68k-elf-objcopy 
@@ -116,7 +116,7 @@ $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.s
 
 .PRECIOUS: %.out
 %.out : $(LINK_FILES) $(SRC_FILES)
-	$(CC) $(SRC_FILES) -o $@ $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINK_FILES)
+	$(CC) $(SRC_FILES) -o $@ $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINK_FILES) -Wl,--print-map
 
 _install: $(INSTALLED_HEADER_FILES) $(INSTALLED_TARGET)
 

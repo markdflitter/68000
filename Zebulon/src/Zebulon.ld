@@ -5,6 +5,11 @@ MEMORY
 
 SECTIONS
 {
+	.reserved :
+	{
+		__vector_table = . ;
+		. += 1024;
+	} > RAM
 
 	.text :
 	{

@@ -15,11 +15,11 @@ MKDIR := mkdir -p
 CP := cp
 RM := rm -rf
 CC := m68k-elf-g++
-LIBCFLAGS := -c -g -march=68000 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
-CFLAGS := -march=68000 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
+LIBCFLAGS := -c -g -march=68010 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
+CFLAGS := -march=68010 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
 
 AS := m68k-elf-as
-ASFLAGS := -m68000
+ASFLAGS := -m68010
 AR := m68k-elf-ar
 ARFLAGS := -rcs
 OBJCOPY := m68k-elf-objcopy 

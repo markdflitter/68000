@@ -3,6 +3,10 @@ class duart
 public:
 	duart (unsigned int base_address = 0xC00001);
 
+	void set_interrupt_vector (unsigned int vector);
+	void enable_interrupts ();
+	void disable_interrupts ();
+
 	void write_char (int channel, char c);
 	char read_char (int channel) const;
 private:

@@ -54,3 +54,23 @@ char duart::read_char (int channel) const
 	return _uart[channel]->read_char ();
 }
 
+
+void duart::set_interrupt_vector (unsigned int vector)
+{
+	_rm->ivr = vector;
+} 
+
+const unsigned char TIMER_INTERRUPT = 8;
+
+void duart::enable_interrupts ()
+{
+	_rm->imr = TIMER_INTERRUPT;
+}
+
+void duart::disable_interrupts ()
+{
+	_rm->imr = 0;
+}
+
+
+
