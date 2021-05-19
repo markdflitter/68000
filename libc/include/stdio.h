@@ -2,7 +2,6 @@
 
 #define NULL 0
 
-
 extern "C" int getchar(void);
 extern "C" char* gets (char* str);
 

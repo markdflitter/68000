@@ -127,5 +127,3 @@ int printf (const char* format, ...)
 	va_end (ap);
 	return 0;
 }
-
-
