@@ -1,18 +1,18 @@
-#include "space_manager.h"
+#include "SpaceManager.h"
+#include <size_t.h>
 
 class FAT
 {
 public:
 	FAT ();
-	FAT (unsigned int size);
+	FAT (size_t size);
 
-	unsigned int create_file (char* name, size);
+	unsigned int create_file (char* name, size_t size);
 private:
- 	space_manager _sm;
+ 	SpaceManager m_spaceManager;
   
-	struct file
+	struct File
 	{
 		char* _name;
-		
 	};
 };
