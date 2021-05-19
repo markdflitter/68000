@@ -49,12 +49,12 @@ ide::register_access::register_access (MC68230& controller, unsigned char reg)
 
 unsigned char ide::register_access::read8 ()
 {
-	_controller.set_port_b_direction (MC68230::in);
+	_controller.setPortBDirection (MC68230::in);
 	
 	set_address ();
 	set_strobe (READ_STROBE, negate);
 
-	unsigned char result = _controller.read_port_b ();
+	unsigned char result = _controller.readPortB ();
 
 	set_strobe (READ_STROBE, assert);
 	
@@ -64,11 +64,11 @@ unsigned char ide::register_access::read8 ()
 
 void ide::register_access::write8 (unsigned char value)
 {
-	_controller.set_port_b_direction (MC68230::out);
+	_controller.setPortBDirection (MC68230::out);
 
 	set_address ();
 
-	_controller.write_port_b (value);
+	_controller.writePortB (value);
 
 	set_strobe (WRITE_STROBE, negate);
 	set_strobe (WRITE_STROBE, assert);
@@ -78,14 +78,13 @@ void ide::register_access::write8 (unsigned char value)
 
 unsigned short ide::register_access::read16 ()
 {
-	_controller.set_port_b_direction (MC68230::in);
-	_controller.set_port_a_direction (MC68230::in);
-			
+	_controller.setPortBDirection (MC68230::in);
+	_controller.setPortADirection (MC68230::in);			
 	set_address ();
 	set_strobe (READ_STROBE, negate);
 
-	unsigned char lsb = _controller.read_port_b ();
-	unsigned char msb = _controller.read_port_a ();
+	unsigned char lsb = _controller.readPortB ();
+	unsigned char msb = _controller.readPortA ();
 
 	set_strobe (READ_STROBE, assert);
 
@@ -99,13 +98,13 @@ unsigned short ide::register_access::read16 ()
 
 void ide::register_access::write16 (unsigned short value)
 {
-	_controller.set_port_b_direction (MC68230::out);
-	_controller.set_port_a_direction (MC68230::out);
+	_controller.setPortBDirection (MC68230::out);
+	_controller.setPortADirection (MC68230::out);
 	
 	set_address ();
 
-	_controller.write_port_b (value & 0xFF);
-	_controller.write_port_a (value >> 8);
+	_controller.writePortB (value & 0xFF);
+	_controller.writePortA (value >> 8);
 
 	set_strobe (WRITE_STROBE, negate);
 	set_strobe (WRITE_STROBE, assert);
@@ -148,17 +147,17 @@ void ide::register_access::assert_bits (unsigned char bits)
 
 void ide::register_access::write_state ()
 {
-	_controller.write_port_c (_state);
+	_controller.writePortC (_state);
 }
 
 
 ide::ide (unsigned int base_address)
 	: _controller (base_address)
 {
-	_controller.set_general_control (0x0);
-	_controller.set_port_a_control (0x40);
-	_controller.set_port_b_control (0x40);
-	_controller.set_port_c_direction (MC68230::out);
+	_controller.setGeneralControl (0x0);
+	_controller.setPortAControl (0x40);
+	_controller.setPortBControl (0x40);
+	_controller.setPortCDirection (MC68230::out);
 }
 
 unsigned char ide::read_register (unsigned char reg)

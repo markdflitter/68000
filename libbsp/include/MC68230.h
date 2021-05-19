@@ -1,70 +1,70 @@
-#include <stdio.h>
+//#include <stdio.h>
 
 class MC68230
 {
 public:
-	MC68230 (unsigned int base_address = 0xA00000);
+	MC68230 (unsigned int baseAddress = 0xA00000);
 
 	enum eDirection {in = 0x0, out = 0xFF}; 
 
-	inline void set_general_control (unsigned char control)
+	inline void setGeneralControl (unsigned char control)
 	{
-		write (&_rm->port_general_control, control);
+		write (&m_registers->port_general_control, control);
 	}
 
-	inline void set_port_a_control (unsigned char control)
+	inline void setPortAControl (unsigned char control)
 	{
-		write (&_rm->port_a_control, control);
+		write (&m_registers->port_a_control, control);
 	}
 
-	inline void set_port_a_direction (eDirection direction)
+	inline void setPortADirection (eDirection direction)
 	{
-		write (&_rm->port_a_data_direction, direction);
+		write (&m_registers->port_a_data_direction, direction);
 	}
 
-	inline void set_port_b_control (unsigned char control)
+	inline void setPortBControl (unsigned char control)
 	{
-		write (&_rm->port_b_control, control);
+		write (&m_registers->port_b_control, control);
 	}
 
-	inline void set_port_b_direction (eDirection direction)
+	inline void setPortBDirection (eDirection direction)
 	{
-		write (&_rm->port_b_data_direction, direction);
+		write (&m_registers->port_b_data_direction, direction);
 	}
 
-	inline void set_port_c_direction (eDirection direction)
+	inline void setPortCDirection (eDirection direction)
 	{
-		write (&_rm->port_c_data_direction, direction);
+		write (&m_registers->port_c_data_direction, direction);
 	}
 
-	inline unsigned char read_port_a ()
+	inline unsigned char readPortA ()
 	{	
-		return read (&_rm->port_a_data);
+		return read (&m_registers->port_a_data);
 	}
 
-	inline void write_port_a (unsigned char value)
+	inline void writePortA (unsigned char value)
 	{	
-		write (&_rm->port_a_data, value);
+		write (&m_registers->port_a_data, value);
 	}
 
-	inline unsigned char read_port_b ()
+	inline unsigned char readPortB ()
 	{	
-		return read (&_rm->port_b_data);
+		return read (&m_registers->port_b_data);
 	}
 
-	inline void write_port_b (unsigned char value)
+	inline void writePortB (unsigned char value)
 	{	
-		write (&_rm->port_b_data, value);
+		write (&m_registers->port_b_data, value);
 	}
 
-	inline unsigned char read_port_c ()
+	inline unsigned char readPortC ()
 	{	
-		return read (&_rm->port_c_data);
+		return read (&m_registers->port_c_data);
 	}
 
-	inline void write_port_c (unsigned char value)
+	inline void writePortC (unsigned char value)
 	{	
-		write (&_rm->port_c_data, value);
+		write (&m_registers->port_c_data, value);
 	}
 
 	inline void write (volatile unsigned char* address, unsigned char value)
@@ -82,7 +82,7 @@ public:
 
 
 private:
-	struct __attribute__((__packed__)) register_map
+	struct __attribute__((__packed__)) Registers
 	{
 		unsigned char _0;
 
@@ -128,6 +128,5 @@ private:
 		volatile unsigned char port_status;
 	};
 
-	register_map* _rm;
+	Registers* m_registers;
 };
-
