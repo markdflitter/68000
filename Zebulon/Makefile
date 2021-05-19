@@ -34,7 +34,7 @@ LINK_LINE := -lgcc -lcpp -lbsp -lc -lbsp -lgcc -Wl,--whole-archive -litanium -lc
 
 #top level build targets
 TOP_LEVEL_TARGET := Zebulon
-DEPENDENCIES := libcrt libstart libcpp libitanium libc libbsp
+DEPENDENCIES := libbsp libc libitanium libcpp libstart libcrt
 
 #find the source files and which object files they produce
 SRC_FILES := $(wildcard $(SRC_DIRECTORY)/*.c $(SRC_DIRECTORY)/*.cpp $(SRC_DIRECTORY)/*.s)
@@ -116,7 +116,7 @@ $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.s
 
 .PRECIOUS: %.out
 %.out : $(LINK_FILES) $(SRC_FILES)
-	$(CC) $(SRC_FILES) -o $@ $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINK_FILES) -Wl,--print-map
+	$(CC) $(SRC_FILES) -o $@ $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINK_FILES)
 
 _install: $(INSTALLED_HEADER_FILES) $(INSTALLED_TARGET)
 
