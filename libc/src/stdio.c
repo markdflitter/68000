@@ -1,5 +1,5 @@
 #include "../include/stdio.h"
-#include "../include/libgloss.h"
+#include <bsp.h>
 
 int getchar(void)
 {
