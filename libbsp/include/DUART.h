@@ -1,25 +1,26 @@
-class duart
+class DUART
 {
 public:
-	duart (unsigned int base_address = 0xC00001);
+	DUART (unsigned int baseAddress = 0xC00001);
 
-	void set_interrupt_vector (unsigned int vector);
-	void enable_interrupts ();
-	void disable_interrupts ();
+	void setInterruptVector (unsigned int vector);
+	void enableInterrupts ();
+	void disableInterrupts ();
 
-	void write_char (int channel, char c);
-	char read_char (int channel) const;
+	enum eChannel {channelA = 0, channelB	= 1};
+	void writeChar (eChannel channel, char c);
+	char readChar (eChannel channel) const;
 private:
-  	class uart {
+  	class UART {
 		public:
-			uart (unsigned int base_address);
-			void write_char (char c);
-			char read_char () const;
+			UART (unsigned int baseAaddress);
+			void writeChar (char c);
+			char readChar () const;
 		private:
 			static const char TX_READY = 0x4;
 			static const char RX_READY = 0x1;
 
-			struct __attribute__((__packed__)) uart_register_map
+			struct __attribute__((__packed__)) Registers
 			{
 				union {
 					volatile char mr1;
@@ -42,17 +43,17 @@ private:
 				};
 			};
 
-			bool space_to_send () const;
-			bool char_ready () const;
+			bool spaceToSend () const;
+			bool charReady () const;
 
-			uart_register_map* _rm;
+			Registers* m_registers;
 		};
 
-		uart _a;
-		uart _b;
-		uart* _uart[2];
+		UART m_a;
+		UART m_b;
+		UART* m_uart[2];
 	
-		struct __attribute__((__packed__)) duart_register_map
+		struct __attribute__((__packed__)) Registers
 		{
 			char _1 [8];		// skip port a
 			union {
@@ -93,6 +94,5 @@ private:
 			};
 		};
 	
-		duart_register_map* _rm;
+		Registers* m_registers;
 };
-
