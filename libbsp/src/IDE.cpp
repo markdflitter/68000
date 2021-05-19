@@ -1,6 +1,6 @@
-#include "../include/ide.h"
-#include <stdio.h>
+#include "../include/IDE.h"
 #include <string.h>
+#include <stdio.h>
 
 const unsigned char READ_SECTORS_WITH_RETRY = 0x20;
 const unsigned char WRITE_SECTORS_WITH_RETRY = 0x30;
@@ -41,52 +41,52 @@ const unsigned char MC = 0x20;
 const unsigned char UNC = 0x40;
 const unsigned char BBK = 0x80;
 
-ide::register_access::register_access (MC68230& controller, unsigned char reg)
-	: _controller (controller), _reg (reg)
+IDE::RegisterAccess::RegisterAccess (MC68230& controller, unsigned char reg)
+	: m_controller (controller), m_register (reg)
 {
 	reset ();
 }
 
-unsigned char ide::register_access::read8 ()
+unsigned char IDE::RegisterAccess::read8 ()
 {
-	_controller.setPortBDirection (MC68230::in);
+	m_controller.setPortBDirection (MC68230::in);
 	
-	set_address ();
-	set_strobe (READ_STROBE, negate);
+	setAddress ();
+	setStrobe (READ_STROBE, negate);
 
-	unsigned char result = _controller.readPortB ();
+	unsigned char result = m_controller.readPortB ();
 
-	set_strobe (READ_STROBE, assert);
+	setStrobe (READ_STROBE, assert);
 	
 	reset ();
 	return result;
 }
 
-void ide::register_access::write8 (unsigned char value)
+void IDE::RegisterAccess::write8 (unsigned char value)
 {
-	_controller.setPortBDirection (MC68230::out);
+	m_controller.setPortBDirection (MC68230::out);
 
-	set_address ();
+	setAddress ();
 
-	_controller.writePortB (value);
+	m_controller.writePortB (value);
 
-	set_strobe (WRITE_STROBE, negate);
-	set_strobe (WRITE_STROBE, assert);
+	setStrobe (WRITE_STROBE, negate);
+	setStrobe (WRITE_STROBE, assert);
 
 	reset ();
 }
 
-unsigned short ide::register_access::read16 ()
+unsigned short IDE::RegisterAccess::read16 ()
 {
-	_controller.setPortBDirection (MC68230::in);
-	_controller.setPortADirection (MC68230::in);			
-	set_address ();
-	set_strobe (READ_STROBE, negate);
+	m_controller.setPortBDirection (MC68230::in);
+	m_controller.setPortADirection (MC68230::in);			
+	setAddress ();
+	setStrobe (READ_STROBE, negate);
 
-	unsigned char lsb = _controller.readPortB ();
-	unsigned char msb = _controller.readPortA ();
+	unsigned char lsb = m_controller.readPortB ();
+	unsigned char msb = m_controller.readPortA ();
 
-	set_strobe (READ_STROBE, assert);
+	setStrobe (READ_STROBE, assert);
 
 	unsigned short result = msb;
 	result = result << 8;
@@ -96,98 +96,98 @@ unsigned short ide::register_access::read16 ()
 	return result;
 }
 
-void ide::register_access::write16 (unsigned short value)
+void IDE::RegisterAccess::write16 (unsigned short value)
 {
-	_controller.setPortBDirection (MC68230::out);
-	_controller.setPortADirection (MC68230::out);
+	m_controller.setPortBDirection (MC68230::out);
+	m_controller.setPortADirection (MC68230::out);
 	
-	set_address ();
+	setAddress ();
 
-	_controller.writePortB (value & 0xFF);
-	_controller.writePortA (value >> 8);
+	m_controller.writePortB (value & 0xFF);
+	m_controller.writePortA (value >> 8);
 
-	set_strobe (WRITE_STROBE, negate);
-	set_strobe (WRITE_STROBE, assert);
+	setStrobe (WRITE_STROBE, negate);
+	setStrobe (WRITE_STROBE, assert);
 
 	reset ();
 }
 
-void ide::register_access::reset ()
+void IDE::RegisterAccess::reset ()
 {
-	negate_bits (0xFF);
-	assert_bits (CHIP_SELECT_0 | READ_STROBE | WRITE_STROBE);
-	write_state ();
+	negateBits (0xFF);
+	assertBits (CHIP_SELECT_0 | READ_STROBE | WRITE_STROBE);
+	writeState ();
 }
 
-void ide::register_access::set_address ()
+void IDE::RegisterAccess::setAddress ()
 {
-	negate_bits (CHIP_SELECT_0);
-	assert_bits (_reg);
-	write_state ();
+	negateBits (CHIP_SELECT_0);
+	assertBits (m_register);
+	writeState ();
 }
 
-void ide::register_access::set_strobe (unsigned char strobe, eState state)
+void IDE::RegisterAccess::setStrobe (unsigned char strobe, eState state)
 {
 	if (state == assert)
-		assert_bits (strobe);
+		assertBits (strobe);
 	else
-		negate_bits (strobe);
-	write_state ();
+		negateBits (strobe);
+	writeState ();
 }
 
-void ide::register_access::negate_bits (unsigned char bits)
+void IDE::RegisterAccess::negateBits (unsigned char bits)
 {
-	_state = _state & ~bits;
+	m_state = m_state & ~bits;
 }
 
-void ide::register_access::assert_bits (unsigned char bits)
+void IDE::RegisterAccess::assertBits (unsigned char bits)
 {
-	_state = _state | bits;
+	m_state = m_state | bits;
 }
 
-void ide::register_access::write_state ()
+void IDE::RegisterAccess::writeState ()
 {
-	_controller.writePortC (_state);
+	m_controller.writePortC (m_state);
 }
 
 
-ide::ide (unsigned int base_address)
-	: _controller (base_address)
+IDE::IDE (unsigned int baseAddress)
+	: m_controller (baseAddress)
 {
-	_controller.setGeneralControl (0x0);
-	_controller.setPortAControl (0x40);
-	_controller.setPortBControl (0x40);
-	_controller.setPortCDirection (MC68230::out);
+	m_controller.setGeneralControl (0x0);
+	m_controller.setPortAControl (0x40);
+	m_controller.setPortBControl (0x40);
+	m_controller.setPortCDirection (MC68230::out);
 }
 
-unsigned char ide::read_register (unsigned char reg)
+unsigned char IDE::readRegister (unsigned char reg)
 {
-	return access_register (reg).read8 ();
+	return accessRegister (reg).read8 ();
 }
 
-void ide::write_register (unsigned char reg, unsigned char value)
+void IDE::writeRegister (unsigned char reg, unsigned char value)
 {
-	return access_register (reg).write8 (value);
+	return accessRegister (reg).write8 (value);
 }
 
-unsigned short ide::read_data ()
+unsigned short IDE::readData ()
 {
-	return access_register (DATA_REGISTER).read16 ();
+	return accessRegister (DATA_REGISTER).read16 ();
 }
 
-void ide::write_data (unsigned short value)
+void IDE::writeData (unsigned short value)
 {
-	return access_register (DATA_REGISTER).write16 (value);
+	return accessRegister (DATA_REGISTER).write16 (value);
 }
 
-bool ide::has_error ()
+bool IDE::hasError ()
 {
-	return (read_status () & ERR) != 0;
+	return (readStatus () & ERR) != 0;
 }
 
-void ide::print_error ()
+void IDE::printError ()
 {
-	unsigned char error = read_register (ERROR_REGISTER);
+	unsigned char error = readRegister (ERROR_REGISTER);
 
 	printf ("IDE ERROR:\n\r");
 		
@@ -209,46 +209,45 @@ void ide::print_error ()
 		printf ("  bad block\n\r");
 }
 
-
-void ide::wait (unsigned char what)
+void IDE::wait (unsigned char what)
 {
-	while ((read_status () & what) == 0x0)
+	while ((readStatus () & what) == 0x0)
 		;
 }
 
-void ide::wait_not (unsigned char what)
+void IDE::waitNot (unsigned char what)
 {
-	while ((read_status () & what) != 0x0)
+	while ((readStatus () & what) != 0x0)
 		;
 }
 
-unsigned char ide::read_status ()
+unsigned char IDE::readStatus ()
 {
-	return read_register (STATUS_REGISTER);
+	return readRegister (STATUS_REGISTER);
 }
 
-void ide::send_command (unsigned char command)
+void IDE::sendCommand (unsigned char command)
 {
-	wait_not (BUSY);
-	write_register (COMMAND_REGISTER, command);
+	waitNot (BUSY);
+	writeRegister (COMMAND_REGISTER, command);
 }
 
-ide::register_access ide::access_register (unsigned char reg)
+IDE::RegisterAccess IDE::accessRegister (unsigned char reg)
 {
-	return register_access (_controller, reg);
+	return RegisterAccess (m_controller, reg);
 }
 
-bool ide::ident (disk_info& result)
+bool IDE::ident (DiskInfo& result)
 {
-	write_register (DRIVE_SELECT_REGISTER, MASTER);
+	writeRegister (DRIVE_SELECT_REGISTER, MASTER);
 	wait (DRDY);
 
-	send_command (IDENT_COMMAND);
-	wait_not (BUSY);
+	sendCommand (IDENT_COMMAND);
+	waitNot (BUSY);
 
-	if (has_error ())
+	if (hasError ())
 	{
-		print_error ();
+		printError ();
 		return false;
 	}
 	wait (DRQ);
@@ -256,7 +255,7 @@ bool ide::ident (disk_info& result)
 	unsigned short response [256];
 	for (int i = 0; i < 256; i++)
 	{
-		unsigned short data = read_data ();
+		unsigned short data = readData ();
 		response [i] = data;
 	}
 
@@ -314,30 +313,30 @@ bool ide::ident (disk_info& result)
 	return true;	
 }
 
-void ide::set_lba (unsigned long lba)
+void IDE::setLBA (unsigned long LBA)
 {
-	write_register (SECTOR_COUNT_REGISTER, 1);
-	write_register (LBA_0_REGISTER, lba & 0xFF);
-	write_register (LBA_1_REGISTER, (lba & 0xFF00) >> 8);
-	write_register (LBA_2_REGISTER, (lba & 0xFF0000) >> 16);
-	write_register (LBA_3_REGISTER, MASTER | ((lba & 0x0F000000) >> 24));
+	writeRegister (SECTOR_COUNT_REGISTER, 1);
+	writeRegister (LBA_0_REGISTER, LBA & 0xFF);
+	writeRegister (LBA_1_REGISTER, (LBA & 0xFF00) >> 8);
+	writeRegister (LBA_2_REGISTER, (LBA & 0xFF0000) >> 16);
+	writeRegister (LBA_3_REGISTER, MASTER | ((LBA & 0x0F000000) >> 24));
 }
 
 
-bool ide::write (unsigned long lba, unsigned char data [512])
+bool IDE::write (unsigned long LBA, unsigned char data [512])
 {
-	write_register (DRIVE_SELECT_REGISTER, MASTER);
+	writeRegister (DRIVE_SELECT_REGISTER, MASTER);
 	wait (DRDY);
 
-	set_lba (lba);
+	setLBA (LBA);
 
-	send_command (WRITE_SECTORS_WITH_RETRY);
+	sendCommand (WRITE_SECTORS_WITH_RETRY);
 
-	wait_not (BUSY);
+	waitNot (BUSY);
 
-	if (has_error ())
+	if (hasError ())
 	{
-		print_error ();
+		printError ();
 		return false;
 	}
 
@@ -348,26 +347,26 @@ bool ide::write (unsigned long lba, unsigned char data [512])
 		unsigned short w;
 		memcpy (&w, &(data [i]), 2);
 
-		write_data (w);
+		writeData (w);
 	}
 
 	return true;
 }
 
-bool ide::read (unsigned long lba, unsigned char data [512])
+bool IDE::read (unsigned long LBA, unsigned char data [512])
 {
-	write_register (DRIVE_SELECT_REGISTER, MASTER);
+	writeRegister (DRIVE_SELECT_REGISTER, MASTER);
 	wait (DRDY);
 
-	set_lba (lba);
+	setLBA (LBA);
 
-	send_command (READ_SECTORS_WITH_RETRY);
+	sendCommand (READ_SECTORS_WITH_RETRY);
 
-	wait_not (BUSY);
+	waitNot (BUSY);
 
-	if (has_error ())
+	if (hasError ())
 	{
-		print_error ();
+		printError ();
 		return false;
 	}
 
@@ -375,10 +374,9 @@ bool ide::read (unsigned long lba, unsigned char data [512])
 
 	for (int i = 0; i < 512; i = i + 2)
 	{
-		unsigned short w = read_data ();
+		unsigned short w = readData ();
 		memcpy (&(data [i]),&w, 2);
 	}
 
 	return true;
 }
-

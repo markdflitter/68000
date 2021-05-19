@@ -1,7 +1,7 @@
 #include "Shell.h"
 #include <stdio.h>
 #include <string.h>
-#include <ide.h>
+#include <IDE.h>
 
 extern char* __begin;
 extern char* __end;
@@ -22,8 +22,8 @@ void printHelp (void)
 
 void ident ()
 {
-	ide i;
-	ide::disk_info info;
+	IDE i;
+	IDE::DiskInfo info;
 	if (i.ident (info))
 	{
 		printf ("model number\t\t\t\t: %s\n\r",info.model_number);
@@ -88,7 +88,7 @@ void write ()
 {
 	unsigned char data [512] = "The house stood on a slight rise just on the edge of the village. It stood on its own and looked out over a broad spread of West Country farmland. Not a remarkable house by any means—it was about thirty years old, squattish, squarish, made of brick, and had four windows set in the front of a size and proportion which more or less exactly failed to please the eye.  The only person for whom the house was in any way special was Arthur Dent, and that was only because it happened to be the one he lived in.";
 	
-	ide i;
+	IDE i;
 	i.write (lba, data);
 }
 
@@ -97,7 +97,7 @@ void read ()
 {
 	unsigned char data [512];
 	
-	ide i;
+	IDE i;
 	i.read (lba, data);
 
 	printf ("%s\n\r",data);
@@ -105,7 +105,7 @@ void read ()
 
 void save ()
 {
-	ide i;
+	IDE i;
 
 	const int startBlock = 513;
 	int curBlock = startBlock;

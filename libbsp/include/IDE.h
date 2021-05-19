@@ -1,11 +1,11 @@
 #include "MC68230.h"
 
-class ide
+class IDE
 {
 public:
-	ide (unsigned int base_address = 0xA00000);
+	IDE (unsigned int baseAddress = 0xA00000);
 
-	struct disk_info {
+	struct DiskInfo {
 		unsigned short general;
 		bool hard_sectored;
 		bool soft_sectored;
@@ -53,38 +53,38 @@ public:
 		unsigned char multiword_DMA_modes_active;
 	};
 	
-	bool ident (disk_info& result);
+	bool ident (DiskInfo& result);
 
-	bool write (unsigned long lba, unsigned char data [512]);
-	bool read (unsigned long lba, unsigned char data [512]);
+	bool write (unsigned long LBA, unsigned char data [512]);
+	bool read (unsigned long LBA, unsigned char data [512]);
 private:
-	MC68230 _controller;
+	MC68230 m_controller;
 
-	unsigned char read_register (unsigned char reg);
-	void write_register (unsigned char reg, unsigned char value);
+	unsigned char readRegister (unsigned char reg);
+	void writeRegister (unsigned char reg, unsigned char value);
 
-	unsigned short read_data ();
-	void write_data (unsigned short value);
+	unsigned short readData ();
+	void writeData (unsigned short value);
 		
-	bool has_error ();
-	void print_error ();
+	bool hasError ();
+	void printError ();
 
 	void wait (unsigned char what);
-	void wait_not (unsigned char what);
+	void waitNot (unsigned char what);
 
-	void wait_drive_ready ();
-	void wait_not_busy ();
-	void wait_drq ();
+	void waitDriveReady ();
+	void waitNotBusy ();
+	void waitDRQ ();
 
-	unsigned char read_status ();
+	unsigned char readStatus ();
 
-	void send_command (unsigned char command);
+	void sendCommand (unsigned char command);
 
-	void set_lba (unsigned long lba);
+	void setLBA (unsigned long LBA);
 
-	class register_access {
+	class RegisterAccess {
 	public:
-		register_access (MC68230& controller, unsigned char reg);
+		RegisterAccess (MC68230& controller, unsigned char reg);
 		
 		unsigned char read8 ();
 		void write8 (unsigned char value);
@@ -93,20 +93,19 @@ private:
 		void write16 (unsigned short value);
 	private:
 		void reset ();
-		void set_address ();
+		void setAddress ();
 	
 		enum eState {assert, negate};	
-		void set_strobe (unsigned char strobe, eState state);
+		void setStrobe (unsigned char strobe, eState state);
 		
-		void negate_bits (unsigned char bits);
-		void assert_bits (unsigned char bits);
-		void write_state ();
+		void negateBits (unsigned char bits);
+		void assertBits (unsigned char bits);
+		void writeState ();
 
-		unsigned char _reg;
-		unsigned char _state;
-		MC68230& _controller;
+		unsigned char m_register;
+		unsigned char m_state;
+		MC68230& m_controller;
 	};
 
-	register_access access_register (unsigned char reg);
+	RegisterAccess accessRegister (unsigned char reg);
 };
-
