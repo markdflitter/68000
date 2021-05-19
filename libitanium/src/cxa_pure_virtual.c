@@ -1,6 +1,5 @@
 #include "../include/cxa_pure_virtual.h"
 #include <stdio.h>
-#include <stdlib.h>
 
 void __cxa_pure_virtual ()
 {
@@ -9,4 +8,3 @@ void __cxa_pure_virtual ()
 	for (;;)
 		;
 }
-

@@ -1,7 +1,7 @@
 #include <bsp.h>
 #include <stdio.h>
-#include "vector_table.h"
-#include "shell.h"
+#include "VectorTable.h"
+#include "Shell.h"
 
 
 extern unsigned char* __vector_table;
@@ -18,15 +18,15 @@ void tick ()
 
 void runShell ()
 {
-	shell s (time);
+	Shell s (time);
 	s.run ();
 }
 
 
 int main ()
 {
-	//vector_table v (__vector_table);
-	//v.set_vector (64, &tick);	
+	//VectorTable v (__vector_table);
+	//v.setVector (64, &tick);	
 
 	//__set_interrupt_vector (64);
 	//__enable_interrupts ();
