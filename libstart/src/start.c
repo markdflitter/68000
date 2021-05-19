@@ -1,5 +1,5 @@
 #include "../include/start.h"
-#include "../include/libgloss_start.h"
+#include <bsp.h>
 #include <stdio.h>
 
 extern int main (void);
