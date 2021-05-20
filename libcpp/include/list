@@ -1,6 +1,8 @@
 #ifndef LIST
 #define LIST
 
+#include <stdio.h>
+
 namespace std
 {
 
@@ -11,28 +13,112 @@ private:
 	struct node
 	{
 		T value;
+		node* prev;
 		node* next;
 	};
 
 public:
 	list () 
 	{
-		m_sentinel = new node ();
-		m_sentinel->next = m_sentinel;
-		m_head = m_sentinel;
+		m_end = new node ();
+		m_rend = new node ();
+	
+		m_end->next = 0;
+		m_end->prev = m_rend;
+
+		m_rend->prev = 0;
+		m_rend->next = m_end;
+
+		m_tail = m_end;
+		m_head = m_rend;
+
+		m_size = 0;
 	}
 
 	~list ()
 	{
+		node* cur = m_head; 
+		while (cur != 0)
+		{
+			node* nodeToDelete = cur;
+			cur = cur->next;
+			delete nodeToDelete;
+		}
+	}
+
+	size_t size () const { return m_size; }
+	bool empty () const {return m_size == 0;}
+
+	void clear ()
+	{
+		while (m_size > 0)
+			pop_back ();
 	}
 
 	void push_front (const T& t)
 	{
 		node* n = new node ();
 		n->value = t;
-		n->next = m_head;
+		
+		n->next = m_head->next;
+		n->prev = m_head;
+		m_head->next->prev = n;
+		m_head->next = n;
 
-		m_head = n;
+		m_size++;
+	}
+
+	T pop_front ()
+	{
+		T value;
+
+		if (m_size > 0)
+		{
+			node* n = m_head->next;
+			value = n->value;
+
+			m_head->next = n->next;
+			m_head->next->prev = n->prev;
+
+			m_size--;
+		
+			delete n;
+		}
+
+		return value;
+	}
+
+	void push_back (const T& t)
+	{
+		node* n = new node ();
+		n->value = t;
+		
+		n->prev = m_tail->prev;
+		n->next = m_tail;
+		m_tail->prev->next = n;
+		m_tail->prev = n;
+		
+		m_size++;
+	}
+
+	T pop_back ()
+	{
+		T value;
+
+		if (m_size > 0)
+		{
+			node* n = m_tail->prev;
+			value = n->value;
+
+			m_tail->prev = n->prev;
+			m_tail->prev->next = n->next;
+
+			m_size--;
+		
+			delete n;
+		}
+
+		return value;
 	}
 
 	class iterator 
@@ -48,7 +134,6 @@ public:
 		}
 
 		bool operator== (const iterator& other) const {return cur == other.cur;}
-
 		bool operator!= (const iterator& other) const {return !(*this == other);}
 
 		T& operator* () {return cur->value;}
@@ -58,13 +143,69 @@ public:
 		node* cur;
 	};
 
-	iterator begin () { return iterator (m_head); }
-	iterator end () { return iterator (m_sentinel);}
+	class const_iterator 
+	{
+	public:
+		friend list;
+
+		const_iterator operator++ (int)
+		{
+			const_iterator result = *this;
+			cur = cur->next;
+			return result;
+		}
+
+		bool operator== (const const_iterator& other) const {return cur == other.cur;}
+		bool operator!= (const const_iterator& other) const {return !(*this == other);}
+
+		const T& operator* () const {return cur->value;}
+	private:
+		const_iterator (node * start) : cur (start) {}
+
+		node* cur;
+	};
+
+	iterator begin () { return iterator (m_head->next); }
+	iterator end () { return iterator (m_end);}
+
+	const_iterator begin () const { return const_iterator (m_head->next); }
+	const_iterator end () const { return const_iterator (m_end);}
+
+
+
+	void print ()
+	{
+		printf ("-----\n\r");
+		{
+			node* cur = m_head;
+			while (cur != 0)
+			{
+				printf ("%d\n\r",cur->value);
+				cur = cur->next;
+			}
+		}
+		printf ("=====\n\r");
+		{
+			node* cur = m_tail;
+			while (cur != 0)
+			{
+				printf ("%d\n\r",cur->value);
+				cur = cur->prev;
+			}
+		}
+		printf ("_____\n\r");
+	}
+
 private:
 	list (const list&);
 
-	node* m_sentinel;
+	node* m_rend;
+	node* m_end;
+	
 	node* m_head;
+	node* m_tail;
+
+	size_t m_size;
 };
 
 }

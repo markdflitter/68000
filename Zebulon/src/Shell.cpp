@@ -29,10 +29,10 @@ void testString ()
 		printf ("different\n\r");
 }
 
-void printList (std::list<int>& l)
+void printList (const std::list<int>& l)
 {
 	printf ("-----\n\r");
-	for (std::list<int>::iterator i = l.begin (); i != l.end (); i++)
+	for (std::list<int>::const_iterator i = l.begin (); i != l.end (); i++)
 	{
 		printf ("%d\n\r",*i);
 	}
@@ -44,12 +44,27 @@ void testList ()
 {
 	std::list<int> l;
 	printList (l);
+	printf ("size is %d\n\r",l.size ());
+	
 	l.push_front (1);
 	printList (l);
-	l.push_front (2);
+	printf ("size is %d\n\r",l.size ());
+	
+	l.push_back (2);
 	printList (l);
+	printf ("size is %d\n\r",l.size ());
+	
 	l.push_front (3);
 	printList (l);
+	printf ("size is %d\n\r",l.size ());
+	
+	l.pop_front ();
+	printList (l);
+	printf ("size is %d\n\r",l.size ());
+	
+	l.pop_back ();
+	printList (l);
+	printf ("size is %d\n\r",l.size ());
 }
 
 
