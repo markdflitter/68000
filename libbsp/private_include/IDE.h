@@ -1,7 +1,8 @@
 #ifndef IDE_H
 #define IDE_H
 
-#include "bsp.h"
+#include "../include/bsp.h"
+#include "rw.h"
 #include "MC68230.h"
 
 class IDE

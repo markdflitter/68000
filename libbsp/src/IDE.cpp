@@ -1,6 +1,5 @@
-#include "../include/IDE.h"
-#include <string.h>
-#include <stdio.h>
+#include "../private_include/IDE.h"
+//#include <stdio.h>
 
 const unsigned char READ_SECTORS_WITH_RETRY = 0x20;
 const unsigned char WRITE_SECTORS_WITH_RETRY = 0x30;
@@ -189,7 +188,7 @@ void IDE::printError ()
 {
 	unsigned char error = readRegister (ERROR_REGISTER);
 
-	printf ("IDE ERROR:\n\r");
+/*	printf ("IDE ERROR:\n\r");
 		
 	if ((error & AMNF) != 0);
 		printf ("  address mark not found\n\r");
@@ -207,6 +206,7 @@ void IDE::printError ()
 		printf ("  uncorrectable data error\n\r");
 	if ((error & BBK) != 0);
 		printf ("  bad block\n\r");
+*/
 }
 
 void IDE::wait (unsigned char what)
@@ -280,13 +280,13 @@ bool IDE::ident (DiskInfo& result)
 	result.numBytesPerTrack = response [4];
 	result.numBytesPerSector = response [5];
 	result.numSectorsPerTrack = response [6];
-	memcpy (&(result.serialNumber), &(response [10]), 2 * 10);
+	__memcpy (&(result.serialNumber), &(response [10]), 2 * 10);
 
 	result.bufferType = response [20];
 	result.bufferSize = response [21];
 	result.numEccBytes = response [22];
-	memcpy (&(result.firmwareRevision), &(response [23]), 2 * 4);
-	memcpy (&(result.modelNumber), &(response [27]), 2 * 20);
+	__memcpy (&(result.firmwareRevision), &(response [23]), 2 * 4);
+	__memcpy (&(result.modelNumber), &(response [27]), 2 * 20);
 
 	result.maxRwSectorsPerInterrupt = response [47] & 0xFF;
 	
@@ -301,9 +301,9 @@ bool IDE::ident (DiskInfo& result)
 	result.numCurrentCylinders = response [54];
 	result.numCurrentHeads = response [55];
 	result.numCurrentSectorsPerTrack = response [56];
-	memcpy (&(result.currentCapacityInSectors), &(response [57]), 2 * 2);
+	__memcpy (&(result.currentCapacityInSectors), &(response [57]), 2 * 2);
 	result.currentRwSectorsPerInterrupt = response [59] & 0xFF;
-	memcpy (&(result.totalNumOfUserSectors), &(response [60]), 2 * 2);
+	__memcpy (&(result.totalNumOfUserSectors), &(response [60]), 2 * 2);
 			
 	result.singlewordDmaModesSupported = response [62] & 0xFF;
 	result.singlewordDmaModesActive = response [62] >> 8;
@@ -345,7 +345,7 @@ bool IDE::write (unsigned long LBA, unsigned char data [512])
 	for (int i = 0; i < 512; i = i + 2)
 	{
 		unsigned short w;
-		memcpy (&w, &(data [i]), 2);
+		__memcpy (&w, &(data [i]), 2);
 
 		writeData (w);
 	}
@@ -375,7 +375,7 @@ bool IDE::read (unsigned long LBA, unsigned char data [512])
 	for (int i = 0; i < 512; i = i + 2)
 	{
 		unsigned short w = readData ();
-		memcpy (&(data [i]),&w, 2);
+		__memcpy (&(data [i]),&w, 2);
 	}
 
 	return true;

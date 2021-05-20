@@ -1,5 +1,5 @@
-#include "../include/DUART.h"
-#include "../include/rw.h"
+#include "../private_include/DUART.h"
+#include "../private_include/rw.h"
 
 DUART::UART::UART (unsigned int baseAddress) :
 	m_registers ((Registers*) baseAddress)

@@ -1,4 +1,4 @@
-#include "../include/SpaceManager.h"
+#include "SpaceManager.h"
 
 SpaceManager::SpaceManager ()
  	: m_free (0)
