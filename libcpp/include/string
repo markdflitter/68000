@@ -22,7 +22,7 @@ private:
 	char * m_s;
 };
 
-};
+}
 
 #endif
 

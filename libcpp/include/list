@@ -1,0 +1,72 @@
+#ifndef LIST
+#define LIST
+
+namespace std
+{
+
+template <typename T>
+class list
+{
+private:
+	struct node
+	{
+		T value;
+		node* next;
+	};
+
+public:
+	list () 
+	{
+		m_sentinel = new node ();
+		m_sentinel->next = m_sentinel;
+		m_head = m_sentinel;
+	}
+
+	~list ()
+	{
+	}
+
+	void push_front (const T& t)
+	{
+		node* n = new node ();
+		n->value = t;
+		n->next = m_head;
+
+		m_head = n;
+	}
+
+	class iterator 
+	{
+	public:
+		friend list;
+
+		iterator operator++ (int)
+		{
+			iterator result = *this;
+			cur = cur->next;
+			return result;
+		}
+
+		bool operator== (const iterator& other) const {return cur == other.cur;}
+
+		bool operator!= (const iterator& other) const {return !(*this == other);}
+
+		T& operator* () {return cur->value;}
+	private:
+		iterator (node * start) : cur (start) {}
+
+		node* cur;
+	};
+
+	iterator begin () { return iterator (m_head); }
+	iterator end () { return iterator (m_sentinel);}
+private:
+	list (const list&);
+
+	node* m_sentinel;
+	node* m_head;
+};
+
+}
+
+#endif

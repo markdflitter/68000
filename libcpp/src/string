@@ -55,6 +55,4 @@ string::assign (const char* s)
 	}
 }
 
-};
-
-
+}

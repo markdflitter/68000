@@ -3,6 +3,8 @@
 #include <string.h>
 #include <IDE.h>
 #include <string>
+#include <list>
+
 
 extern char* __begin;
 extern char* __end;
@@ -26,6 +28,30 @@ void testString ()
 	else
 		printf ("different\n\r");
 }
+
+void printList (std::list<int>& l)
+{
+	printf ("-----\n\r");
+	for (std::list<int>::iterator i = l.begin (); i != l.end (); i++)
+	{
+		printf ("%d\n\r",*i);
+	}
+	printf ("=====\n\r");
+}
+
+
+void testList ()
+{
+	std::list<int> l;
+	printList (l);
+	l.push_front (1);
+	printList (l);
+	l.push_front (2);
+	printList (l);
+	l.push_front (3);
+	printList (l);
+}
+
 
 
 void printHelp (void)
@@ -198,7 +224,8 @@ void Shell::run () const
 		if (strcmp (buf, "save") == 0) save ();
 		if (strcmp (buf, "uptime") == 0) printf ("uptime: %d\n\r", m_tick);
 		if (strcmp (buf, "tststr") == 0) testString ();
-	}
+		if (strcmp (buf, "tstlst") == 0) testList ();
+		}
 
 	return ;
 }
