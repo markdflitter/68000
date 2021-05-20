@@ -1,4 +1,4 @@
-//#include <stdio.h>
+#include <rw.h>
 
 class MC68230
 {
@@ -66,21 +66,6 @@ public:
 	{	
 		write (&m_registers->port_c_data, value);
 	}
-
-	inline void write (volatile unsigned char* address, unsigned char value)
-	{
-		//printf ("write 0x%x to 0x%x\n\r", value, address);
-		*address = value;
-	}
-
-	inline unsigned char read (volatile unsigned char* address) const
-	{
-		unsigned char value = *address;
-		//printf ("read 0x%x from 0x%x\n\r", value, address);
-		return value;
-	}
-
-
 private:
 	struct __attribute__((__packed__)) Registers
 	{
