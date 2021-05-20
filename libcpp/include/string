@@ -1,0 +1,29 @@
+#ifndef STRING
+#define STRING
+
+namespace std
+{
+
+class string
+{
+public:
+	string (const char* s);
+	string (const string& other);
+
+	~string ();
+
+	string& operator= (const string& other);
+	
+	bool operator== (const string& other);
+
+	const char* c_str () const;
+private:
+	void assign (const char* s);
+
+	char * m_s;
+};
+
+};
+
+#endif
+
