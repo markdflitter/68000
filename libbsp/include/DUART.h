@@ -26,23 +26,23 @@ private:
 			struct __attribute__((__packed__)) Registers
 			{
 				union {
-					volatile char mr1;
-					volatile char mr2;
+					volatile unsigned char mr1;
+					volatile unsigned char mr2;
 				};
 				char _1;
 				union {
-					volatile char csr;
-					volatile char sr;
+					volatile unsigned char csr;
+					volatile unsigned char sr;
 				};
 				char _2;
 				union {
-					volatile char cr;
-					volatile char test;
+					volatile unsigned char cr;
+					volatile unsigned char test;
 				};
 				char _3;
 				union {
-					volatile char tx;
-					volatile char rx;
+					volatile unsigned char tx;
+					volatile unsigned char rx;
 				};
 			};
 
@@ -60,40 +60,40 @@ private:
 		{
 			char _1 [8];		// skip port a
 			union {
-				volatile char acr;
-				volatile char ipcr;
+				volatile unsigned char acr;
+				volatile unsigned char ipcr;
 			};
 			char _2;
 			union {
-				volatile char imr;
-				volatile char isr;
+				volatile unsigned char imr;
+				volatile unsigned char isr;
 			};
 			char _3;
 			union {
-				volatile char crur;
-				volatile char ctu;
+				volatile unsigned char crur;
+				volatile unsigned char ctu;
 			};
 			char _4;
 			union {
-				volatile char ctlr;
-				volatile char ctl;
+				volatile unsigned char ctlr;
+				volatile unsigned char ctl;
 			};
 			char _5[8];		// skip port b
-			volatile char ivr;
+			volatile unsigned char ivr;
 			char _6;
 			union {
-				volatile char opcr;
-				volatile char ip;
+				volatile unsigned char opcr;
+				volatile unsigned char ip;
 			};
 			char _7;
 			union {
-				volatile char set_op_command;
-				volatile char start_counter;
+				volatile unsigned char set_op_command;
+				volatile unsigned char start_counter;
 			};
 			char _8;
 			union {
-				volatile char reset_op_command;
-				volatile char stop_counter;
+				volatile unsigned char reset_op_command;
+				volatile unsigned char stop_counter;
 			};
 		};
 	

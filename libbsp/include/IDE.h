@@ -1,6 +1,7 @@
 #ifndef IDE_H
 #define IDE_H
 
+#include "bsp.h"
 #include "MC68230.h"
 
 class IDE
@@ -8,54 +9,6 @@ class IDE
 public:
 	IDE (unsigned int baseAddress = 0xA00000);
 
-	struct DiskInfo {
-		unsigned short general;
-		bool hardSectored;
-		bool softSectored;
-		bool notMfmEncoded;
-		bool headSwitchTime15uS;
-		bool spindleMotorControlOptionImplemented;
-		bool fixedDrive;
-		bool removeableCartridgeDrive;
-		bool transferRateLt5Mbs;
-		bool transferRateLt10Mbs;
-		bool transferRateGt10Mbs;
-		bool rotationalSpeedTolerance;
-		bool dataStrobeOffsetOptionAvailable;
-		bool trackOffsetOptionAvailable;
-		bool formatSpeedToleranceGapRequired;
-
-		unsigned short numCylinders;
-		unsigned short numHeads;
-		unsigned short numBytesPerTrack;
-		unsigned short numBytesPerSector;
-		unsigned short numSectorsPerTrack;
-		unsigned char serialNumber [20];
-		unsigned short bufferType;
-		unsigned short bufferSize;
-		unsigned short numEccBytes;
-		unsigned short firmwareRevision [8];
-		unsigned char modelNumber[40];
-		unsigned short maxRwSectorsPerInterrupt;
-		bool doubleWordIO;
-		unsigned short capabilities;
-		bool LbaSupported;
-		bool DmaSupported;
-		unsigned short PioMode;
-		unsigned short DmaMode;
-		bool currentValid;
-		unsigned short numCurrentCylinders;
-		unsigned short numCurrentHeads;
-		unsigned short numCurrentSectorsPerTrack;
-		unsigned int currentCapacityInSectors;
-		unsigned int totalNumOfUserSectors;
-		unsigned short currentRwSectorsPerInterrupt;
-		unsigned char singlewordDmaModesSupported;
-		unsigned char singlewordDmaModesActive;
-		unsigned char multiwordDmaModesSupported;
-		unsigned char multiwordDmaModesActive;
-	};
-	
 	bool ident (DiskInfo& result);
 
 	bool write (unsigned long LBA, unsigned char data [512]);

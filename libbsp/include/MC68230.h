@@ -1,7 +1,7 @@
 #ifndef MC68230_H
 #define MC68230_H
 
-#include <rw.h>
+#include "../include/rw.h"
 
 class MC68230
 {

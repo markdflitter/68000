@@ -1,7 +1,7 @@
 #include "Shell.h"
 #include <stdio.h>
 #include <string.h>
-#include <IDE.h>
+#include <bsp.h>
 #include <string>
 #include <list>
 
@@ -82,9 +82,8 @@ void printHelp (void)
 
 void ident ()
 {
-	IDE i;
-	IDE::DiskInfo info;
-	if (i.ident (info))
+	DiskInfo info;
+	if (__ide_ident (info))
 	{
 		printf ("model number\t\t\t\t: %s\n\r",info.modelNumber);
 		printf ("serial number\t\t\t\t: %s\n\r",info.serialNumber);
@@ -148,8 +147,7 @@ void write ()
 {
 	unsigned char data [512] = "The house stood on a slight rise just on the edge of the village. It stood on its own and looked out over a broad spread of West Country farmland. Not a remarkable house by any means—it was about thirty years old, squattish, squarish, made of brick, and had four windows set in the front of a size and proportion which more or less exactly failed to please the eye.  The only person for whom the house was in any way special was Arthur Dent, and that was only because it happened to be the one he lived in.";
 	
-	IDE i;
-	i.write (lba, data);
+	__ide_write (lba, data);
 }
 
 
@@ -157,16 +155,13 @@ void read ()
 {
 	unsigned char data [512];
 	
-	IDE i;
-	i.read (lba, data);
+	__ide_read (lba, data);
 
 	printf ("%s\n\r",data);
 }
 
 void save ()
 {
-	IDE i;
-
 	const int startBlock = 513;
 	int curBlock = startBlock;
 
@@ -202,7 +197,7 @@ void save ()
 		}
 
 		printf ("writing block %d\n\r", curBlock);
-		i.write (curBlock, block);
+		__ide_write (curBlock, block);
 		curBlock++;
 	}
 }

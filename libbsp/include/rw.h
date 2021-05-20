@@ -17,7 +17,7 @@ inline void write (volatile unsigned char* address, unsigned char value)
 	*address = value;
 }
 
-inline unsigned char read (volatile unsigned char* address) const
+inline unsigned char read (volatile unsigned char* address)
 {
 	unsigned char value = *address;
 

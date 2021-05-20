@@ -8,7 +8,7 @@ DUART::UART::UART (unsigned int baseAddress) :
 
 bool DUART::UART::spaceToSend () const
 {
-	return (read (m_registers->sr) & TX_READY) != 0;
+	return (read (&m_registers->sr) & TX_READY) != 0;
 }
 
 
@@ -17,12 +17,12 @@ void DUART::UART::writeChar (char c)
 	while (!spaceToSend ())
 		;
 	
-	write (m_registers->tx, c);
+	write (&m_registers->tx, c);
 }
 
 bool DUART::UART::charReady () const 
 {
-	return (read (m_registers->sr) & RX_READY) != 0;
+	return (read (&m_registers->sr) & RX_READY) != 0;
 }
 
 
@@ -31,7 +31,7 @@ char DUART::UART::readChar () const
 	while (!charReady ())
 		;
 
-	return read (m_registers->rx);
+	return read (&m_registers->rx);
 }
 
 
@@ -57,17 +57,17 @@ char DUART::readChar (eChannel channel) const
 
 void DUART::setInterruptVector (unsigned int vector)
 {
-	write (m_registers->ivr, vector);
+	write (&m_registers->ivr, vector);
 } 
 
 const unsigned char TIMER_INTERRUPT = 8;
 
 void DUART::enableInterrupts ()
 {
-	write (m_registers->imr, TIMER_INTERRUPT);
+	write (&m_registers->imr, TIMER_INTERRUPT);
 }
 
 void DUART::disableInterrupts ()
 {
-	write (m_registers->imr, 0);
+	write (&m_registers->imr, 0);
 }
