@@ -1,3 +1,6 @@
+#ifndef RW_H
+#define RW_H
+
 //#define LOG_ACCESS
 #undef LOG_ACESS
 
@@ -24,3 +27,5 @@ inline unsigned char read (volatile unsigned char* address) const
 
 	return value;
 }
+
+#endif

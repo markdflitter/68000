@@ -1,3 +1,6 @@
+#ifndef FAT_H
+#define FAT_H
+
 #include "SpaceManager.h"
 #include <size_t.h>
 
@@ -16,3 +19,5 @@ private:
 		char* _name;
 	};
 };
+
+#endif

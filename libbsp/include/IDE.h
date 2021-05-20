@@ -1,3 +1,6 @@
+#ifndef IDE_H
+#define IDE_H
+
 #include "MC68230.h"
 
 class IDE
@@ -109,3 +112,5 @@ private:
 
 	RegisterAccess accessRegister (unsigned char reg);
 };
+
+#endif

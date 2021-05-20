@@ -1,3 +1,6 @@
+#ifndef SPACE_MANAGER_H
+#define SPACE_MANAGER_H
+
 #include <size_t.h>
 
 class SpaceManager
@@ -23,3 +26,5 @@ private:
 	
 	Chunk* m_free;
 };
+
+#endif

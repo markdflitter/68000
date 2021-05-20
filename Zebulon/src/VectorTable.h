@@ -1,3 +1,6 @@
+#ifndef VECTOR_TABLE_H
+#define VECTOR_TABLE_H
+
 class VectorTable
 {
 public:
@@ -14,3 +17,5 @@ private:
 
 	Table* m_table;
 };
+
+#endif

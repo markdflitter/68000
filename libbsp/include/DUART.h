@@ -1,3 +1,6 @@
+#ifndef DUART_H
+#define DUART_H
+
 class DUART
 {
 public:
@@ -96,3 +99,5 @@ private:
 	
 		Registers* m_registers;
 };
+
+#endif
