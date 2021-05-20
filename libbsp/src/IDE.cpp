@@ -260,55 +260,55 @@ bool IDE::ident (DiskInfo& result)
 	}
 
 	result.general = response [0];
-	result.hard_sectored = result.general & 0x2;
-	result.soft_sectored = result.general & 0x4;
-	result.not_MFM_encoded = result.general & 0x8;
-	result.head_switch_time_15uS = result.general & 0x10;
-	result.spindle_motor_control_option_implemented = result.general & 0x20;
-	result.fixed_drive = result.general & 0x40;
-	result.removeable_cartridge_drive = result.general & 0x80;
-	result.transfer_rate_lt_5Mbs = result.general & 0x100;
-	result.transfer_rate_lt_10Mbs = result.general & 0x200;
-	result.transfer_rate_gt_10Mbs = result.general & 0x400;
-	result.rotational_speed_tolerance = result.general & 0x800;
-	result.data_strobe_offset_option_available = result.general & 0x1000;
-	result.track_offset_option_available = result.general & 0x2000;
-	result.format_speed_tolerance_gap_required = result.general & 0x4000;
+	result.hardSectored = result.general & 0x2;
+	result.softSectored = result.general & 0x4;
+	result.notMfmEncoded = result.general & 0x8;
+	result.headSwitchTime15uS = result.general & 0x10;
+	result.spindleMotorControlOptionImplemented = result.general & 0x20;
+	result.fixedDrive = result.general & 0x40;
+	result.removeableCartridgeDrive = result.general & 0x80;
+	result.transferRateLt5Mbs = result.general & 0x100;
+	result.transferRateLt10Mbs = result.general & 0x200;
+	result.transferRateGt10Mbs = result.general & 0x400;
+	result.rotationalSpeedTolerance = result.general & 0x800;
+	result.dataStrobeOffsetOptionAvailable = result.general & 0x1000;
+	result.trackOffsetOptionAvailable = result.general & 0x2000;
+	result.formatSpeedToleranceGapRequired = result.general & 0x4000;
 
-	result.num_cylinders = response [1];
-	result.num_heads = response [3];
-	result.num_bytes_per_track = response [4];
-	result.num_bytes_per_sector = response [5];
-	result.num_sectors_per_track = response [6];
-	memcpy (&(result.serial_number), &(response [10]), 2 * 10);
+	result.numCylinders = response [1];
+	result.numHeads = response [3];
+	result.numBytesPerTrack = response [4];
+	result.numBytesPerSector = response [5];
+	result.numSectorsPerTrack = response [6];
+	memcpy (&(result.serialNumber), &(response [10]), 2 * 10);
 
-	result.buffer_type = response [20];
-	result.buffer_size = response [21];
-	result.num_ECC_bytes = response [22];
-	memcpy (&(result.firmware_revision), &(response [23]), 2 * 4);
-	memcpy (&(result.model_number), &(response [27]), 2 * 20);
+	result.bufferType = response [20];
+	result.bufferSize = response [21];
+	result.numEccBytes = response [22];
+	memcpy (&(result.firmwareRevision), &(response [23]), 2 * 4);
+	memcpy (&(result.modelNumber), &(response [27]), 2 * 20);
 
-	result.max_rw_sectors_per_interrupt = response [47] & 0xFF;
+	result.maxRwSectorsPerInterrupt = response [47] & 0xFF;
 	
-	result.double_word_io = response [48] & 0x1;
+	result.doubleWordIO = response [48] & 0x1;
 	result.capabilities = response [49];
-	result.DMA_supported = result.capabilities & 0x100;
-	result.LBA_supported = result.capabilities & 0x200;
-	result.PIO_mode = response [51] >> 8;
-	result.DMA_mode = response [52] >> 8;
+	result.DmaSupported = result.capabilities & 0x100;
+	result.LbaSupported = result.capabilities & 0x200;
+	result.PioMode = response [51] >> 8;
+	result.DmaMode = response [52] >> 8;
 
-	result.current_valid = response [53] & 0x1;
-	result.num_current_cylinders = response [54];
-	result.num_current_heads = response [55];
-	result.num_current_sectors_per_track = response [56];
-	memcpy (&(result.current_capacity_in_sectors), &(response [57]), 2 * 2);
-	result.current_rw_sectors_per_interrupt = response [59] & 0xFF;
-	memcpy (&(result.total_num_of_user_sectors), &(response [60]), 2 * 2);
+	result.currentValid = response [53] & 0x1;
+	result.numCurrentCylinders = response [54];
+	result.numCurrentHeads = response [55];
+	result.numCurrentSectorsPerTrack = response [56];
+	memcpy (&(result.currentCapacityInSectors), &(response [57]), 2 * 2);
+	result.currentRwSectorsPerInterrupt = response [59] & 0xFF;
+	memcpy (&(result.totalNumOfUserSectors), &(response [60]), 2 * 2);
 			
-	result.singleword_DMA_modes_supported = response [62] & 0xFF;
-	result.singleword_DMA_modes_active = response [62] >> 8;
-	result.multiword_DMA_modes_supported = response [63] & 0xFF;
-	result.multiword_DMA_modes_active = response [63] >> 8;
+	result.singlewordDmaModesSupported = response [62] & 0xFF;
+	result.singlewordDmaModesActive = response [62] >> 8;
+	result.multiwordDmaModesSupported = response [63] & 0xFF;
+	result.multiwordDmaModesActive = response [63] >> 8;
 	
 	return true;	
 }
