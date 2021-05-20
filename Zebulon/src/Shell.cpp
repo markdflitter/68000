@@ -4,13 +4,37 @@
 #include <bsp.h>
 #include <string>
 #include <list>
-
+#include "FAT.h"
 
 extern char* __begin;
 extern char* __end;
 extern char* start;
 
 namespace {
+
+
+void statFile (const FAT::File& file)
+{
+	for (std::list<SpaceManager::Chunk>::const_iterator i = file.m_chunks.begin (); i != file.m_chunks.end (); i++)
+		printf ("%d -> %d\n\r", (*i).m_start, (*i).m_start + (*i).m_length);
+}
+
+void createFile (FAT& fat)
+{
+	FAT::File file1 = fat.createFile ("Mark", 100);
+	statFile (file1);
+
+	FAT::File file2 = fat.createFile ("Mark", 100);
+	statFile (file2);
+}
+
+void ls (const FAT& fat)
+{
+	std::list<FAT::File> files = fat.ls ();
+	for (std::list<FAT::File>::iterator i = files.begin (); i != files.end (); i++)
+		statFile (*i);
+}
+
 
 void testString ()
 {
@@ -214,6 +238,8 @@ void Shell::run () const
 	const char* version = "Z-Shell V1.10";
 	printf ("%s\n\r",version);
 
+	FAT f (1000000);
+
 	printf ("type help for help\n\r");
 
 	char buf [21];
@@ -235,7 +261,9 @@ void Shell::run () const
 		if (strcmp (buf, "uptime") == 0) printf ("uptime: %d\n\r", m_tick);
 		if (strcmp (buf, "tststr") == 0) testString ();
 		if (strcmp (buf, "tstlst") == 0) testList ();
-		}
+		if (strcmp (buf, "create") == 0) createFile (f);
+		if (strcmp (buf, "ls") == 0) ls (f);
+	}
 
 	return ;
 }

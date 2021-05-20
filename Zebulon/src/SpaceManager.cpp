@@ -1,40 +1,27 @@
 #include "SpaceManager.h"
 
 SpaceManager::SpaceManager ()
- 	: m_free (0)
 {
 	load ();
 }
 
 SpaceManager::SpaceManager (size_t size)
- : m_free (0)
 {
 	format (size);
 }
 
-SpaceManager::~SpaceManager ()
+std::list<SpaceManager::Chunk> SpaceManager::allocate (size_t size)
 {
-	if (m_free)
-	{
-		delete m_free;
-		m_free = 0;
-	}
-}
+	std::list<Chunk> allocation;
 
-
-SpaceManager::Chunk* SpaceManager::allocate (size_t size)
-{
-	Chunk* allocation = 0;
-	
-	if (m_free)
+	if (m_free.size () > 0)
 	{
-		if (m_free->m_length >= size)
+		Chunk& first = *(m_free.begin ());
+		if (first.m_length >= size)
 		{
-			allocation = new Chunk ();
-			allocation->m_start = m_free->m_start;
-			allocation->m_length = size;
-			m_free->m_start += size;
-			m_free->m_length -= size;
+			allocation.push_back (Chunk (first.m_start, size));
+			first.m_start += size;
+			first.m_length -= size;
 		
 			save ();
 		}
@@ -49,9 +36,7 @@ void SpaceManager::print () const
 
 void SpaceManager::format (size_t size)
 {
-	m_free->m_start = 2;
-	m_free->m_length = size;
-
+	m_free.push_back (Chunk (2, size));
 	save ();
 }
 

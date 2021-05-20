@@ -1,8 +1,6 @@
 #ifndef LIST
 #define LIST
 
-#include <stdio.h>
-
 namespace std
 {
 
@@ -20,19 +18,13 @@ private:
 public:
 	list () 
 	{
-		m_end = new node ();
-		m_rend = new node ();
-	
-		m_end->next = 0;
-		m_end->prev = m_rend;
+		init ();
+	}
 
-		m_rend->prev = 0;
-		m_rend->next = m_end;
-
-		m_tail = m_end;
-		m_head = m_rend;
-
-		m_size = 0;
+	list (const list& other)
+	{
+		init ();
+		assign (other);
 	}
 
 	~list ()
@@ -172,32 +164,39 @@ public:
 	const_iterator end () const { return const_iterator (m_end);}
 
 
-
-	void print ()
+	list<T>& operator= (const list& other)
 	{
-		printf ("-----\n\r");
+		if (&other != this)
 		{
-			node* cur = m_head;
-			while (cur != 0)
-			{
-				printf ("%d\n\r",cur->value);
-				cur = cur->next;
-			}
+			assign (other);
 		}
-		printf ("=====\n\r");
-		{
-			node* cur = m_tail;
-			while (cur != 0)
-			{
-				printf ("%d\n\r",cur->value);
-				cur = cur->prev;
-			}
-		}
-		printf ("_____\n\r");
+		
+		return *this;
 	}
-
+	
+	void assign (const list& other)
+	{
+		clear ();
+		for (const_iterator i = other.begin ();	i != other.end (); i++)
+			push_back (*i);
+	}
 private:
-	list (const list&);
+	void init ()
+	{
+		m_end = new node ();
+		m_rend = new node ();
+	
+		m_end->next = 0;
+		m_end->prev = m_rend;
+
+		m_rend->prev = 0;
+		m_rend->next = m_end;
+
+		m_tail = m_end;
+		m_head = m_rend;
+
+		m_size = 0;
+	}
 
 	node* m_rend;
 	node* m_end;

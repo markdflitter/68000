@@ -4,6 +4,8 @@ extern char* __end;
 
 void* malloc (size_t size)
 {
+	if (size & 0x1)	size = size + 1;
+
 	static char* top_of_heap = (char*) &__end;
 
 	char* alloc = top_of_heap;

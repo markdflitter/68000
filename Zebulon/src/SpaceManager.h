@@ -2,20 +2,22 @@
 #define SPACE_MANAGER_H
 
 #include <size_t.h>
+#include <list>
 
 class SpaceManager
 {
 public:
 	SpaceManager ();	
 	SpaceManager (size_t size);	
-	~SpaceManager ();	
 
 	struct Chunk {
+		Chunk () : m_start (0), m_length (0) {} 
+		Chunk (unsigned int start, size_t length) : m_start (start), m_length (length) {} 
 		unsigned int m_start;
 		size_t m_length;
 	};
 
-	Chunk* allocate (size_t size);
+	std::list <Chunk> allocate (size_t size);
 
 	void print () const;
 private:
@@ -24,7 +26,7 @@ private:
 	void load ();
 	void save () const;
 	
-	Chunk* m_free;
+	std::list<Chunk> m_free;
 };
 
 #endif
