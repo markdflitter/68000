@@ -2,12 +2,31 @@
 #include <stdio.h>
 #include <string.h>
 #include <IDE.h>
+#include <string>
 
 extern char* __begin;
 extern char* __end;
 extern char* start;
 
 namespace {
+
+void testString ()
+{
+	std::string s1 ("HelloWorld");
+	printf ("0x%x %s\n\r", s1.c_str (), s1.c_str ());
+
+	std::string s2 (s1);
+	printf ("0x%x %s\n\r", s2.c_str (), s2.c_str ());
+
+	s2 = s1;
+	printf ("0x%x %s\n\r", s2.c_str (), s2.c_str ());
+
+	if (s1 == s2)
+		printf ("same\n\r");
+	else
+		printf ("different\n\r");
+}
+
 
 void printHelp (void)
 {
@@ -177,7 +196,8 @@ void Shell::run () const
 		if (strcmp (buf, "read") == 0) read ();
 		if (strcmp (buf, "write") == 0) write ();
 		if (strcmp (buf, "save") == 0) save ();
-		if (strcmp (buf, "uptime") == 0) {printf ("uptime: %d\n\r", m_tick);}
+		if (strcmp (buf, "uptime") == 0) printf ("uptime: %d\n\r", m_tick);
+		if (strcmp (buf, "tststr") == 0) testString ();
 	}
 
 	return ;

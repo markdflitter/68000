@@ -9,7 +9,6 @@ class string
 public:
 	string (const char* s);
 	string (const string& other);
-
 	~string ();
 
 	string& operator= (const string& other);
