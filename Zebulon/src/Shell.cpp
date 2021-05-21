@@ -4,13 +4,54 @@
 #include <bsp.h>
 #include <string>
 #include <list>
+#include <vector>
+#include <stdlib.h>
 #include "FAT.h"
+#include "ctype.h"
 
 extern char* __begin;
 extern char* __end;
 extern char* start;
 
 namespace {
+
+std::vector<std::string> tokenize (const std::string& command)
+{
+	std::vector<std::string> result;
+
+	const char* str = command.c_str ();
+	char buf [255];
+	char* cur = buf;
+	while (*str != '\0')
+	{
+		if (*str != ' ')
+			*cur++ = *str;
+		else
+		{
+			*cur = '\0';
+			result.push_back (std::string (buf));
+			cur = buf;
+		}
+		str++;
+	}
+
+	if (cur != buf)
+	{
+		*cur = '\0';
+		result.push_back (std::string (buf));
+		cur = buf;
+	}
+
+	return result;
+}
+
+
+
+void format (FAT& fat, unsigned long size)
+{
+	printf ("formatting to %d\n\r", size);	
+	fat.format (size);
+}
 
 
 void statFile (const FAT::File& file)
@@ -20,13 +61,10 @@ void statFile (const FAT::File& file)
 		printf ("%d -> %d\n\r", (*i).m_start, (*i).m_start + (*i).m_length);
 }
 
-void createFile (FAT& fat, const std::string& filename)
+void createFile (FAT& fat, const std::string& filename, unsigned long size)
 {
-	FAT::File file1 = fat.createFile (filename, 100);
+	FAT::File file1 = fat.createFile (filename, size);
 	statFile (file1);
-
-	FAT::File file2 = fat.createFile (filename, 100);
-	statFile (file2);
 }
 
 void ls (const FAT& fat)
@@ -35,64 +73,6 @@ void ls (const FAT& fat)
 	for (std::list<FAT::File>::iterator i = files.begin (); i != files.end (); i++)
 		statFile (*i);
 }
-
-
-void testString ()
-{
-	std::string s1 ("HelloWorld");
-	printf ("0x%x %s\n\r", s1.c_str (), s1.c_str ());
-
-	std::string s2 (s1);
-	printf ("0x%x %s\n\r", s2.c_str (), s2.c_str ());
-
-	s2 = s1;
-	printf ("0x%x %s\n\r", s2.c_str (), s2.c_str ());
-
-	if (s1 == s2)
-		printf ("same\n\r");
-	else
-		printf ("different\n\r");
-}
-
-void printList (const std::list<int>& l)
-{
-	printf ("-----\n\r");
-	for (std::list<int>::const_iterator i = l.begin (); i != l.end (); i++)
-	{
-		printf ("%d\n\r",*i);
-	}
-	printf ("=====\n\r");
-}
-
-
-void testList ()
-{
-	std::list<int> l;
-	printList (l);
-	printf ("size is %d\n\r",l.size ());
-	
-	l.push_front (1);
-	printList (l);
-	printf ("size is %d\n\r",l.size ());
-	
-	l.push_back (2);
-	printList (l);
-	printf ("size is %d\n\r",l.size ());
-	
-	l.push_front (3);
-	printList (l);
-	printf ("size is %d\n\r",l.size ());
-	
-	l.pop_front ();
-	printList (l);
-	printf ("size is %d\n\r",l.size ());
-	
-	l.pop_back ();
-	printList (l);
-	printf ("size is %d\n\r",l.size ());
-}
-
-
 
 void printHelp (void)
 {
@@ -166,30 +146,47 @@ void ident ()
 		printf ("ERROR: ident failed\n\r");
 }
 
-const unsigned long lba = 512;
-
-void write ()
+void write (unsigned long block)
 {
+	printf ("writing to %d\n\r", block);
+
 	unsigned char data [512] = "The house stood on a slight rise just on the edge of the village. It stood on its own and looked out over a broad spread of West Country farmland. Not a remarkable house by any means—it was about thirty years old, squattish, squarish, made of brick, and had four windows set in the front of a size and proportion which more or less exactly failed to please the eye.  The only person for whom the house was in any way special was Arthur Dent, and that was only because it happened to be the one he lived in.";
 	
-	__ide_write (lba, data);
+	__ide_write (block, data);
 }
 
-
-void read ()
+void read (unsigned long block)
 {
+	printf ("reading from %d\n\r", block);
+
 	unsigned char data [512];
 	
-	__ide_read (lba, data);
+	__ide_read (block, data);
 
-	printf ("%s\n\r",data);
+	unsigned char* p = data;
+
+	for (int l = 0; l < 32; l++)
+	{
+		for (int c = 0; c < 16; c++) printf ("%x",*p++);
+		printf (" ");
+
+		p -= 16;
+		for (int c = 0; c < 16; c++)
+		{
+			if (isprint (*p))
+				printf ("%c",*p);
+			else
+				printf (".");
+			p++;
+		}
+		printf ("\n\r");
+	}
 }
 
 void save ()
 {
 	const int startBlock = 513;
 	int curBlock = startBlock;
-
 
 	static char* begin = (char*) &__begin;
 	static char* end = (char*) &__end;
@@ -236,14 +233,14 @@ Shell::Shell (unsigned int& tick) : m_tick (tick)
 
 void Shell::run () const
 {
-	const char* version = "Z-Shell V1.10";
+	const char* version = "Z-Shell V1.11";
 	printf ("%s\n\r",version);
 
-	FAT fat (1000000);
+	FAT fat;
 
 	printf ("type help for help\n\r");
 
-	char buf [21];
+	char buf [255];
 	int exit = 0;
 	while (!exit)
 	{
@@ -252,24 +249,39 @@ void Shell::run () const
 		*p = '\0';
 		printf ("\n\r");
 
-		if (strcmp (buf, "exit") == 0) exit = 1;
-		if (strcmp (buf, "version") == 0) printf ("%s\n\r",version);
-		if (strcmp (buf, "help") == 0) printHelp ();
-		if (strcmp (buf, "ident") == 0) ident ();
-		if (strcmp (buf, "read") == 0) read ();
-		if (strcmp (buf, "write") == 0) write ();
-		if (strcmp (buf, "save") == 0) save ();
-		if (strcmp (buf, "uptime") == 0) printf ("uptime: %d\n\r", m_tick);
-		if (strcmp (buf, "tststr") == 0) testString ();
-		if (strcmp (buf, "tstlst") == 0) testList ();
-		if (strcmp (buf, "create") == 0) 
-		{
-				char* p = gets (buf);
-				std::string filename (p);
-				createFile (fat, filename);
-		}
+		std::string command (buf);
+		std::vector<std::string> tokens = tokenize (command);
 
-		if (strcmp (buf, "ls") == 0) ls (fat);
+		if (tokens.size () > 0)
+		{
+			if (tokens [0] == "exit") exit = 1;
+			if (tokens [0] == "version") printf ("%s\n\r",version);
+			if (tokens [0] == "help") printHelp ();
+			if (tokens [0] == "ident") ident ();
+			if (tokens [0] == "read" && tokens.size () > 1) 
+			{
+				unsigned long block = atol (tokens [1].c_str ());
+				read (block);
+			}
+			if (tokens [0] == "write" && tokens.size () > 1)
+			{
+				unsigned long block = atol (tokens [1].c_str ());
+				write (block);
+			}
+			if (tokens [0] == "save") save ();
+			if (tokens [0] == "create" && tokens.size () > 2)
+			{
+				std::string filename (tokens [1].c_str ());
+				unsigned long size = atol (tokens [2].c_str ());
+				createFile (fat, filename, size);
+			}
+			if (tokens [0] == "ls") ls (fat);
+			if (tokens [0] == "format" && tokens.size () > 1)
+			{
+				unsigned long size = atol (tokens [1].c_str ());			
+				format (fat, size);
+			}			
+		}
 	}
 
 	return ;

@@ -9,11 +9,6 @@ SpaceManager::SpaceManager ()
 	load ();
 }
 
-SpaceManager::SpaceManager (size_t size)
-{
-	format (size);
-}
-
 std::list<SpaceManager::Chunk> SpaceManager::allocate (size_t size)
 {
 	std::list<Chunk> allocation;
@@ -45,11 +40,12 @@ void SpaceManager::print () const
 
 void SpaceManager::format (size_t size)
 {
+	m_free.clear ();
 	m_free.push_back (Chunk (2, size));
 	save ();
 }
 
-const char* ident = "SpaceManager";
+const char* spaceManagerIdent = "SpaceManager";
 const unsigned int version = 1;
 	
 void SpaceManager::save () const
@@ -57,13 +53,13 @@ void SpaceManager::save () const
 	unsigned char block [512];
 
 	unsigned int i = 0;
-	memcpy (&(block[i]), ident, strlen (ident) + 1); i += strlen (ident) + 1;
+	memcpy (&(block[i]), spaceManagerIdent, strlen (spaceManagerIdent) + 1); i += strlen (spaceManagerIdent) + 1;
 	memcpy (&(block[i]), &version, version); i += sizeof (version);
 	size_t chunks = m_free.size ();
 	memcpy (&(block[i]), &chunks, sizeof (chunks)); i += sizeof (chunks);
 	for (std::list<Chunk>::const_iterator j = m_free.begin (); j != m_free.end (); j++)
 	{
-		memcpy (&(block[i]), &(*j), 4); i += sizeof (Chunk);
+		memcpy (&(block[i]), &(*j), sizeof (Chunk)); i += sizeof (Chunk);
 	}
 			
 	__ide_write (0, block);	
@@ -75,13 +71,13 @@ void SpaceManager::load ()
 	__ide_read (0, block);	
 	
 	unsigned int i = 0;
-	char strbuffer [strlen (ident) + 1];
-	memcpy (&strbuffer, &(block[i]), strlen (ident) + 1); i += strlen (ident) + 1;
-	strbuffer [strlen (ident)] = '\0';
+	char strbuffer [strlen (spaceManagerIdent) + 1];
+	memcpy (&strbuffer, &(block[i]), strlen (spaceManagerIdent) + 1); i += strlen (spaceManagerIdent) + 1;
+	strbuffer [strlen (spaceManagerIdent)] = '\0';
 	std::string readIdent (strbuffer);
-	if (std::string (ident) != std::string (readIdent))
+	if (std::string (spaceManagerIdent) != std::string (readIdent))
 	{
-		printf ("[ERROR] SpaceManager::ident mismatch.  Expected %s, got %s", ident, readIdent);
+		printf ("[ERROR] SpaceManager::ident mismatch.  Expected %s, got %s\n\r", spaceManagerIdent, readIdent);
 		return ;
 	}
 
@@ -89,7 +85,7 @@ void SpaceManager::load ()
 	memcpy (&readVersion, &(block[i]), sizeof (version)); i += sizeof (version);
 	if (readVersion != 1)
 	{
-		printf ("[ERROR] SpaceManager::version mismatch.  Expected %d, got %d", 1, readVersion);
+		printf ("[ERROR] SpaceManager::version mismatch.  Expected %d, got %d\n\r", 1, readVersion);
 		return ;
 	}
 

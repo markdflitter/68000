@@ -1,0 +1,89 @@
+#ifndef VECTOR
+#define VECTOR
+
+#include <size_t.h>
+
+namespace std
+{
+
+template <class T>
+class vector
+{
+public:
+	vector () : m_size (0), m_Ts (0)
+	{
+		reserve (2);
+	}
+	
+	void push_back (const T& t)
+	{
+		if (m_size == m_capacity)
+			reserve (2 * m_capacity);
+		
+		m_Ts [m_size++] = t;
+	}
+
+	T pop_back ()
+	{
+		T result = m_Ts [m_size - 1];
+		
+		m_Ts [m_size - 1] = T ();
+		m_size--;	
+
+		return result;
+	}
+
+	void clear ()
+	{
+		delete m_Ts;
+		m_Ts = 0;
+		reserve (m_capacity);
+	}
+
+	const T& front () const {return m_Ts [0];}
+	T& front () {return m_Ts [0];}
+
+	const T& back () const {return m_Ts [m_size - 1];}
+	T& back () {return m_Ts [m_size - 1];}
+
+	const T& operator[] (size_t pos) const
+	{
+		return m_Ts [pos];
+	}
+
+	T& operator[] (size_t pos)
+	{
+		return m_Ts [pos];
+	}
+
+
+
+	void reserve (size_t capacity)
+	{
+		T* new_Ts = new T [capacity];
+		
+		if (m_Ts)
+		{
+			for (int i = 0; i < m_size; i++)
+			{
+				new_Ts [i] = m_Ts [i];
+			}
+			delete[] m_Ts;
+		}
+
+		m_Ts = new_Ts;
+		m_capacity = capacity;
+	}
+
+	bool empty () const {return m_size == 0;}
+	size_t size () const {return m_size;}
+	size_t capacity () const {return m_capacity;}
+private:
+	size_t m_size;
+	size_t m_capacity;
+	T* m_Ts;
+};
+
+}
+
+#endif

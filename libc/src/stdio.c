@@ -1,4 +1,5 @@
 #include "../include/stdio.h"
+#include "../include/string.h"
 #include <bsp.h>
 
 int getchar(void)
@@ -42,8 +43,17 @@ int puts (const char* s)
 
 void bin2hex (int num, char* buf)
 {
-	int w = num;
 	const char* LUT = "0123456789ABCDEF";
+	if (num < 16)
+	{
+		buf [0] = LUT [(num & 0xF0) >> 4];
+		buf [1] = LUT [num & 0xF];
+		buf [2] = '\0';
+
+		return ;
+	}
+
+	int w = num;
 	for (int i = 0; i < 8; i++)
 	{
 		buf [7 - i] = LUT [w & 0xF];
@@ -51,6 +61,12 @@ void bin2hex (int num, char* buf)
 	}
 
 	buf [8] = '\0';
+
+	char* p = buf;
+	while (*p++ == '0')
+		;
+
+	if (p != buf) memcpy (buf, p - 1, 9 - (p - 1 - buf));
 }
 
 void bin2dec (unsigned int num, char* buf)

@@ -10,7 +10,6 @@ class FAT
 {
 public:
 	FAT ();
-	FAT (size_t size);
 
 	struct File
 	{
@@ -20,9 +19,11 @@ public:
 
 	File createFile (const std::string& name, size_t size);
 	std::list<File> ls () const;
+
+	void format (size_t size);
 private:
 	void load ();
-	void save ();
+	void save () const;
 
  	SpaceManager m_spaceManager;
 	

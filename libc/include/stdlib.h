@@ -8,4 +8,7 @@ extern "C" void free (void* ptr);
 
 extern "C" void abort (void);
 
+extern "C" long atol (const char* str);
+extern "C" int atoi (const char* str);
+
 #endif

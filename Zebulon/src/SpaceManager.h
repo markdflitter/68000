@@ -8,7 +8,6 @@ class SpaceManager
 {
 public:
 	SpaceManager ();	
-	SpaceManager (size_t size);	
 
 	struct Chunk {
 		Chunk () : m_start (0), m_length (0) {} 
@@ -20,9 +19,9 @@ public:
 	std::list <Chunk> allocate (size_t size);
 
 	void print () const;
-private:
-	void format (size_t size);
 
+	void format (size_t size);
+private:
 	void load ();
 	void save () const;
 	
