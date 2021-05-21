@@ -3,6 +3,7 @@
 #include <string.h>
 #include <bsp.h>
 #include <stdio.h>
+#include "Serialise.h"
 
 FAT::FAT ()
 {
@@ -15,7 +16,7 @@ FAT::File FAT::createFile (const std::string& name, size_t size)
 	result.m_name = name;
 	result.m_chunks = m_spaceManager.allocate (size);
 	
-	m_files.push_front (result);
+	m_files.push_back (result);
 		
 	save ();
 
@@ -34,56 +35,65 @@ void FAT::format (size_t size)
 	save ();
 }
 
-const char* FatIdent = "FAT";
-const unsigned int version = 1;
+const char* FatIdent = "__Zebulon_FAT__";
+const unsigned int version = 5;
+
+unsigned char* FAT::serialise (unsigned char* p) const
+{
+	p = Serialise::serialise (FatIdent, p);
+	p = Serialise::serialise (version, p);
+
+	p = m_spaceManager.serialise (p);
+
+	p = Serialise::serialise (m_files, p);	
+
+	return p;
+}
+
+unsigned char* FAT::deserialise (unsigned char* p)
+{
+	std::string readIdent;
+	p = Serialise::deserialise (readIdent, p, strlen (FatIdent));
+	if (std::string (FatIdent) != readIdent)
+	{
+		printf ("[ERROR] FAT - ident mismatch.  Expected %s, got %s\n\r", FatIdent, readIdent.c_str ());
+		return p;
+	}
+
+	unsigned int readVersion = 0;
+	p = Serialise::deserialise (readVersion, p);
+	if (readVersion != version)
+	{
+		printf ("[ERROR] FAT - version mismatch.  Expected %d, got %d\n\r", version, readVersion);
+		return p;
+	}
+
+	p = m_spaceManager.deserialise (p);
+	
+	p = Serialise::deserialise (m_files, p);
+
+	printf ("found %d files\n\r", m_files.size ());
+	
+	return p;
+}
+
 	
 void FAT::save () const
 {
 	unsigned char block [512];
+	unsigned char* p = block;
+	
+	p = serialise (p);
 
-	unsigned int i = 0;
-	memcpy (&(block[i]), FatIdent, strlen (FatIdent) + 1); i += strlen (FatIdent) + 1;
-	memcpy (&(block[i]), &version, version); i += sizeof (version);
-	size_t files = m_files.size ();
-	memcpy (&(block[i]), &files, sizeof (files)); i += sizeof (files);
-	for (std::list<File>::const_iterator j = m_files.begin (); j != m_files.end (); j++)
-	{
-		memcpy (&(block[i]), &(*j), sizeof (File)); i += sizeof (File);
-	}
-			
-	__ide_write (1, block);	
+	__ide_write (0, block);	
 }
 
 void FAT::load ()
 {
 	unsigned char block [512];
-	__ide_read (1, block);	
+	unsigned char* p = block;
 	
-	unsigned int i = 0;
-	char strbuffer [strlen (FatIdent) + 1];
-	memcpy (&strbuffer, &(block[i]), strlen (FatIdent) + 1); i += strlen (FatIdent) + 1;
-	strbuffer [strlen (FatIdent)] = '\0';
-	std::string readIdent (strbuffer);
-	if (std::string (FatIdent) != std::string (readIdent))
-	{
-		printf ("[ERROR] FAT::ident mismatch.  Expected %s, got %s\n\r", FatIdent, readIdent);
-		return ;
-	}
+	__ide_read (0, block);	
 
-	unsigned int readVersion = 0;
-	memcpy (&readVersion, &(block[i]), sizeof (version)); i += sizeof (version);
-	if (readVersion != 1)
-	{
-		printf ("[ERROR] FAT::version mismatch.  Expected %d, got %d\n\r", 1, readVersion);
-		return ;
-	}
-
-	size_t numFiles = 0;
-	memcpy (&numFiles, &(block[i]), sizeof (numFiles)); i += sizeof (numFiles);
-	for (unsigned int file = 0; i < numFiles; i++)
-	{
-		File newFile;
-		memcpy (&newFile, &(block[i]), sizeof (newFile)); i += sizeof (newFile);
-		m_files.push_back (newFile);
-	}
+	p = deserialise (p);
 }

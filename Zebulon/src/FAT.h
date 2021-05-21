@@ -22,6 +22,9 @@ public:
 
 	void format (size_t size);
 private:
+	unsigned char* serialise (unsigned char* p) const;
+	unsigned char* deserialise (unsigned char* p);
+
 	void load ();
 	void save () const;
 

@@ -21,10 +21,10 @@ public:
 	void print () const;
 
 	void format (size_t size);
+
+	unsigned char* serialise (unsigned char* p) const;
+	unsigned char* deserialise (unsigned char* p);
 private:
-	void load ();
-	void save () const;
-	
 	std::list<Chunk> m_free;
 };
 

@@ -63,8 +63,9 @@ void statFile (const FAT::File& file)
 
 void createFile (FAT& fat, const std::string& filename, unsigned long size)
 {
-	FAT::File file1 = fat.createFile (filename, size);
-	statFile (file1);
+	printf ("creating file '%s' of size %d\n\r", filename.c_str (), size);
+	FAT::File file = fat.createFile (filename, size);
+	statFile (file);
 }
 
 void ls (const FAT& fat)
@@ -233,11 +234,11 @@ Shell::Shell (unsigned int& tick) : m_tick (tick)
 
 void Shell::run () const
 {
-	const char* version = "Z-Shell V1.11";
-	printf ("%s\n\r",version);
-
 	FAT fat;
 
+	const char* version = "Z-Shell V1.11";
+	printf ("\n\r");
+	printf ("%s\n\r",version);
 	printf ("type help for help\n\r");
 
 	char buf [255];

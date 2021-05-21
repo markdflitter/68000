@@ -9,7 +9,7 @@ void* __memset (void* ptr, int value, size_t num)
 	while (num--)
 		*p++ = (unsigned char) value;
 
-	return ptr;
+	return p;
 }
 
 void* __memcpy (void* destination, const void* source, size_t num)
@@ -18,7 +18,7 @@ void* __memcpy (void* destination, const void* source, size_t num)
 	const unsigned char* s = (unsigned char*) source;
 
 	while (num--)
-		*d++  = *s++;
+		*d++ = *s++;
 
 	return destination;
 }
