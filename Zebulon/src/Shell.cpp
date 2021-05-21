@@ -15,16 +15,17 @@ namespace {
 
 void statFile (const FAT::File& file)
 {
+	printf ("%s : ",file.m_name.c_str ());
 	for (std::list<SpaceManager::Chunk>::const_iterator i = file.m_chunks.begin (); i != file.m_chunks.end (); i++)
 		printf ("%d -> %d\n\r", (*i).m_start, (*i).m_start + (*i).m_length);
 }
 
-void createFile (FAT& fat)
+void createFile (FAT& fat, const std::string& filename)
 {
-	FAT::File file1 = fat.createFile ("Mark", 100);
+	FAT::File file1 = fat.createFile (filename, 100);
 	statFile (file1);
 
-	FAT::File file2 = fat.createFile ("Mark", 100);
+	FAT::File file2 = fat.createFile (filename, 100);
 	statFile (file2);
 }
 
@@ -238,7 +239,7 @@ void Shell::run () const
 	const char* version = "Z-Shell V1.10";
 	printf ("%s\n\r",version);
 
-	FAT f (1000000);
+	FAT fat (1000000);
 
 	printf ("type help for help\n\r");
 
@@ -261,8 +262,14 @@ void Shell::run () const
 		if (strcmp (buf, "uptime") == 0) printf ("uptime: %d\n\r", m_tick);
 		if (strcmp (buf, "tststr") == 0) testString ();
 		if (strcmp (buf, "tstlst") == 0) testList ();
-		if (strcmp (buf, "create") == 0) createFile (f);
-		if (strcmp (buf, "ls") == 0) ls (f);
+		if (strcmp (buf, "create") == 0) 
+		{
+				char* p = gets (buf);
+				std::string filename (p);
+				createFile (fat, filename);
+		}
+
+		if (strcmp (buf, "ls") == 0) ls (fat);
 	}
 
 	return ;

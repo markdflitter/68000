@@ -11,7 +11,7 @@ FAT::FAT (size_t size) : m_spaceManager (size)
 FAT::File FAT::createFile (const std::string& name, size_t size)
 {
 	File result;
-	//result.m_name = name;
+	result.m_name = name;
 	result.m_chunks = m_spaceManager.allocate (size);
 	
 	m_files.push_front (result);

@@ -5,6 +5,11 @@
 namespace std
 {
 
+string::string () : m_s (new char [1])
+{
+	m_s [0] = '\0';
+}
+
 string::string (const char* s) : m_s (0)
 {
 	assign (s);
@@ -31,14 +36,24 @@ string& string::operator= (const string& other)
 	return *this;
 }
 
-bool string::operator== (const string& other)
+bool string::operator== (const string& other) const
 {
 	return strcmp (m_s, other.c_str ()) == 0;
+}
+
+bool string::operator!= (const string& other) const
+{
+	return !(*this == other);
 }
 
 const char* string::c_str () const
 {
 	return m_s;
+}
+
+size_t string::length () const
+{
+	return strlen (m_s);
 }
 
 void string::assign (const char* s)

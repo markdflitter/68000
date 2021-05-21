@@ -1,21 +1,27 @@
 #ifndef STRING
 #define STRING
 
+#include <size_t.h>
+
 namespace std
 {
 
 class string
 {
 public:
+	string ();
 	string (const char* s);
 	string (const string& other);
 	~string ();
 
 	string& operator= (const string& other);
 	
-	bool operator== (const string& other);
+	bool operator== (const string& other) const;
+	bool operator!= (const string& other) const;
 
 	const char* c_str () const;
+
+	size_t length () const;
 private:
 	void assign (const char* s);
 

@@ -14,7 +14,7 @@ public:
 
 	struct File
 	{
-		//std::string m_name;
+		std::string m_name;
 		std::list <SpaceManager::Chunk> m_chunks;
 	};
 
