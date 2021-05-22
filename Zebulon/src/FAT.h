@@ -19,13 +19,27 @@ public:
 		OpenFile (const File& file);
 		~OpenFile ();
 
+		void read (unsigned char* data, size_t numBytes);	
 		void write (unsigned char* data, size_t numBytes);	
-		bool flush ();
+
+		void flush ();
 	private:
+		static void writeBlock (unsigned long block, unsigned char* buffer);
+		static void readBlock (unsigned long block, unsigned char* buffer);
+		bool block (size_t filePointer, unsigned long& block);
+		
+		void setFilePointer (size_t filePointer);
+		unsigned char* copyFromBuffer (unsigned char* data, size_t bytesToCopy);
+		unsigned char* copyToBuffer (unsigned char* data, size_t bytesToCopy);
+
+
 		const File& m_file;
 		unsigned char m_buffer [512];
-		size_t m_filePointer;
 		unsigned char* m_bufferPointer;
+	
+		size_t m_filePointer;
+		unsigned long m_curBlock;
+		bool m_bufferModified;
 	};
 
 	class File

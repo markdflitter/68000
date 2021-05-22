@@ -21,11 +21,12 @@ void printHelp (void)
 	printf ("help\t\t\t - print this help\n\r");
 	printf ("exit\t\t\t - exit to monitor\n\r");
 	printf ("ident\t\t\t - ident the disk\n\r");
-	printf ("read <block>\t\t - read data from disk\n\r");
-	printf ("write <block>\t\t - write data to disk\n\r");
+	printf ("readB <block>\t\t - read block from disk\n\r");
+	printf ("writeB <block>\t\t - write block to disk\n\r");
 	printf ("save <block>\t\t - save code to disk\n\r");
 	printf ("format <size>\t\t - format the filing system\n\r");
 	printf ("create <name> <size>\t - create a file\n\r");
+	printf ("read <name>\t\t - read file from disk\n\r");
 	printf ("ls\t\t\t - list files\n\r");
 }
 
@@ -90,23 +91,32 @@ void ident ()
 		printf ("ERROR: ident failed\n\r");
 }
 
-void read (unsigned long block)
+size_t min (size_t l, size_t r)
 {
-	printf ("reading from %d\n\r", block);
+	return l < r ? l : r;
+}
 
-	unsigned char data [512];
-	
-	__ide_read (block, data);
 
-	unsigned char* p = data;
+void printBuffer (unsigned char* buffer, size_t bufferLen)
+{
+	unsigned char* p = buffer;
 
-	for (int l = 0; l < 32; l++)
+	while (bufferLen > 0)
 	{
-		for (int c = 0; c < 16; c++) printf ("%x",*p++);
+		size_t rowLen = min (bufferLen, 16);
+		for (int c = 0; c < rowLen; c++) printf ("%x",*p++);
+		
+		size_t pad = 16 -  rowLen;
+		while (pad)
+		{
+			printf ("  ");
+			pad--;
+		}
+
 		printf (" ");
 
-		p -= 16;
-		for (int c = 0; c < 16; c++)
+		p -= rowLen;
+		for (int c = 0; c < rowLen; c++)
 		{
 			if (isprint (*p))
 				printf ("%c",*p);
@@ -114,15 +124,27 @@ void read (unsigned long block)
 				printf (".");
 			p++;
 		}
+		bufferLen -= rowLen;
 		printf ("\n\r");
 	}
 }
 
-void write (unsigned long block)
+
+void readB (unsigned long block)
+{
+	printf ("reading from %d\n\r", block);
+
+	unsigned char data [512];
+	
+	__ide_read (block, data);
+	printBuffer (data, 512);
+}
+
+void writeB (unsigned long block)
 {
 	printf ("writing to %d\n\r", block);
 
-	unsigned char data [512] = "The house stood on a slight rise just on the edge of the village. It stood on its own and looked out over a broad spread of West Country farmland. Not a remarkable house by any means—it was about thirty years old, squattish, squarish, made of brick, and had four windows set in the front of a size and proportion which more or less exactly failed to please the eye.  The only person for whom the house was in any way special was Arthur Dent, and that was only because it happened to be the one he lived in.";
+	unsigned char data [] = "The house stood on a slight rise just on the edge of the village. It stood on its own and looked out over a broad spread of West Country farmland. Not a remarkable house by any means—it was about thirty years old, squattish, squarish, made of brick, and had four windows set in the front of a size and proportion which more or less exactly failed to please the eye.  The only person for whom the house was in any way special was Arthur Dent, and that was only because it happened to be the one he lived in.";
 	
 	__ide_write (block, data);
 }
@@ -179,7 +201,7 @@ void stat (const FAT::File& file)
 {
 	printf ("%s : ",file.name ().c_str ());
 	for (std::list<SpaceManager::Chunk>::const_iterator i = file.chunks ().begin (); i != file.chunks() .end (); i++)
-		printf ("%d -> %d (length %d) \n\r", (*i).m_start, (*i).m_start + (*i).m_length, (*i).m_length);
+		printf ("%d -> %d (length %d) \n\r", (*i).m_start, (*i).m_start + (*i).m_length - 1, (*i).m_length);
 }
 
 void create (FAT& fat, const std::string& filename, unsigned long size)
@@ -193,7 +215,7 @@ void create (FAT& fat, const std::string& filename, unsigned long size)
 
 	unsigned int bytesLeftToWrite = size * 512;
 
-	unsigned char data [600] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;       ";
+	unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
 
 	unsigned char* p = data;
 
@@ -213,6 +235,41 @@ void create (FAT& fat, const std::string& filename, unsigned long size)
 			memcpy (buffer, p, bytesLeftToWrite);
 			f.write (buffer, bytesLeftToWrite);
 			bytesLeftToWrite -= bytesLeftToWrite;
+		}
+	}
+}
+
+void read (const FAT& fat, const std::string& filename)
+{
+	std::list<FAT::File> files = fat.ls ();
+	
+	for (std::list<FAT::File>::iterator i = files.begin (); i != files.end (); i++)
+	{
+		if ((*i).name () == filename)
+		{
+			unsigned int bytesLeftToRead = 0;
+			for (std::list<SpaceManager::Chunk>::iterator j = (*i).chunks ().begin (); j != (*i).chunks ().end (); j++)
+				bytesLeftToRead = (*j).m_length * 512;
+
+			FAT::OpenFile f = (*i).open ();
+	
+			while (bytesLeftToRead > 0)
+			{
+				unsigned char buffer [77];
+				if (bytesLeftToRead >= 77)
+				{
+					f.read (buffer, 77);
+					printBuffer (buffer, 77);
+					bytesLeftToRead -= 77;
+				}
+				else
+				{
+					f.read (buffer, bytesLeftToRead);
+					printBuffer (buffer, bytesLeftToRead);
+					bytesLeftToRead -= bytesLeftToRead;
+				}	
+			}
+			break;
 		}
 	}
 }
@@ -288,15 +345,15 @@ void Shell::run () const
 			if (tokens [0] == "help") printHelp ();
 			if (tokens [0] == "exit") exit = 1;
 			if (tokens [0] == "ident") ident ();
-			if (tokens [0] == "read" && tokens.size () > 1) 
+			if (tokens [0] == "readB" && tokens.size () > 1) 
 			{
 				unsigned long block = atol (tokens [1].c_str ());
-				read (block);
+				readB (block);
 			}
-			if (tokens [0] == "write" && tokens.size () > 1)
+			if (tokens [0] == "writeB" && tokens.size () > 1)
 			{
 				unsigned long block = atol (tokens [1].c_str ());
-				write (block);
+				writeB (block);
 			}
 			if (tokens [0] == "save" && tokens.size () > 1)
 			{
@@ -314,7 +371,12 @@ void Shell::run () const
 				unsigned long size = atol (tokens [2].c_str ());
 				create (fat, filename, size);
 			}
-			if (tokens [0] == "ls") ls (fat);
+			if (tokens [0] == "read" && tokens.size () > 1)
+			{
+				std::string filename (tokens [1].c_str ());
+				read (fat, filename);
+			}
+				if (tokens [0] == "ls") ls (fat);
 		}
 	}
 

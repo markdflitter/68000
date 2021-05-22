@@ -7,78 +7,171 @@
 
 
 FAT::OpenFile::OpenFile (const File& file)
-	: m_file (file), m_filePointer (0), m_bufferPointer (m_buffer)
+	: m_file (file), m_bufferPointer (0), m_bufferModified (false)
 {
+	setFilePointer (0);
 }
 
 FAT::OpenFile::~OpenFile ()
 {
+	flush ();
 }
 
-void FAT::OpenFile::write (unsigned char* data, size_t numBytes)	
+void FAT::OpenFile::read (unsigned char* data, size_t numBytes)	
 {
-	printf ("writing %d bytes to %d\n\r", numBytes, m_filePointer);
+	//printf ("read %d bytes from %d\n\r", numBytes, m_filePointer);
 
 	unsigned char* p = data;
 	while (numBytes > 0)
 	{
+		size_t bytesToCopy = numBytes;
+	
 		size_t bytesLeftInCurrentBuffer = 512 - (m_bufferPointer - m_buffer);
-		size_t bytesToCopy = bytesLeftInCurrentBuffer;
-		if (numBytes < bytesToCopy) bytesToCopy = numBytes;
-	
-		printf ("copying %d bytes to buffer\n\r", bytesToCopy);
+		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
 
-		memcpy (m_bufferPointer, p, bytesToCopy);
-		p += bytesToCopy;
-		m_bufferPointer += bytesToCopy;
+		p = copyFromBuffer (p, bytesToCopy);
 		numBytes -= bytesToCopy;
-		m_filePointer += bytesToCopy;
-
-		if (512 - (m_bufferPointer - m_buffer) == 0)
-		{
-			printf ("buffer full, flushing\n\r");
-			if (!flush ()) return;
-		}
 	}
+}
 	
+void FAT::OpenFile::write (unsigned char* data, size_t numBytes)	
+{
+	//printf ("writing %d bytes to %d\n\r", numBytes, m_filePointer);
+
+	unsigned char* p = data;
+	while (numBytes > 0)
+	{
+		size_t bytesToCopy = numBytes;
+	
+		size_t bytesLeftInCurrentBuffer = 512 - (m_bufferPointer - m_buffer);
+		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
+
+		p = copyToBuffer (p, bytesToCopy);
+		numBytes -= bytesToCopy;
+	}
 }
 
-bool FAT::OpenFile::flush ()
+unsigned char* FAT::OpenFile::copyFromBuffer (unsigned char* data, size_t bytesToCopy)
 {
-	size_t blockNum = (m_filePointer / 512);
-	printf ("blockNum %d\n\r", blockNum);
+	//printf ("copying %d bytes from buffer\n\r", bytesToCopy);
+
+	memcpy (data, m_bufferPointer, bytesToCopy);
+	data += bytesToCopy;
+	m_bufferPointer += bytesToCopy;
+	setFilePointer (m_filePointer + bytesToCopy);
+	
+	return data;
+}
+
+
+unsigned char* FAT::OpenFile::copyToBuffer (unsigned char* data, size_t bytesToCopy)
+{
+	//printf ("copying %d bytes to buffer\n\r", bytesToCopy);
+
+	m_bufferModified = true;
+
+	memcpy (m_bufferPointer, data, bytesToCopy);
+	data += bytesToCopy;
+	m_bufferPointer += bytesToCopy;
+	setFilePointer (m_filePointer + bytesToCopy);
+	
+	return data;
+}
+
+
+void FAT::OpenFile::flush ()
+{
+	//printf ("flush\n\r");
+	if (m_bufferModified)
+	{
+		//printf ("buffer modified\n\r");
+		writeBlock (m_curBlock, m_buffer);
+		m_bufferModified = false;
+	}
+}
+
+void FAT::OpenFile::writeBlock (unsigned long block, unsigned char* buffer)
+{
+	//printf ("writing block %d\n\r", block);
+	__ide_write (block, buffer);
+}
+
+void FAT::OpenFile::readBlock (unsigned long block, unsigned char* buffer)
+{
+	//printf ("reading block %d\n\r", block);
+	__ide_read (block, buffer);
+}
+
+bool FAT::OpenFile::block (size_t filePointer, unsigned long& block)
+{
+	//printf ("find block for file pointer %d\n\r", filePointer);
+	size_t blockIndex = (filePointer / 512) + 1;
+	//printf ("block Index is %d\n\r", blockIndex);
 
 	std::list<SpaceManager::Chunk>::const_iterator i = m_file.chunks ().begin ();
-	unsigned long block; 
 
-	while ((blockNum > 0) && (i != m_file.chunks ().end ()))
+	while (i != m_file.chunks ().end ())
 	{
-		if ((*i).m_length >= blockNum)
+		//printf ("check block from %d to %d\n\r", (*i).m_start, (*i).m_start + (*i).m_length - 1);
+
+		if ((*i).m_length >= blockIndex)
 		{
-			block = (*i).m_start + blockNum;
-			blockNum = 0;
+			//printf ("match!\n\r");
+			block = (*i).m_start + blockIndex -1;
+			break;
 		}
 		else
 		{
-			blockNum -= (*i).m_length;
+			//printf ("next\n\r");
+			blockIndex -= (*i).m_length;
+			//printf ("blockIndex is now %d\n\r", blockIndex);
 			i++;
 		}
 	}
 	
 	if (i != m_file.chunks ().end ())
 	{
-		printf ("found block %d in chunk %d -> %d\n\r", block, (*i).m_start, (*i).m_start + (*i).m_length);
-		//__ide_write (m_buffer, (*i).m_start		
-
-		m_bufferPointer = m_buffer;
+		//printf ("found block %d in chunk %d -> %d\n\r", block, (*i).m_start, (*i).m_start + (*i).m_length - 1);
 		return true;
 	}
 	else
 	{
-		printf ("[ERROR] FAT - not enough space\n\r");
+		//printf ("[ERROR] FAT - not enough space\n\r");
 		return false;
 	}
 }
+
+
+void FAT::OpenFile::setFilePointer (size_t filePointer)
+{
+	//printf ("setting file pointer to %d, was %d\n\r", filePointer, m_filePointer);
+
+	unsigned long newBlock;
+	bool validBlock = block (filePointer, newBlock);
+
+	//printf ("new block is %d, was %d\n\r", newBlock, m_curBlock);
+
+	if (m_bufferPointer == 0 || (newBlock != m_curBlock))
+	{
+		if (m_bufferPointer == 0)
+			;
+			//printf ("first read\n\r");
+		else
+		{
+			//printf ("block changed\n\r");
+			flush ();		
+		}
+
+		if (validBlock) readBlock (newBlock, m_buffer);	
+		
+		m_bufferPointer = m_buffer + (filePointer % 512);
+		//printf ("set buffer pointer to %d\n\r", m_bufferPointer - m_buffer);
+	}
+
+	m_curBlock = newBlock;
+	m_filePointer = filePointer;
+}
+
 
 
 FAT::File::File ()
@@ -148,7 +241,7 @@ void FAT::format (size_t size)
 }
 
 const char* FatIdent = "__Zebulon_FAT__";
-const unsigned int version = 5;
+const unsigned int version = 6;
 
 unsigned char* FAT::serialise (unsigned char* p) const
 {
