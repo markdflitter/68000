@@ -26,6 +26,7 @@ void printHelp (void)
 	printf ("save <block>\t\t - save code to disk\n\r");
 	printf ("format <size>\t\t - format the filing system\n\r");
 	printf ("create <name> <size>\t - create a file\n\r");
+	printf ("write <name>\t\t - fill file with stuff\n\r");
 	printf ("read <name>\t\t - read file from disk\n\r");
 	printf ("ls\t\t\t - list files\n\r");
 }
@@ -149,9 +150,9 @@ void writeB (unsigned long block)
 	__ide_write (block, data);
 }
 
-void save (unsigned long block)
+void save (unsigned long startBlock)
 {
-	int curBlock = block;
+	int curBlock = startBlock;
 
 	static char* begin = (char*) &__begin;
 	static char* end = (char*) &__end;
@@ -166,8 +167,6 @@ void save (unsigned long block)
 
 	for (int b = 0; b < length;)
 	{
-		printf ("b %d\n\r", b);
-
 		unsigned char block [512];
 		if (b == 0)
 		{
@@ -183,7 +182,7 @@ void save (unsigned long block)
 			b += 512;
 		}
 
-		printf ("writing block %d\n\r", curBlock);
+		printf ("writing block %d of %d\n\r", curBlock - startBlock + 1, numBlocks);
 		__ide_write (curBlock, block);
 		curBlock++;
 	}
@@ -209,32 +208,44 @@ void create (FAT& fat, const std::string& filename, unsigned long size)
 	printf ("creating file '%s' of size %d\n\r", filename.c_str (), size);
 	FAT::File file = fat.createFile (filename, size);
 	stat (file);
+}
 
-	printf ("filling file\n\r");
-	FAT::OpenFile f = file.open ();
-
-	unsigned int bytesLeftToWrite = size * 512;
-
-	unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
-
-	unsigned char* p = data;
-
-	while (bytesLeftToWrite > 0)
+void write (FAT& fat, const std::string& filename)
+{
+	std::list<FAT::File> files = fat.ls ();
+	
+	for (std::list<FAT::File>::iterator i = files.begin (); i != files.end (); i++)
 	{
-		unsigned char buffer [100];
-		if (bytesLeftToWrite >= 100)
+		if ((*i).name () == filename)
 		{
-			memcpy (buffer, p, 100);
-			f.write (buffer, 100);
-			bytesLeftToWrite -= 100;
-			p += 100;
-			if (p - data >= 600) p = data;
-		}
-		else
-		{
-			memcpy (buffer, p, bytesLeftToWrite);
-			f.write (buffer, bytesLeftToWrite);
-			bytesLeftToWrite -= bytesLeftToWrite;
+			FAT::OpenFile f = (*i).open ();
+
+			unsigned int bytesLeftToWrite = 0;
+			for (std::list<SpaceManager::Chunk>::iterator j = (*i).chunks ().begin (); j != (*i).chunks ().end (); j++)
+				bytesLeftToWrite = (*j).m_length * 512;
+
+			unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
+
+			unsigned char* p = data;
+
+			while (bytesLeftToWrite > 0)
+			{
+				unsigned char buffer [100];
+				if (bytesLeftToWrite >= 100)
+				{
+					memcpy (buffer, p, 100);
+					f.write (buffer, 100);
+					bytesLeftToWrite -= 100;
+					p += 100;
+					if (p - data >= 600) p = data;
+				}
+				else
+				{
+					memcpy (buffer, p, bytesLeftToWrite);
+					f.write (buffer, bytesLeftToWrite);
+					bytesLeftToWrite -= bytesLeftToWrite;
+				}
+			}
 		}
 	}
 }
@@ -252,15 +263,15 @@ void read (const FAT& fat, const std::string& filename)
 				bytesLeftToRead = (*j).m_length * 512;
 
 			FAT::OpenFile f = (*i).open ();
-	
+
 			while (bytesLeftToRead > 0)
 			{
-				unsigned char buffer [77];
-				if (bytesLeftToRead >= 77)
+				unsigned char buffer [480];
+				if (bytesLeftToRead >= 480)
 				{
-					f.read (buffer, 77);
-					printBuffer (buffer, 77);
-					bytesLeftToRead -= 77;
+					f.read (buffer, 480);
+					printBuffer (buffer, 480);
+					bytesLeftToRead -= 480;
 				}
 				else
 				{
@@ -322,7 +333,7 @@ void Shell::run () const
 {
 	FAT fat;
 
-	const char* version = "Z-Shell V1.12";
+	const char* version = "Z-Shell V1.13";
 	printf ("\n\r");
 	printf ("%s\n\r",version);
 	printf ("type help for help\n\r");
@@ -371,12 +382,17 @@ void Shell::run () const
 				unsigned long size = atol (tokens [2].c_str ());
 				create (fat, filename, size);
 			}
+			if (tokens [0] == "write" && tokens.size () > 1)
+			{
+				std::string filename (tokens [1].c_str ());
+				write (fat, filename);
+			}
 			if (tokens [0] == "read" && tokens.size () > 1)
 			{
 				std::string filename (tokens [1].c_str ());
 				read (fat, filename);
 			}
-				if (tokens [0] == "ls") ls (fat);
+			if (tokens [0] == "ls") ls (fat);
 		}
 	}
 

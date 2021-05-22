@@ -20,11 +20,11 @@ FAT::OpenFile::~OpenFile ()
 void FAT::OpenFile::read (unsigned char* data, size_t numBytes)	
 {
 	//printf ("read %d bytes from %d\n\r", numBytes, m_filePointer);
-	readCurBlock ();
-
 	unsigned char* p = data;
 	while (numBytes > 0)
 	{
+		readCurBlock ();
+
 		size_t bytesToCopy = numBytes;
 	
 		size_t bytesLeftInCurrentBuffer = 512 - (m_bufferPointer - m_buffer);
@@ -38,11 +38,11 @@ void FAT::OpenFile::read (unsigned char* data, size_t numBytes)
 void FAT::OpenFile::write (unsigned char* data, size_t numBytes)	
 {
 	//printf ("writing %d bytes to %d\n\r", numBytes, m_filePointer);
-	readCurBlock ();
-
 	unsigned char* p = data;
 	while (numBytes > 0)
 	{
+		readCurBlock ();
+
 		size_t bytesToCopy = numBytes;
 	
 		size_t bytesLeftInCurrentBuffer = 512 - (m_bufferPointer - m_buffer);
