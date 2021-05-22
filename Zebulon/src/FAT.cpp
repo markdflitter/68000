@@ -20,6 +20,7 @@ FAT::OpenFile::~OpenFile ()
 void FAT::OpenFile::read (unsigned char* data, size_t numBytes)	
 {
 	//printf ("read %d bytes from %d\n\r", numBytes, m_filePointer);
+	readCurBlock ();
 
 	unsigned char* p = data;
 	while (numBytes > 0)
@@ -37,6 +38,7 @@ void FAT::OpenFile::read (unsigned char* data, size_t numBytes)
 void FAT::OpenFile::write (unsigned char* data, size_t numBytes)	
 {
 	//printf ("writing %d bytes to %d\n\r", numBytes, m_filePointer);
+	readCurBlock ();
 
 	unsigned char* p = data;
 	while (numBytes > 0)
@@ -82,27 +84,30 @@ unsigned char* FAT::OpenFile::copyToBuffer (unsigned char* data, size_t bytesToC
 void FAT::OpenFile::flush ()
 {
 	//printf ("flush\n\r");
+	writeCurBlock ();
+}
+
+void FAT::OpenFile::writeCurBlock ()
+{
 	if (m_bufferModified)
 	{
-		//printf ("buffer modified\n\r");
-		writeBlock (m_curBlock, m_buffer);
+		//printf ("buffer modified - writing block %d\n\r", m_curBlock);	
+		__ide_write (m_curBlock, m_buffer);
 		m_bufferModified = false;
 	}
 }
 
-void FAT::OpenFile::writeBlock (unsigned long block, unsigned char* buffer)
+void FAT::OpenFile::readCurBlock ()
 {
-	//printf ("writing block %d\n\r", block);
-	__ide_write (block, buffer);
+	if (!m_bufferLoaded)
+	{	
+		//printf ("buffer not loaded - reading block %d\n\r", m_curBlock);	
+		__ide_read (m_curBlock, m_buffer);
+		m_bufferLoaded = true;
+	}
 }
 
-void FAT::OpenFile::readBlock (unsigned long block, unsigned char* buffer)
-{
-	//printf ("reading block %d\n\r", block);
-	__ide_read (block, buffer);
-}
-
-bool FAT::OpenFile::block (size_t filePointer, unsigned long& block)
+bool FAT::OpenFile::findBlock (size_t filePointer, unsigned long& block)
 {
 	//printf ("find block for file pointer %d\n\r", filePointer);
 	size_t blockIndex = (filePointer / 512) + 1;
@@ -147,22 +152,24 @@ void FAT::OpenFile::setFilePointer (size_t filePointer)
 	//printf ("setting file pointer to %d, was %d\n\r", filePointer, m_filePointer);
 
 	unsigned long newBlock;
-	bool validBlock = block (filePointer, newBlock);
+	bool validBlock = findBlock (filePointer, newBlock);
 
 	//printf ("new block is %d, was %d\n\r", newBlock, m_curBlock);
 
 	if (m_bufferPointer == 0 || (newBlock != m_curBlock))
 	{
 		if (m_bufferPointer == 0)
-			;
+		{
 			//printf ("first read\n\r");
+			;
+		}
 		else
 		{
 			//printf ("block changed\n\r");
 			flush ();		
 		}
 
-		if (validBlock) readBlock (newBlock, m_buffer);	
+		m_bufferLoaded = !validBlock;
 		
 		m_bufferPointer = m_buffer + (filePointer % 512);
 		//printf ("set buffer pointer to %d\n\r", m_bufferPointer - m_buffer);
@@ -171,8 +178,6 @@ void FAT::OpenFile::setFilePointer (size_t filePointer)
 	m_curBlock = newBlock;
 	m_filePointer = filePointer;
 }
-
-
 
 FAT::File::File ()
 {

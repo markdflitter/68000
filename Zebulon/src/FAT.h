@@ -24,9 +24,9 @@ public:
 
 		void flush ();
 	private:
-		static void writeBlock (unsigned long block, unsigned char* buffer);
-		static void readBlock (unsigned long block, unsigned char* buffer);
-		bool block (size_t filePointer, unsigned long& block);
+		void writeCurBlock ();
+		void readCurBlock ();
+		bool findBlock (size_t filePointer, unsigned long& block);
 		
 		void setFilePointer (size_t filePointer);
 		unsigned char* copyFromBuffer (unsigned char* data, size_t bytesToCopy);
@@ -36,10 +36,11 @@ public:
 		const File& m_file;
 		unsigned char m_buffer [512];
 		unsigned char* m_bufferPointer;
-	
+		
 		size_t m_filePointer;
 		unsigned long m_curBlock;
 		bool m_bufferModified;
+		bool m_bufferLoaded;
 	};
 
 	class File
