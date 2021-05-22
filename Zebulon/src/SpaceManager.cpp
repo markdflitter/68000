@@ -39,7 +39,7 @@ void SpaceManager::print () const
 void SpaceManager::format (size_t size)
 {
 	m_free.clear ();
-	m_free.push_back (Chunk (2, size));
+	m_free.push_back (Chunk (1, size));
 }
 
 unsigned char* SpaceManager::serialise (unsigned char* p) const

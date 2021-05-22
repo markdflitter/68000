@@ -11,8 +11,37 @@ class FAT
 public:
 	FAT ();
 
-	struct File
+	class File;
+
+	class OpenFile
 	{
+	public:
+		OpenFile (const File& file);
+		~OpenFile ();
+
+		void write (unsigned char* data, size_t numBytes);	
+		bool flush ();
+	private:
+		const File& m_file;
+		unsigned char m_buffer [512];
+		size_t m_filePointer;
+		unsigned char* m_bufferPointer;
+	};
+
+	class File
+	{
+	public:
+		File ();
+		File (const std::string& name);
+
+		std::string& name ();
+		std::list <SpaceManager::Chunk>& chunks ();
+
+		const std::string& name () const;
+		const std::list <SpaceManager::Chunk>& chunks () const;
+
+		FAT::OpenFile open ();
+	private:
 		std::string m_name;
 		std::list <SpaceManager::Chunk> m_chunks;
 	};

@@ -15,75 +15,18 @@ extern char* start;
 
 namespace {
 
-std::vector<std::string> tokenize (const std::string& command)
-{
-	std::vector<std::string> result;
-
-	const char* str = command.c_str ();
-	char buf [255];
-	char* cur = buf;
-	while (*str != '\0')
-	{
-		if (*str != ' ')
-			*cur++ = *str;
-		else
-		{
-			*cur = '\0';
-			result.push_back (std::string (buf));
-			cur = buf;
-		}
-		str++;
-	}
-
-	if (cur != buf)
-	{
-		*cur = '\0';
-		result.push_back (std::string (buf));
-		cur = buf;
-	}
-
-	return result;
-}
-
-
-
-void format (FAT& fat, unsigned long size)
-{
-	printf ("formatting to %d\n\r", size);	
-	fat.format (size);
-}
-
-
-void statFile (const FAT::File& file)
-{
-	printf ("%s : ",file.m_name.c_str ());
-	for (std::list<SpaceManager::Chunk>::const_iterator i = file.m_chunks.begin (); i != file.m_chunks.end (); i++)
-		printf ("%d -> %d\n\r", (*i).m_start, (*i).m_start + (*i).m_length);
-}
-
-void createFile (FAT& fat, const std::string& filename, unsigned long size)
-{
-	printf ("creating file '%s' of size %d\n\r", filename.c_str (), size);
-	FAT::File file = fat.createFile (filename, size);
-	statFile (file);
-}
-
-void ls (const FAT& fat)
-{
-	std::list<FAT::File> files = fat.ls ();
-	for (std::list<FAT::File>::iterator i = files.begin (); i != files.end (); i++)
-		statFile (*i);
-}
-
 void printHelp (void)
 {
-	printf ("exit\t - exit to monitor\n\r");
-	printf ("version\t - print version\n\r");
-	printf ("help\t - print this help\n\r");
-	printf ("ident\t - ident the disk\n\r");
-	printf ("write\t - write data to disk\n\r");
-	printf ("read\t - read data from disk\n\r");
-	printf ("save\t - save code to disk\n\r");
+	printf ("version\t\t\t - print version\n\r");
+	printf ("help\t\t\t - print this help\n\r");
+	printf ("exit\t\t\t - exit to monitor\n\r");
+	printf ("ident\t\t\t - ident the disk\n\r");
+	printf ("read <block>\t\t - read data from disk\n\r");
+	printf ("write <block>\t\t - write data to disk\n\r");
+	printf ("save <block>\t\t - save code to disk\n\r");
+	printf ("format <size>\t\t - format the filing system\n\r");
+	printf ("create <name> <size>\t - create a file\n\r");
+	printf ("ls\t\t\t - list files\n\r");
 }
 
 void ident ()
@@ -147,15 +90,6 @@ void ident ()
 		printf ("ERROR: ident failed\n\r");
 }
 
-void write (unsigned long block)
-{
-	printf ("writing to %d\n\r", block);
-
-	unsigned char data [512] = "The house stood on a slight rise just on the edge of the village. It stood on its own and looked out over a broad spread of West Country farmland. Not a remarkable house by any means—it was about thirty years old, squattish, squarish, made of brick, and had four windows set in the front of a size and proportion which more or less exactly failed to please the eye.  The only person for whom the house was in any way special was Arthur Dent, and that was only because it happened to be the one he lived in.";
-	
-	__ide_write (block, data);
-}
-
 void read (unsigned long block)
 {
 	printf ("reading from %d\n\r", block);
@@ -184,10 +118,18 @@ void read (unsigned long block)
 	}
 }
 
-void save ()
+void write (unsigned long block)
 {
-	const int startBlock = 513;
-	int curBlock = startBlock;
+	printf ("writing to %d\n\r", block);
+
+	unsigned char data [512] = "The house stood on a slight rise just on the edge of the village. It stood on its own and looked out over a broad spread of West Country farmland. Not a remarkable house by any means—it was about thirty years old, squattish, squarish, made of brick, and had four windows set in the front of a size and proportion which more or less exactly failed to please the eye.  The only person for whom the house was in any way special was Arthur Dent, and that was only because it happened to be the one he lived in.";
+	
+	__ide_write (block, data);
+}
+
+void save (unsigned long block)
+{
+	int curBlock = block;
 
 	static char* begin = (char*) &__begin;
 	static char* end = (char*) &__end;
@@ -225,8 +167,95 @@ void save ()
 	}
 }
 
+
+void format (FAT& fat, unsigned long size)
+{
+	printf ("formatting to %d\n\r", size);	
+	fat.format (size);
 }
 
+
+void stat (const FAT::File& file)
+{
+	printf ("%s : ",file.name ().c_str ());
+	for (std::list<SpaceManager::Chunk>::const_iterator i = file.chunks ().begin (); i != file.chunks() .end (); i++)
+		printf ("%d -> %d (length %d) \n\r", (*i).m_start, (*i).m_start + (*i).m_length, (*i).m_length);
+}
+
+void create (FAT& fat, const std::string& filename, unsigned long size)
+{
+	printf ("creating file '%s' of size %d\n\r", filename.c_str (), size);
+	FAT::File file = fat.createFile (filename, size);
+	stat (file);
+
+	printf ("filling file\n\r");
+	FAT::OpenFile f = file.open ();
+
+	unsigned int bytesLeftToWrite = size * 512;
+
+	unsigned char data [600] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;       ";
+
+	unsigned char* p = data;
+
+	while (bytesLeftToWrite > 0)
+	{
+		unsigned char buffer [100];
+		if (bytesLeftToWrite >= 100)
+		{
+			memcpy (buffer, p, 100);
+			f.write (buffer, 100);
+			bytesLeftToWrite -= 100;
+			p += 100;
+			if (p - data >= 600) p = data;
+		}
+		else
+		{
+			memcpy (buffer, p, bytesLeftToWrite);
+			f.write (buffer, bytesLeftToWrite);
+			bytesLeftToWrite -= bytesLeftToWrite;
+		}
+	}
+}
+
+void ls (const FAT& fat)
+{
+	std::list<FAT::File> files = fat.ls ();
+	for (std::list<FAT::File>::iterator i = files.begin (); i != files.end (); i++)
+		stat (*i);
+}
+
+
+std::vector<std::string> tokenize (const std::string& command)
+{
+	std::vector<std::string> result;
+
+	const char* str = command.c_str ();
+	char buf [255];
+	char* cur = buf;
+	while (*str != '\0')
+	{
+		if (*str != ' ')
+			*cur++ = *str;
+		else
+		{
+			*cur = '\0';
+			result.push_back (std::string (buf));
+			cur = buf;
+		}
+		str++;
+	}
+
+	if (cur != buf)
+	{
+		*cur = '\0';
+		result.push_back (std::string (buf));
+		cur = buf;
+	}
+
+	return result;
+}
+
+}
 
 Shell::Shell (unsigned int& tick) : m_tick (tick)
 {
@@ -236,7 +265,7 @@ void Shell::run () const
 {
 	FAT fat;
 
-	const char* version = "Z-Shell V1.11";
+	const char* version = "Z-Shell V1.12";
 	printf ("\n\r");
 	printf ("%s\n\r",version);
 	printf ("type help for help\n\r");
@@ -255,9 +284,9 @@ void Shell::run () const
 
 		if (tokens.size () > 0)
 		{
-			if (tokens [0] == "exit") exit = 1;
 			if (tokens [0] == "version") printf ("%s\n\r",version);
 			if (tokens [0] == "help") printHelp ();
+			if (tokens [0] == "exit") exit = 1;
 			if (tokens [0] == "ident") ident ();
 			if (tokens [0] == "read" && tokens.size () > 1) 
 			{
@@ -269,19 +298,23 @@ void Shell::run () const
 				unsigned long block = atol (tokens [1].c_str ());
 				write (block);
 			}
-			if (tokens [0] == "save") save ();
-			if (tokens [0] == "create" && tokens.size () > 2)
+			if (tokens [0] == "save" && tokens.size () > 1)
 			{
-				std::string filename (tokens [1].c_str ());
-				unsigned long size = atol (tokens [2].c_str ());
-				createFile (fat, filename, size);
+				unsigned long block = atol (tokens [1].c_str ());			
+				save (block);
 			}
-			if (tokens [0] == "ls") ls (fat);
 			if (tokens [0] == "format" && tokens.size () > 1)
 			{
 				unsigned long size = atol (tokens [1].c_str ());			
 				format (fat, size);
-			}			
+			}
+			if (tokens [0] == "create" && tokens.size () > 2)
+			{
+				std::string filename (tokens [1].c_str ());
+				unsigned long size = atol (tokens [2].c_str ());
+				create (fat, filename, size);
+			}
+			if (tokens [0] == "ls") ls (fat);
 		}
 	}
 
