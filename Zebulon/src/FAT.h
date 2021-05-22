@@ -16,11 +16,13 @@ public:
 	class OpenFile
 	{
 	public:
-		OpenFile (const File& file);
+		OpenFile (File& file);
 		~OpenFile ();
 
 		void read (unsigned char* data, size_t numBytes);	
 		void write (unsigned char* data, size_t numBytes);	
+
+		bool EOF () const;
 
 		void flush ();
 	private:
@@ -31,9 +33,8 @@ public:
 		void setFilePointer (size_t filePointer);
 		unsigned char* copyFromBuffer (unsigned char* data, size_t bytesToCopy);
 		unsigned char* copyToBuffer (unsigned char* data, size_t bytesToCopy);
-
-
-		const File& m_file;
+	
+		File& m_file;
 		unsigned char m_buffer [512];
 		unsigned char* m_bufferPointer;
 		
@@ -50,28 +51,33 @@ public:
 		File (const std::string& name);
 
 		std::string& name ();
+	size_t& bytes ();
 		std::list <SpaceManager::Chunk>& chunks ();
 
 		const std::string& name () const;
+		size_t allocSize () const;
+		const size_t& bytes () const;
 		const std::list <SpaceManager::Chunk>& chunks () const;
 
 		FAT::OpenFile open ();
+		FAT* fat;
 	private:
 		std::string m_name;
 		std::list <SpaceManager::Chunk> m_chunks;
+		size_t m_bytes;
 	};
 
 	File createFile (const std::string& name, size_t size);
-	std::list<File> ls () const;
+	std::list<File>& ls ();
 
 	void format (size_t size);
+
+	void save () const;
 private:
 	unsigned char* serialise (unsigned char* p) const;
 	unsigned char* deserialise (unsigned char* p);
 
 	void load ();
-	void save () const;
-
  	SpaceManager m_spaceManager;
 	
 	std::list<File> m_files;

@@ -6,7 +6,7 @@
 #include "Serialise.h"
 
 
-FAT::OpenFile::OpenFile (const File& file)
+FAT::OpenFile::OpenFile (File& file)
 	: m_file (file), m_bufferPointer (0), m_bufferModified (false)
 {
 	setFilePointer (0);
@@ -15,6 +15,7 @@ FAT::OpenFile::OpenFile (const File& file)
 FAT::OpenFile::~OpenFile ()
 {
 	flush ();
+	m_file.fat->save ();
 }
 
 void FAT::OpenFile::read (unsigned char* data, size_t numBytes)	
@@ -49,8 +50,16 @@ void FAT::OpenFile::write (unsigned char* data, size_t numBytes)
 		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
 
 		p = copyToBuffer (p, bytesToCopy);
+		if (m_filePointer > m_file.bytes ())
+			m_file.bytes () = m_filePointer;
+
 		numBytes -= bytesToCopy;
 	}
+}
+
+bool FAT::OpenFile::EOF () const
+{
+	return m_filePointer >= m_file.bytes ();
 }
 
 unsigned char* FAT::OpenFile::copyFromBuffer (unsigned char* data, size_t bytesToCopy)
@@ -113,7 +122,7 @@ bool FAT::OpenFile::findBlock (size_t filePointer, unsigned long& block)
 	size_t blockIndex = (filePointer / 512) + 1;
 	//printf ("block Index is %d\n\r", blockIndex);
 
-	std::list<SpaceManager::Chunk>::const_iterator i = m_file.chunks ().begin ();
+	std::list<SpaceManager::Chunk>::iterator i = m_file.chunks ().begin ();
 
 	while (i != m_file.chunks ().end ())
 	{
@@ -180,17 +189,23 @@ void FAT::OpenFile::setFilePointer (size_t filePointer)
 }
 
 FAT::File::File ()
+	: m_bytes (0)
 {
 }
 
 FAT::File::File (const std::string& name)
-	: m_name (name)
+	: m_name (name), m_bytes (0)
 {
 }
 
 std::string& FAT::File::name ()
 {
 	return m_name;
+}
+
+size_t& FAT::File::bytes ()
+{
+	return m_bytes;
 }
 
 std::list <SpaceManager::Chunk>& FAT::File::chunks ()
@@ -203,11 +218,25 @@ const std::string& FAT::File::name () const
 	return m_name;
 }
 
+size_t FAT::File::allocSize () const
+{
+	size_t result = 0;
+
+	for (std::list<SpaceManager::Chunk>::const_iterator i = m_chunks.begin (); i != m_chunks.end (); i++)
+		result = (*i).m_length * 512;
+	
+	return result;
+}
+	
+const size_t& FAT::File::bytes () const
+{
+	return m_bytes;
+}
+
 const std::list <SpaceManager::Chunk>& FAT::File::chunks () const
 {
 	return m_chunks;
 }
-
 
 FAT::OpenFile FAT::File::open ()
 {
@@ -225,6 +254,7 @@ FAT::File FAT::createFile (const std::string& name, size_t size)
 	File result;
 	result.name () = name;
 	result.chunks () = m_spaceManager.allocate (size);
+	result.fat = this;
 	
 	m_files.push_back (result);
 		
@@ -233,7 +263,7 @@ FAT::File FAT::createFile (const std::string& name, size_t size)
 	return result;
 }
 
-std::list<FAT::File> FAT::ls () const
+std::list<FAT::File>& FAT::ls ()
 {
 	return m_files;
 }
@@ -246,7 +276,7 @@ void FAT::format (size_t size)
 }
 
 const char* FatIdent = "__Zebulon_FAT__";
-const unsigned int version = 6;
+const unsigned int version = 7;
 
 unsigned char* FAT::serialise (unsigned char* p) const
 {
@@ -281,6 +311,8 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	p = m_spaceManager.deserialise (p);
 	
 	p = Serialise::deserialise (m_files, p);
+	for (std::list<File>::iterator i = m_files.begin(); i != m_files.end (); i++)
+		(*i).fat = this;
 
 	printf ("found %d files\n\r", m_files.size ());
 	

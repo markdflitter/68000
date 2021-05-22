@@ -198,9 +198,9 @@ void format (FAT& fat, unsigned long size)
 
 void stat (const FAT::File& file)
 {
-	printf ("%s : ",file.name ().c_str ());
+	printf ("%s : %d bytes : ",file.name ().c_str (), file.bytes ());
 	for (std::list<SpaceManager::Chunk>::const_iterator i = file.chunks ().begin (); i != file.chunks() .end (); i++)
-		printf ("%d -> %d (length %d) \n\r", (*i).m_start, (*i).m_start + (*i).m_length - 1, (*i).m_length);
+		printf ("%d -> %d (length %d)]\n\r", (*i).m_start, (*i).m_start + (*i).m_length - 1, (*i).m_length);
 }
 
 void create (FAT& fat, const std::string& filename, unsigned long size)
@@ -212,7 +212,7 @@ void create (FAT& fat, const std::string& filename, unsigned long size)
 
 void write (FAT& fat, const std::string& filename)
 {
-	std::list<FAT::File> files = fat.ls ();
+	std::list<FAT::File>& files = fat.ls ();
 	
 	for (std::list<FAT::File>::iterator i = files.begin (); i != files.end (); i++)
 	{
@@ -220,9 +220,7 @@ void write (FAT& fat, const std::string& filename)
 		{
 			FAT::OpenFile f = (*i).open ();
 
-			unsigned int bytesLeftToWrite = 0;
-			for (std::list<SpaceManager::Chunk>::iterator j = (*i).chunks ().begin (); j != (*i).chunks ().end (); j++)
-				bytesLeftToWrite = (*j).m_length * 512;
+			unsigned int bytesLeftToWrite = (*i).allocSize();
 
 			unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
 
@@ -250,21 +248,19 @@ void write (FAT& fat, const std::string& filename)
 	}
 }
 
-void read (const FAT& fat, const std::string& filename)
+void read (FAT& fat, const std::string& filename)
 {
-	std::list<FAT::File> files = fat.ls ();
+	std::list<FAT::File>& files = fat.ls ();
 	
 	for (std::list<FAT::File>::iterator i = files.begin (); i != files.end (); i++)
 	{
 		if ((*i).name () == filename)
 		{
-			unsigned int bytesLeftToRead = 0;
-			for (std::list<SpaceManager::Chunk>::iterator j = (*i).chunks ().begin (); j != (*i).chunks ().end (); j++)
-				bytesLeftToRead = (*j).m_length * 512;
-
+			unsigned int bytesLeftToRead = (*i).bytes ();
+			
 			FAT::OpenFile f = (*i).open ();
 
-			while (bytesLeftToRead > 0)
+			while (!f.EOF ())
 			{
 				unsigned char buffer [480];
 				if (bytesLeftToRead >= 480)
@@ -285,13 +281,12 @@ void read (const FAT& fat, const std::string& filename)
 	}
 }
 
-void ls (const FAT& fat)
+void ls (FAT& fat)
 {
-	std::list<FAT::File> files = fat.ls ();
+	std::list<FAT::File>& files = fat.ls ();
 	for (std::list<FAT::File>::iterator i = files.begin (); i != files.end (); i++)
 		stat (*i);
 }
-
 
 std::vector<std::string> tokenize (const std::string& command)
 {
