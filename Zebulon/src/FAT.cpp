@@ -53,18 +53,59 @@ FILE FAT::open (const string& name)
 
 void FAT::close (FILE file)
 {
-	if ((file >= m_openFiles.size ()) || (m_openFiles [file].isNull ()))
-	{
-		printf ("not open\n\r");
-		return;
-	}
-
+	getOpenFile (file);
 	m_openFiles [file].reset ();
 }
 
-list<FileHeader::Ptr>& FAT::ls ()
+
+void FAT::read (FILE file, unsigned char* data, file_address_t numBytes) const
 {
-	return m_fileHeaders;
+	OpenFile::Ptr of = getOpenFile (file);
+	if (!of.isNull ())
+		of->read (data, numBytes);
+}
+
+void FAT::write (FILE file, unsigned char* data, file_address_t numBytes)
+{
+	OpenFile::Ptr of = getOpenFile (file);
+	if (!of.isNull ())
+		of->write (data, numBytes);
+}
+
+bool FAT::EOF (FILE file) const
+{
+	OpenFile::Ptr of = getOpenFile (file);
+	if (!of.isNull ())
+		return of->EOF ();
+
+	return true;
+}
+
+list<string> FAT::ls () const
+{
+	list<string> result;
+
+	for (list<FileHeader::Ptr>::const_iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
+	{
+		result.push_back ((*i)->name ());
+	}
+
+	return result;
+}
+
+FileStat FAT::stat (const string& name) const
+{
+	FileHeader::ConstPtr file = findFile (name);
+	if (!file.isNull ())
+	{
+		FileStat stat (file->name (), file->size (), file->allocSize ());
+
+		for (list<Chunk::Ptr>::const_iterator j = file->chunks ().begin (); j != file->chunks ().end (); j++)
+			stat.chunks.push_back (Chunk ((*j)->start, (*j)->length));
+		return stat;
+	}
+	else
+		return FileStat ();
 }
 
 FileHeader::Ptr FAT::findFile (const string& name)
@@ -75,6 +116,39 @@ FileHeader::Ptr FAT::findFile (const string& name)
 
 	return FileHeader::Ptr ();
 }
+
+FileHeader::ConstPtr FAT::findFile (const string& name) const
+{
+	for (list<FileHeader::Ptr>::const_iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
+		if ((*i)->name () == name)
+			return (*i);
+
+	return FileHeader::ConstPtr ();
+}
+
+OpenFile::ConstPtr FAT::getOpenFile (FILE file) const
+{
+	if ((file >= m_openFiles.size ()) || (m_openFiles [file].isNull ()))
+	{
+		printf ("not open\n\r");
+		return OpenFile::ConstPtr ();
+	}
+
+	return m_openFiles [file];
+}
+
+
+OpenFile::Ptr FAT::getOpenFile (FILE file)
+{
+	if ((file >= m_openFiles.size ()) || (m_openFiles [file].isNull ()))
+	{
+		printf ("not open\n\r");
+		return OpenFile::Ptr ();
+	}
+
+	return m_openFiles [file];
+}
+
 
 const char* FatIdent = "__Zebulon_FAT__1__";
 const char* FatVersion = "1.0";

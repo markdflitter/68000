@@ -8,7 +8,9 @@
 #include <stdlib.h>
 #include "FAT.h"
 #include "ctype.h"
-/*
+
+using namespace std;
+
 extern char* __begin;
 extern char* __end;
 extern char* start;
@@ -96,7 +98,6 @@ size_t min (size_t l, size_t r)
 {
 	return l < r ? l : r;
 }
-
 
 void printBuffer (unsigned char* buffer, size_t bufferLen)
 {
@@ -195,102 +196,91 @@ void format (FAT& fat, block_address_t size)
 	fat.format (size);
 }
 
-void stat (const File& file)
+void stat (const FAT& fat, const string& name)
 {
-	printf ("%s : %d bytes : ",file.name ().c_str (), file.size ());
-	for (std::list<Chunk>::const_iterator i = file.chunks ().begin (); i != file.chunks() .end (); i++)
+	FileStat fileStat = fat.stat (name);
+	printf ("%s : %d bytes : ",fileStat.name.c_str (), fileStat.size);
+	for (auto i = fileStat.chunks.begin (); i != fileStat.chunks.end (); i++)
 		printf ("%d -> %d (length %d)\n\r", (*i).start, (*i).start + (*i).length - 1, (*i).length);
 }
 
-void create (FAT& fat, const std::string& filename, block_address_t size)
+void create (FAT& fat, const string& filename, block_address_t size)
 {
 	printf ("creating file '%s' of size %d\n\r", filename.c_str (), size);
-	File file = fat.createFile (filename, size);
-	stat (file);
+	fat.create (filename, size);
+	stat (fat, filename);
 }
 
-void write (FAT& fat, const std::string& filename)
+void write (FAT& fat, const string& filename)
 {
-/*
-	std::list<File>& files = fat.ls ();
-	
-	for (std::list<File>::iterator i = files.begin (); i != files.end (); i++)
+	FILE f = fat.open (filename);
+	if (f == file_not_found) return ;
+
+	file_address_t bytesLeftToWrite = fat.stat (filename).allocSize;
+
+	unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
+
+	unsigned char* p = data;
+
+	while (bytesLeftToWrite > 0)
 	{
-		if ((*i).name () == filename)
+		unsigned char buffer [100];
+		if (bytesLeftToWrite >= 100)
 		{
-			OpenFile f = (*i).open ();
-
-			file_address_t bytesLeftToWrite = (*i).allocSize();
-
-			unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
-
-			unsigned char* p = data;
-
-			while (bytesLeftToWrite > 0)
-			{
-				unsigned char buffer [100];
-				if (bytesLeftToWrite >= 100)
-				{
-					memcpy (buffer, p, 100);
-					f.write (buffer, 100);
-					bytesLeftToWrite -= 100;
-					p += 100;
-					if (p - data >= 600) p = data;
-				}
-				else
-				{
-					memcpy (buffer, p, bytesLeftToWrite);
-					f.write (buffer, bytesLeftToWrite);
-					bytesLeftToWrite -= bytesLeftToWrite;
-				}
-			}
+			memcpy (buffer, p, 100);
+			fat.write (f, buffer, 100);
+			bytesLeftToWrite -= 100;
+			p += 100;
+			if (p - data >= 600) p = data;
+		}
+		else
+		{
+			memcpy (buffer, p, bytesLeftToWrite);
+			fat.write (f, buffer, bytesLeftToWrite);
+			bytesLeftToWrite -= bytesLeftToWrite;
 		}
 	}
+
+	fat.close (f);
 }
 
-void read (FAT& fat, const std::string& filename)
+void read (FAT& fat, const string& filename)
 {
-	std::list<File>& files = fat.ls ();
-	
-	for (std::list<File>::iterator i = files.begin (); i != files.end (); i++)
-	{
-		if ((*i).name () == filename)
-		{
-			file_address_t bytesLeftToRead = (*i).size ();
+	FILE f = fat.open (filename);
+	if (f == file_not_found) return ;
+
+	file_address_t bytesLeftToRead = fat.stat (filename).size;
 			
-			OpenFile f = (*i).open ();
-
-			while (!f.EOF ())
-			{
-				unsigned char buffer [480];
-				if (bytesLeftToRead >= 480)
-				{
-					f.read (buffer, 480);
-					printBuffer (buffer, 480);
-					bytesLeftToRead -= 480;
-				}
-				else
-				{
-					f.read (buffer, bytesLeftToRead);
-					printBuffer (buffer, bytesLeftToRead);
-					bytesLeftToRead -= bytesLeftToRead;
-				}	
-			}
-			break;
+	while (!fat.EOF (f))
+	{
+		unsigned char buffer [480];
+		if (bytesLeftToRead >= 480)
+		{
+			fat.read (f, buffer, 480);
+			printBuffer (buffer, 480);
+			bytesLeftToRead -= 480;
 		}
+		else
+		{
+			fat.read (f, buffer, bytesLeftToRead);
+			printBuffer (buffer, bytesLeftToRead);
+			bytesLeftToRead -= bytesLeftToRead;
+		}	
 	}
+
+	fat.close (f);
 }
 
 void ls (FAT& fat)
 {
-	std::list<File>& files = fat.ls ();
-	for (std::list<File>::iterator i = files.begin (); i != files.end (); i++)
-		stat (*i);
+	list<string> files = fat.ls ();
+	for (auto i = files.begin (); i != files.end (); i++)
+		stat (fat, *i);
 }
 
-std::vector<std::string> tokenize (const std::string& command)
+vector<string> tokenize (const string& command)
 {
-	std::vector<std::string> result;
+	vector<string> result;
 
 	const char* str = command.c_str ();
 	char buf [255];
@@ -302,7 +292,7 @@ std::vector<std::string> tokenize (const std::string& command)
 		else
 		{
 			*cur = '\0';
-			result.push_back (std::string (buf));
+			result.push_back (string (buf));
 			cur = buf;
 		}
 		str++;
@@ -311,7 +301,7 @@ std::vector<std::string> tokenize (const std::string& command)
 	if (cur != buf)
 	{
 		*cur = '\0';
-		result.push_back (std::string (buf));
+		result.push_back (string (buf));
 		cur = buf;
 	}
 
@@ -342,8 +332,8 @@ void Shell::run () const
 		*p = '\0';
 		printf ("\n\r");
 
-		std::string command (buf);
-		std::vector<std::string> tokens = tokenize (command);
+		string command (buf);
+		vector<string> tokens = tokenize (command);
 
 		if (tokens.size () > 0)
 		{
@@ -373,18 +363,18 @@ void Shell::run () const
 			}
 			if (tokens [0] == "create" && tokens.size () > 2)
 			{
-				std::string filename (tokens [1].c_str ());
+				string filename (tokens [1].c_str ());
 				block_address_t size = atol (tokens [2].c_str ());
 				create (fat, filename, size);
 			}
 			if (tokens [0] == "write" && tokens.size () > 1)
 			{
-				std::string filename (tokens [1].c_str ());
+				string filename (tokens [1].c_str ());
 				write (fat, filename);
 			}
 			if (tokens [0] == "read" && tokens.size () > 1)
 			{
-				std::string filename (tokens [1].c_str ());
+				string filename (tokens [1].c_str ());
 				read (fat, filename);
 			}
 			if (tokens [0] == "ls") ls (fat);
@@ -393,4 +383,4 @@ void Shell::run () const
 
 	return ;
 }
-*/
+

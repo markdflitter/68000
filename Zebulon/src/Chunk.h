@@ -2,7 +2,7 @@
 #define CHUNK_H
 
 #include <shared_ptr>
-#include "block_address.h"
+#include "block_address_t.h"
 
 struct Chunk {
 	typedef mdf::shared_ptr <Chunk> Ptr;

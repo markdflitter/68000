@@ -1,7 +1,7 @@
 #ifndef SPACE_MANAGER_H
 #define SPACE_MANAGER_H
 
-#include "block_address.h"
+#include "block_address_t.h"
 #include <list>
 #include "Chunk.h"
 

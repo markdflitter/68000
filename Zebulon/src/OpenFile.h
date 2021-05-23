@@ -3,8 +3,8 @@
 
 #include <shared_ptr>
 #include "FileHeader.h"
-#include "file_address.h"
-#include "block_address.h"
+#include "file_address_t.h"
+#include "block_address_t.h"
 
 class OpenFile
 {

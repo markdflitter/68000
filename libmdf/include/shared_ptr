@@ -8,6 +8,9 @@ template <class T>
 class shared_ptr
 {
 public:
+	template<typename U>
+	    friend class shared_ptr;
+
 	explicit shared_ptr ()
 		: m_t (0)
 	{
