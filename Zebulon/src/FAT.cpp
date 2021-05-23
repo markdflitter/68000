@@ -18,7 +18,7 @@ FAT::OpenFile::~OpenFile ()
 	m_file.fat->save ();
 }
 
-void FAT::OpenFile::read (unsigned char* data, size_t numBytes)	
+void FAT::OpenFile::read (unsigned char* data, file_address_t numBytes)	
 {
 	//printf ("read %d bytes from %d\n\r", numBytes, m_filePointer);
 	unsigned char* p = data;
@@ -26,9 +26,9 @@ void FAT::OpenFile::read (unsigned char* data, size_t numBytes)
 	{
 		readCurBlock ();
 
-		size_t bytesToCopy = numBytes;
+		file_address_t bytesToCopy = numBytes;
 	
-		size_t bytesLeftInCurrentBuffer = 512 - (m_bufferPointer - m_buffer);
+		file_address_t bytesLeftInCurrentBuffer = 512 - (m_bufferPointer - m_buffer);
 		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
 
 		p = copyFromBuffer (p, bytesToCopy);
@@ -36,7 +36,7 @@ void FAT::OpenFile::read (unsigned char* data, size_t numBytes)
 	}
 }
 	
-void FAT::OpenFile::write (unsigned char* data, size_t numBytes)	
+void FAT::OpenFile::write (unsigned char* data, file_address_t numBytes)	
 {
 	//printf ("writing %d bytes to %d\n\r", numBytes, m_filePointer);
 	unsigned char* p = data;
@@ -44,9 +44,9 @@ void FAT::OpenFile::write (unsigned char* data, size_t numBytes)
 	{
 		readCurBlock ();
 
-		size_t bytesToCopy = numBytes;
+		file_address_t bytesToCopy = numBytes;
 	
-		size_t bytesLeftInCurrentBuffer = 512 - (m_bufferPointer - m_buffer);
+		file_address_t bytesLeftInCurrentBuffer = 512 - (m_bufferPointer - m_buffer);
 		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
 
 		p = copyToBuffer (p, bytesToCopy);
@@ -62,7 +62,7 @@ bool FAT::OpenFile::EOF () const
 	return m_filePointer >= m_file.bytes ();
 }
 
-unsigned char* FAT::OpenFile::copyFromBuffer (unsigned char* data, size_t bytesToCopy)
+unsigned char* FAT::OpenFile::copyFromBuffer (unsigned char* data, file_address_t bytesToCopy)
 {
 	//printf ("copying %d bytes from buffer\n\r", bytesToCopy);
 
@@ -75,7 +75,7 @@ unsigned char* FAT::OpenFile::copyFromBuffer (unsigned char* data, size_t bytesT
 }
 
 
-unsigned char* FAT::OpenFile::copyToBuffer (unsigned char* data, size_t bytesToCopy)
+unsigned char* FAT::OpenFile::copyToBuffer (unsigned char* data, file_address_t bytesToCopy)
 {
 	//printf ("copying %d bytes to buffer\n\r", bytesToCopy);
 
@@ -116,10 +116,10 @@ void FAT::OpenFile::readCurBlock ()
 	}
 }
 
-bool FAT::OpenFile::findBlock (size_t filePointer, unsigned long& block)
+bool FAT::OpenFile::findBlock (file_address_t filePointer, SpaceManager::block_address_t& block)
 {
 	//printf ("find block for file pointer %d\n\r", filePointer);
-	size_t blockIndex = (filePointer / 512) + 1;
+	unsigned long blockIndex = (filePointer / 512) + 1;
 	//printf ("block Index is %d\n\r", blockIndex);
 
 	std::list<SpaceManager::Chunk>::iterator i = m_file.chunks ().begin ();
@@ -156,11 +156,11 @@ bool FAT::OpenFile::findBlock (size_t filePointer, unsigned long& block)
 }
 
 
-void FAT::OpenFile::setFilePointer (size_t filePointer)
+void FAT::OpenFile::setFilePointer (file_address_t filePointer)
 {
 	//printf ("setting file pointer to %d, was %d\n\r", filePointer, m_filePointer);
 
-	unsigned long newBlock;
+	SpaceManager::block_address_t newBlock;
 	bool validBlock = findBlock (filePointer, newBlock);
 
 	//printf ("new block is %d, was %d\n\r", newBlock, m_curBlock);
@@ -203,7 +203,7 @@ std::string& FAT::File::name ()
 	return m_name;
 }
 
-size_t& FAT::File::bytes ()
+FAT::file_address_t& FAT::File::bytes ()
 {
 	return m_bytes;
 }
@@ -218,9 +218,9 @@ const std::string& FAT::File::name () const
 	return m_name;
 }
 
-size_t FAT::File::allocSize () const
+FAT::file_address_t FAT::File::allocSize () const
 {
-	size_t result = 0;
+	FAT::file_address_t result = 0;
 
 	for (std::list<SpaceManager::Chunk>::const_iterator i = m_chunks.begin (); i != m_chunks.end (); i++)
 		result = (*i).m_length * 512;
@@ -228,7 +228,7 @@ size_t FAT::File::allocSize () const
 	return result;
 }
 	
-const size_t& FAT::File::bytes () const
+const FAT::file_address_t& FAT::File::bytes () const
 {
 	return m_bytes;
 }
@@ -249,7 +249,7 @@ FAT::FAT ()
 	load ();
 }
 
-FAT::File FAT::createFile (const std::string& name, size_t size)
+FAT::File FAT::createFile (const std::string& name, SpaceManager::block_address_t size)
 {
 	File result;
 	result.name () = name;
@@ -268,20 +268,20 @@ std::list<FAT::File>& FAT::ls ()
 	return m_files;
 }
 
-void FAT::format (size_t size)
+void FAT::format (SpaceManager::block_address_t size)
 {
 	m_spaceManager.format (size);
 	m_files.clear ();
 	save ();
 }
 
-const char* FatIdent = "__Zebulon_FAT__";
-const unsigned int version = 7;
+const char* FatIdent = "__Zebulon_FAT__1__";
+const char* FatVersion = "1.0";
 
 unsigned char* FAT::serialise (unsigned char* p) const
 {
 	p = Serialise::serialise (FatIdent, p);
-	p = Serialise::serialise (version, p);
+	p = Serialise::serialise (FatVersion, p);
 
 	p = m_spaceManager.serialise (p);
 
@@ -300,11 +300,11 @@ unsigned char* FAT::deserialise (unsigned char* p)
 		return p;
 	}
 
-	unsigned int readVersion = 0;
-	p = Serialise::deserialise (readVersion, p);
-	if (readVersion != version)
+	std::string readVersion;
+	p = Serialise::deserialise (readVersion, p, strlen (FatVersion));
+	if (std::string (FatVersion) != readVersion)
 	{
-		printf ("[ERROR] FAT - version mismatch.  Expected %d, got %d\n\r", version, readVersion);
+		printf ("[ERROR] FAT - version mismatch.  Expected %s, got %s\n\r", FatVersion, readVersion);
 		return p;
 	}
 

@@ -131,7 +131,7 @@ void printBuffer (unsigned char* buffer, size_t bufferLen)
 }
 
 
-void readB (unsigned long block)
+void readB (SpaceManager::block_address_t block)
 {
 	printf ("reading from %d\n\r", block);
 
@@ -141,7 +141,7 @@ void readB (unsigned long block)
 	printBuffer (data, 512);
 }
 
-void writeB (unsigned long block)
+void writeB (SpaceManager::block_address_t block)
 {
 	printf ("writing to %d\n\r", block);
 
@@ -150,9 +150,9 @@ void writeB (unsigned long block)
 	__ide_write (block, data);
 }
 
-void save (unsigned long startBlock)
+void save (SpaceManager::block_address_t startBlock)
 {
-	int curBlock = startBlock;
+	SpaceManager::block_address_t curBlock = startBlock;
 
 	static char* begin = (char*) &__begin;
 	static char* end = (char*) &__end;
@@ -160,12 +160,12 @@ void save (unsigned long startBlock)
 
 	printf ("start 0x%x end 0x%x entry 0x%x\n\r", begin, end, entry);
 
-	size_t length = end - begin;
-	size_t numBlocks = (length / 512) + 1;
+	FAT::file_address_t length = end - begin;
+	SpaceManager::block_address_t numBlocks = (length / 512) + 1;
 
 	printf ("%d bytes, which is %d blocks\n\r", length, numBlocks);
 
-	for (int b = 0; b < length;)
+	for (FAT::file_address_t b = 0; b < length;)
 	{
 		unsigned char block [512];
 		if (b == 0)
@@ -189,12 +189,11 @@ void save (unsigned long startBlock)
 }
 
 
-void format (FAT& fat, unsigned long size)
+void format (FAT& fat, SpaceManager::block_address_t size)
 {
 	printf ("formatting to %d\n\r", size);	
 	fat.format (size);
 }
-
 
 void stat (const FAT::File& file)
 {
@@ -203,7 +202,7 @@ void stat (const FAT::File& file)
 		printf ("%d -> %d (length %d)\n\r", (*i).m_start, (*i).m_start + (*i).m_length - 1, (*i).m_length);
 }
 
-void create (FAT& fat, const std::string& filename, unsigned long size)
+void create (FAT& fat, const std::string& filename, SpaceManager::block_address_t size)
 {
 	printf ("creating file '%s' of size %d\n\r", filename.c_str (), size);
 	FAT::File file = fat.createFile (filename, size);
@@ -220,7 +219,7 @@ void write (FAT& fat, const std::string& filename)
 		{
 			FAT::OpenFile f = (*i).open ();
 
-			unsigned int bytesLeftToWrite = (*i).allocSize();
+			FAT::file_address_t bytesLeftToWrite = (*i).allocSize();
 
 			unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
 
@@ -256,7 +255,7 @@ void read (FAT& fat, const std::string& filename)
 	{
 		if ((*i).name () == filename)
 		{
-			unsigned int bytesLeftToRead = (*i).bytes ();
+			FAT::file_address_t bytesLeftToRead = (*i).bytes ();
 			
 			FAT::OpenFile f = (*i).open ();
 
@@ -328,7 +327,7 @@ void Shell::run () const
 {
 	FAT fat;
 
-	const char* version = "Z-Shell V1.13";
+	const char* version = "Z-Shell V1.14";
 	printf ("\n\r");
 	printf ("%s\n\r",version);
 	printf ("type help for help\n\r");
@@ -353,28 +352,28 @@ void Shell::run () const
 			if (tokens [0] == "ident") ident ();
 			if (tokens [0] == "readB" && tokens.size () > 1) 
 			{
-				unsigned long block = atol (tokens [1].c_str ());
+				SpaceManager::block_address_t block = atol (tokens [1].c_str ());
 				readB (block);
 			}
 			if (tokens [0] == "writeB" && tokens.size () > 1)
 			{
-				unsigned long block = atol (tokens [1].c_str ());
+				SpaceManager::block_address_t block = atol (tokens [1].c_str ());
 				writeB (block);
 			}
 			if (tokens [0] == "save" && tokens.size () > 1)
 			{
-				unsigned long block = atol (tokens [1].c_str ());			
+				SpaceManager::block_address_t block = atol (tokens [1].c_str ());			
 				save (block);
 			}
 			if (tokens [0] == "format" && tokens.size () > 1)
 			{
-				unsigned long size = atol (tokens [1].c_str ());			
+				SpaceManager::block_address_t size = atol (tokens [1].c_str ());			
 				format (fat, size);
 			}
 			if (tokens [0] == "create" && tokens.size () > 2)
 			{
 				std::string filename (tokens [1].c_str ());
-				unsigned long size = atol (tokens [2].c_str ());
+				SpaceManager::block_address_t size = atol (tokens [2].c_str ());
 				create (fat, filename, size);
 			}
 			if (tokens [0] == "write" && tokens.size () > 1)

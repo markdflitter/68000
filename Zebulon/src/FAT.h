@@ -9,6 +9,8 @@
 class FAT
 {
 public:
+	typedef unsigned long file_address_t;
+	
 	FAT ();
 
 	class File;
@@ -19,8 +21,8 @@ public:
 		OpenFile (File& file);
 		~OpenFile ();
 
-		void read (unsigned char* data, size_t numBytes);	
-		void write (unsigned char* data, size_t numBytes);	
+		void read (unsigned char* data, file_address_t numBytes);	
+		void write (unsigned char* data, file_address_t numBytes);	
 
 		bool EOF () const;
 
@@ -28,18 +30,18 @@ public:
 	private:
 		void writeCurBlock ();
 		void readCurBlock ();
-		bool findBlock (size_t filePointer, unsigned long& block);
+		bool findBlock (file_address_t filePointer, SpaceManager::block_address_t & block);
 		
-		void setFilePointer (size_t filePointer);
-		unsigned char* copyFromBuffer (unsigned char* data, size_t bytesToCopy);
-		unsigned char* copyToBuffer (unsigned char* data, size_t bytesToCopy);
+		void setFilePointer (file_address_t filePointer);
+		unsigned char* copyFromBuffer (unsigned char* data, file_address_t bytesToCopy);
+		unsigned char* copyToBuffer (unsigned char* data, file_address_t bytesToCopy);
 	
 		File& m_file;
 		unsigned char m_buffer [512];
 		unsigned char* m_bufferPointer;
 		
-		size_t m_filePointer;
-		unsigned long m_curBlock;
+		file_address_t m_filePointer;
+		SpaceManager::block_address_t m_curBlock;
 		bool m_bufferModified;
 		bool m_bufferLoaded;
 	};
@@ -49,14 +51,14 @@ public:
 	public:
 		File ();
 		File (const std::string& name);
-
+		
 		std::string& name ();
-	size_t& bytes ();
+		file_address_t& bytes ();
 		std::list <SpaceManager::Chunk>& chunks ();
 
 		const std::string& name () const;
-		size_t allocSize () const;
-		const size_t& bytes () const;
+		file_address_t allocSize () const;
+		const file_address_t& bytes () const;
 		const std::list <SpaceManager::Chunk>& chunks () const;
 
 		FAT::OpenFile open ();
@@ -64,13 +66,13 @@ public:
 	private:
 		std::string m_name;
 		std::list <SpaceManager::Chunk> m_chunks;
-		size_t m_bytes;
+		file_address_t  m_bytes;
 	};
 
 	File createFile (const std::string& name, size_t size);
 	std::list<File>& ls ();
 
-	void format (size_t size);
+	void format (SpaceManager::block_address_t size);
 
 	void save () const;
 private:

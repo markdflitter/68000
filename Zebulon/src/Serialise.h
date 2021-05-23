@@ -10,7 +10,6 @@
 class Serialise
 {
 public:
-	static unsigned char* serialise (unsigned int i, unsigned char* p);
 	static unsigned char* serialise (unsigned long l, unsigned char* p);
 	static unsigned char* serialise (const std::string& s, unsigned char* p);
 	static unsigned char* serialise (const SpaceManager::Chunk& chunk, unsigned char* p);

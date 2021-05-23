@@ -9,7 +9,7 @@ SpaceManager::SpaceManager ()
 {
 }
 
-std::list<SpaceManager::Chunk> SpaceManager::allocate (size_t size)
+std::list<SpaceManager::Chunk> SpaceManager::allocate (block_address_t size)
 {
 	std::list<Chunk> allocation;
 
@@ -36,7 +36,7 @@ void SpaceManager::print () const
 	}
 }
 
-void SpaceManager::format (size_t size)
+void SpaceManager::format (block_address_t size)
 {
 	m_free.clear ();
 	m_free.push_back (Chunk (1, size));

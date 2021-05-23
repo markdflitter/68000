@@ -23,13 +23,6 @@ unsigned char* copyTo (void* dest, const void* src, size_t numBytes)
 	return inc_p ((unsigned char*) dest, numBytes);
 }
 
-
-}
-
-unsigned char* Serialise::serialise (unsigned int i, unsigned char* p)
-{
-	size_t sz = sizeof (i);
-	return copyTo (p, &i, sz); 
 }
 
 unsigned char* Serialise::serialise (unsigned long l, unsigned char* p)
@@ -58,12 +51,6 @@ unsigned char* Serialise::serialise (const FAT::File& file, unsigned char* p)
 	p = serialise (file.chunks (), p);
 
 	return p;
-}
-
-unsigned char* Serialise::deserialise (unsigned int& i, unsigned char* p)
-{
-	size_t sz = sizeof (i);
-	return copyFrom (&i, p, sz); 
 }
 
 unsigned char* Serialise::deserialise (unsigned long& l, unsigned char* p)

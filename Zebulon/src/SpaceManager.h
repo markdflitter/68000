@@ -7,20 +7,22 @@
 class SpaceManager
 {
 public:
+	typedef unsigned long block_address_t;
+
 	SpaceManager ();	
 
 	struct Chunk {
 		Chunk () : m_start (0), m_length (0) {} 
-		Chunk (unsigned int start, size_t length) : m_start (start), m_length (length) {} 
-		unsigned int m_start;
-		size_t m_length;
+		Chunk (block_address_t start, block_address_t length) : m_start (start), m_length (length) {} 
+		block_address_t m_start;
+		block_address_t m_length;
 	};
 
-	std::list <Chunk> allocate (size_t size);
+	std::list <Chunk> allocate (block_address_t size);
 
 	void print () const;
 
-	void format (size_t size);
+	void format (block_address_t size);
 
 	unsigned char* serialise (unsigned char* p) const;
 	unsigned char* deserialise (unsigned char* p);
