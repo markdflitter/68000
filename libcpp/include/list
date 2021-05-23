@@ -1,6 +1,8 @@
 #ifndef LIST
 #define LIST
 
+#include <size_t.h>
+
 namespace std
 {
 

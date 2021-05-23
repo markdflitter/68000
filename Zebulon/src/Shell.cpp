@@ -131,7 +131,7 @@ void printBuffer (unsigned char* buffer, size_t bufferLen)
 }
 
 
-void readB (SpaceManager::block_address_t block)
+void readB (block_address_t block)
 {
 	printf ("reading from %d\n\r", block);
 
@@ -141,7 +141,7 @@ void readB (SpaceManager::block_address_t block)
 	printBuffer (data, 512);
 }
 
-void writeB (SpaceManager::block_address_t block)
+void writeB (block_address_t block)
 {
 	printf ("writing to %d\n\r", block);
 
@@ -150,9 +150,9 @@ void writeB (SpaceManager::block_address_t block)
 	__ide_write (block, data);
 }
 
-void save (SpaceManager::block_address_t startBlock)
+void save (block_address_t startBlock)
 {
-	SpaceManager::block_address_t curBlock = startBlock;
+	block_address_t curBlock = startBlock;
 
 	static char* begin = (char*) &__begin;
 	static char* end = (char*) &__end;
@@ -160,12 +160,12 @@ void save (SpaceManager::block_address_t startBlock)
 
 	printf ("start 0x%x end 0x%x entry 0x%x\n\r", begin, end, entry);
 
-	FAT::file_address_t length = end - begin;
-	SpaceManager::block_address_t numBlocks = (length / 512) + 1;
+	file_address_t length = end - begin;
+	block_address_t numBlocks = (length / 512) + 1;
 
 	printf ("%d bytes, which is %d blocks\n\r", length, numBlocks);
 
-	for (FAT::file_address_t b = 0; b < length;)
+	for (file_address_t b = 0; b < length;)
 	{
 		unsigned char block [512];
 		if (b == 0)
@@ -189,37 +189,38 @@ void save (SpaceManager::block_address_t startBlock)
 }
 
 
-void format (FAT& fat, SpaceManager::block_address_t size)
+void format (FAT& fat, block_address_t size)
 {
 	printf ("formatting to %d\n\r", size);	
 	fat.format (size);
 }
 
-void stat (const FAT::File& file)
+void stat (const File& file)
 {
 	printf ("%s : %d bytes : ",file.name ().c_str (), file.size ());
-	for (std::list<SpaceManager::Chunk>::const_iterator i = file.chunks ().begin (); i != file.chunks() .end (); i++)
+	for (std::list<Chunk>::const_iterator i = file.chunks ().begin (); i != file.chunks() .end (); i++)
 		printf ("%d -> %d (length %d)\n\r", (*i).m_start, (*i).m_start + (*i).m_length - 1, (*i).m_length);
 }
 
-void create (FAT& fat, const std::string& filename, SpaceManager::block_address_t size)
+void create (FAT& fat, const std::string& filename, block_address_t size)
 {
 	printf ("creating file '%s' of size %d\n\r", filename.c_str (), size);
-	FAT::File file = fat.createFile (filename, size);
+	File file = fat.createFile (filename, size);
 	stat (file);
 }
 
 void write (FAT& fat, const std::string& filename)
 {
-	std::list<FAT::File>& files = fat.ls ();
+/*
+	std::list<File>& files = fat.ls ();
 	
-	for (std::list<FAT::File>::iterator i = files.begin (); i != files.end (); i++)
+	for (std::list<File>::iterator i = files.begin (); i != files.end (); i++)
 	{
 		if ((*i).name () == filename)
 		{
-			FAT::OpenFile f = (*i).open ();
+			OpenFile f = (*i).open ();
 
-			FAT::file_address_t bytesLeftToWrite = (*i).allocSize();
+			file_address_t bytesLeftToWrite = (*i).allocSize();
 
 			unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
 
@@ -245,19 +246,21 @@ void write (FAT& fat, const std::string& filename)
 			}
 		}
 	}
+*/
 }
 
 void read (FAT& fat, const std::string& filename)
 {
-	std::list<FAT::File>& files = fat.ls ();
+/*
+	std::list<File>& files = fat.ls ();
 	
-	for (std::list<FAT::File>::iterator i = files.begin (); i != files.end (); i++)
+	for (std::list<File>::iterator i = files.begin (); i != files.end (); i++)
 	{
 		if ((*i).name () == filename)
 		{
-			FAT::file_address_t bytesLeftToRead = (*i).size ();
+			file_address_t bytesLeftToRead = (*i).size ();
 			
-			FAT::OpenFile f = (*i).open ();
+			OpenFile f = (*i).open ();
 
 			while (!f.EOF ())
 			{
@@ -278,12 +281,13 @@ void read (FAT& fat, const std::string& filename)
 			break;
 		}
 	}
+*/
 }
 
 void ls (FAT& fat)
 {
-	std::list<FAT::File>& files = fat.ls ();
-	for (std::list<FAT::File>::iterator i = files.begin (); i != files.end (); i++)
+	std::list<File>& files = fat.ls ();
+	for (std::list<File>::iterator i = files.begin (); i != files.end (); i++)
 		stat (*i);
 }
 
@@ -352,28 +356,28 @@ void Shell::run () const
 			if (tokens [0] == "ident") ident ();
 			if (tokens [0] == "readB" && tokens.size () > 1) 
 			{
-				SpaceManager::block_address_t block = atol (tokens [1].c_str ());
+				block_address_t block = atol (tokens [1].c_str ());
 				readB (block);
 			}
 			if (tokens [0] == "writeB" && tokens.size () > 1)
 			{
-				SpaceManager::block_address_t block = atol (tokens [1].c_str ());
+				block_address_t block = atol (tokens [1].c_str ());
 				writeB (block);
 			}
 			if (tokens [0] == "save" && tokens.size () > 1)
 			{
-				SpaceManager::block_address_t block = atol (tokens [1].c_str ());			
+				block_address_t block = atol (tokens [1].c_str ());			
 				save (block);
 			}
 			if (tokens [0] == "format" && tokens.size () > 1)
 			{
-				SpaceManager::block_address_t size = atol (tokens [1].c_str ());			
+				block_address_t size = atol (tokens [1].c_str ());			
 				format (fat, size);
 			}
 			if (tokens [0] == "create" && tokens.size () > 2)
 			{
 				std::string filename (tokens [1].c_str ());
-				SpaceManager::block_address_t size = atol (tokens [2].c_str ());
+				block_address_t size = atol (tokens [2].c_str ());
 				create (fat, filename, size);
 			}
 			if (tokens [0] == "write" && tokens.size () > 1)

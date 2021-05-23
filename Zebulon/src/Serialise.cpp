@@ -1,10 +1,8 @@
 #include "Serialise.h"
 #include <string.h>
-#include <stdio.h>
 
 namespace
 {
-
 
 unsigned char* inc_p (unsigned char* p, size_t sz)
 {
@@ -38,13 +36,13 @@ unsigned char* Serialise::serialise (const std::string& s, unsigned char* p)
 	return copyTo (p, s.c_str (), sz);
 }
 
-unsigned char* Serialise::serialise (const SpaceManager::Chunk& chunk, unsigned char* p)
+unsigned char* Serialise::serialise (const Chunk& chunk, unsigned char* p)
 {
 	size_t sz = sizeof (chunk);
 	return copyTo (p, &chunk, sz);
 }
 
-unsigned char* Serialise::serialise (const FAT::File& file, unsigned char* p)
+unsigned char* Serialise::serialise (const File& file, unsigned char* p)
 {
 	p = serialise (file.name (), p);
 	p = serialise (file.size (), p);
@@ -75,23 +73,23 @@ unsigned char* Serialise::deserialise (std::string& s, unsigned char* p, size_t 
 	return p;
 }
 
-unsigned char* Serialise::deserialise (SpaceManager::Chunk& chunk, unsigned char* p)
+unsigned char* Serialise::deserialise (Chunk& chunk, unsigned char* p)
 {
 	size_t sz = sizeof (chunk);
 	return copyFrom (&chunk, p, sizeof (chunk));
 }
 
-unsigned char* Serialise::deserialise (FAT::File& file, unsigned char* p)
+unsigned char* Serialise::deserialise (File& file, unsigned char* p)
 {
 	std::string name;	
 	p = deserialise (name, p, 20);
 	file.setName (name);
 
-	FAT::file_address_t size;	
+	file_address_t size;	
 	p = deserialise (size, p);
 	file.setSize (size);
 
-	std::list<SpaceManager::Chunk> chunks;
+	std::list<Chunk> chunks;
 	p = deserialise (chunks, p);
 	file.setChunks (chunks);
 

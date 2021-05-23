@@ -1,15 +1,14 @@
 #include "SpaceManager.h"
-#include <string>
-#include <string.h>
-#include <bsp.h>
-#include <stdio.h>
 #include "Serialise.h"
+#include <stdio.h>
 
-SpaceManager::SpaceManager ()
+void SpaceManager::format (block_address_t size)
 {
+	m_free.clear ();
+	m_free.push_back (Chunk (1, size));
 }
 
-std::list<SpaceManager::Chunk> SpaceManager::allocate (block_address_t size)
+std::list<Chunk> SpaceManager::allocate (block_address_t size)
 {
 	std::list<Chunk> allocation;
 
@@ -27,21 +26,6 @@ std::list<SpaceManager::Chunk> SpaceManager::allocate (block_address_t size)
 	return allocation;
 }	
 
-void SpaceManager::print () const
-{
-	unsigned int chunk = 0;
-	for (std::list<Chunk>::const_iterator i = m_free.begin (); i != m_free.end (); i++)
-	{
-		printf ("%d : %d -> %d\n\r", chunk, (*i).m_start, (*i).m_start + (*i).m_length);
-	}
-}
-
-void SpaceManager::format (block_address_t size)
-{
-	m_free.clear ();
-	m_free.push_back (Chunk (1, size));
-}
-
 unsigned char* SpaceManager::serialise (unsigned char* p) const
 {
 	return Serialise::serialise (m_free, p);
@@ -52,7 +36,6 @@ unsigned char* SpaceManager::deserialise (unsigned char* p)
 	p = Serialise::deserialise (m_free, p);
 
  	printf ("loaded %d free chunks\n\r",m_free.size ());
-	print ();
 
 	return p;
 }

@@ -1,262 +1,15 @@
 #include "FAT.h"
-#include <string>
-#include <string.h>
 #include <bsp.h>
 #include <stdio.h>
 #include "Serialise.h"
-
-
-FAT::OpenFile::OpenFile (File* file)
-	: m_file (file), m_bufferPointer (0), m_bufferModified (false)
-{
-	setFilePointer (0);
-}
-
-FAT::OpenFile::~OpenFile ()
-{
-	flush ();
-	m_file->fat ()->save ();
-}
-
-void FAT::OpenFile::read (unsigned char* data, file_address_t numBytes)	
-{
-	//printf ("read %d bytes from %d\n\r", numBytes, m_filePointer);
-	unsigned char* p = data;
-	while (numBytes > 0)
-	{
-		readCurBlock ();
-
-		file_address_t bytesToCopy = numBytes;
-	
-		file_address_t bytesLeftInCurrentBuffer = 512 - (m_bufferPointer - m_buffer);
-		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
-
-		p = copyFromBuffer (p, bytesToCopy);
-		numBytes -= bytesToCopy;
-	}
-}
-	
-void FAT::OpenFile::write (unsigned char* data, file_address_t numBytes)	
-{
-	//printf ("writing %d bytes to %d\n\r", numBytes, m_filePointer);
-	unsigned char* p = data;
-	while (numBytes > 0)
-	{
-		readCurBlock ();
-
-		file_address_t bytesToCopy = numBytes;
-	
-		file_address_t bytesLeftInCurrentBuffer = 512 - (m_bufferPointer - m_buffer);
-		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
-
-		p = copyToBuffer (p, bytesToCopy);
-		if (m_filePointer > m_file->size ())
-			m_file->setSize (m_filePointer);
-
-		numBytes -= bytesToCopy;
-	}
-}
-
-bool FAT::OpenFile::EOF () const
-{
-	return m_filePointer >= m_file->size ();
-}
-
-unsigned char* FAT::OpenFile::copyFromBuffer (unsigned char* data, file_address_t bytesToCopy)
-{
-	//printf ("copying %d bytes from buffer\n\r", bytesToCopy);
-
-	memcpy (data, m_bufferPointer, bytesToCopy);
-	data += bytesToCopy;
-	m_bufferPointer += bytesToCopy;
-	setFilePointer (m_filePointer + bytesToCopy);
-	
-	return data;
-}
-
-
-unsigned char* FAT::OpenFile::copyToBuffer (unsigned char* data, file_address_t bytesToCopy)
-{
-	//printf ("copying %d bytes to buffer\n\r", bytesToCopy);
-
-	m_bufferModified = true;
-
-	memcpy (m_bufferPointer, data, bytesToCopy);
-	data += bytesToCopy;
-	m_bufferPointer += bytesToCopy;
-	setFilePointer (m_filePointer + bytesToCopy);
-	
-	return data;
-}
-
-
-void FAT::OpenFile::flush ()
-{
-	//printf ("flush\n\r");
-	writeCurBlock ();
-}
-
-void FAT::OpenFile::writeCurBlock ()
-{
-	if (m_bufferModified)
-	{
-		//printf ("buffer modified - writing block %d\n\r", m_curBlock);	
-		__ide_write (m_curBlock, m_buffer);
-		m_bufferModified = false;
-	}
-}
-
-void FAT::OpenFile::readCurBlock ()
-{
-	if (!m_bufferLoaded)
-	{	
-		//printf ("buffer not loaded - reading block %d\n\r", m_curBlock);	
-		__ide_read (m_curBlock, m_buffer);
-		m_bufferLoaded = true;
-	}
-}
-
-bool FAT::OpenFile::findBlock (file_address_t filePointer, SpaceManager::block_address_t& block)
-{
-	//printf ("find block for file pointer %d\n\r", filePointer);
-	unsigned long blockIndex = (filePointer / 512) + 1;
-	//printf ("block Index is %d\n\r", blockIndex);
-
-	std::list<SpaceManager::Chunk>::const_iterator i = m_file->chunks ().begin ();
-
-	while (i != m_file->chunks ().end ())
-	{
-		//printf ("check block from %d to %d\n\r", (*i).m_start, (*i).m_start + (*i).m_length - 1);
-
-		if ((*i).m_length >= blockIndex)
-		{
-			//printf ("match!\n\r");
-			block = (*i).m_start + blockIndex -1;
-			break;
-		}
-		else
-		{
-			//printf ("next\n\r");
-			blockIndex -= (*i).m_length;
-			//printf ("blockIndex is now %d\n\r", blockIndex);
-			i++;
-		}
-	}
-	
-	if (i != m_file->chunks ().end ())
-	{
-		//printf ("found block %d in chunk %d -> %d\n\r", block, (*i).m_start, (*i).m_start + (*i).m_length - 1);
-		return true;
-	}
-	else
-	{
-		//printf ("[ERROR] FAT - not enough space\n\r");
-		return false;
-	}
-}
-
-
-void FAT::OpenFile::setFilePointer (file_address_t filePointer)
-{
-	//printf ("setting file pointer to %d, was %d\n\r", filePointer, m_filePointer);
-
-	SpaceManager::block_address_t newBlock;
-	bool validBlock = findBlock (filePointer, newBlock);
-
-	//printf ("new block is %d, was %d\n\r", newBlock, m_curBlock);
-
-	if (m_bufferPointer == 0 || (newBlock != m_curBlock))
-	{
-		if (m_bufferPointer == 0)
-		{
-			//printf ("first read\n\r");
-			;
-		}
-		else
-		{
-			//printf ("block changed\n\r");
-			flush ();		
-		}
-
-		m_bufferLoaded = !validBlock;
-		
-		m_bufferPointer = m_buffer + (filePointer % 512);
-		//printf ("set buffer pointer to %d\n\r", m_bufferPointer - m_buffer);
-	}
-
-	m_curBlock = newBlock;
-	m_filePointer = filePointer;
-}
-
-FAT::File::File (FAT* fat, const std::string& name, const std::list<SpaceManager::Chunk> chunks)
-	: m_fat (fat), m_name (name), m_chunks (chunks), m_size (0)
-{
-}
-
-const FAT* FAT::File::fat () const
-{
-	return m_fat;
-}
-
-
-void FAT::File::setFat (const FAT* fat)
-{
-	m_fat = fat;
-}
-
-std::string FAT::File::name () const
-{
-	return m_name;
-}
-
-void FAT::File::setName (const std::string& name)
-{
-	m_name = name;
-}
-
-FAT::file_address_t FAT::File::size () const
-{
-	return m_size;
-}
-
-void FAT::File::setSize (file_address_t size)
-{
-	m_size = size;
-}
-
-const std::list <SpaceManager::Chunk>& FAT::File::chunks () const
-{
-	return m_chunks;
-}
-
-void FAT::File::setChunks (const std::list <SpaceManager::Chunk>& chunks)
-{
-	m_chunks = chunks;
-}
-
-
-FAT::file_address_t FAT::File::allocSize () const
-{
-	FAT::file_address_t result = 0;
-
-	for (std::list<SpaceManager::Chunk>::const_iterator i = m_chunks.begin (); i != m_chunks.end (); i++)
-		result = (*i).m_length * 512;
-	
-	return result;
-}
-	
-FAT::OpenFile FAT::File::open ()
-{
-	return OpenFile (this);
-}
-
+#include <string.h>
 
 FAT::FAT ()
 {
 	load ();
 }
 
-FAT::File FAT::createFile (const std::string& name, SpaceManager::block_address_t size)
+File FAT::createFile (const std::string& name, block_address_t size)
 {
 	File result (this, name, m_spaceManager.allocate (size));
 	m_files.push_back (result);
@@ -266,12 +19,12 @@ FAT::File FAT::createFile (const std::string& name, SpaceManager::block_address_
 	return result;
 }
 
-std::list<FAT::File>& FAT::ls ()
+std::list<File>& FAT::ls ()
 {
 	return m_files;
 }
 
-void FAT::format (SpaceManager::block_address_t size)
+void FAT::format (block_address_t size)
 {
 	m_spaceManager.format (size);
 	m_files.clear ();

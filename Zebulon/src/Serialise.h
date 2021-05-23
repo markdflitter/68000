@@ -2,18 +2,17 @@
 #define SERIALISE_H
 
 #include <string>
+#include "Chunk.h"
+#include "File.h"
 #include <list>
-#include "SpaceManager.h"
-#include "FAT.h"
-#include <stdio.h>
 
 class Serialise
 {
 public:
 	static unsigned char* serialise (unsigned long l, unsigned char* p);
 	static unsigned char* serialise (const std::string& s, unsigned char* p);
-	static unsigned char* serialise (const SpaceManager::Chunk& chunk, unsigned char* p);
-	static unsigned char* serialise (const FAT::File& file, unsigned char* p);
+	static unsigned char* serialise (const Chunk& chunk, unsigned char* p);
+	static unsigned char* serialise (const File& file, unsigned char* p);
 	template <class T> static unsigned char* serialise (const std::list<T>& list, unsigned char* p)
 	{
 		size_t num = list.size ();
@@ -28,8 +27,8 @@ public:
 	static unsigned char* deserialise (unsigned int& i, unsigned char* p);
 	static unsigned char* deserialise (unsigned long& l, unsigned char* p);
 	static unsigned char* deserialise (std::string& s, unsigned char* p, size_t maxLength);
-	static unsigned char* deserialise (SpaceManager::Chunk& chunk, unsigned char* p);
-	static unsigned char* deserialise (FAT::File& file, unsigned char* p);
+	static unsigned char* deserialise (Chunk& chunk, unsigned char* p);
+	static unsigned char* deserialise (File& file, unsigned char* p);
 	template <class T> static unsigned char* deserialise (std::list <T>& list, unsigned char* p)
 	{
 		list.clear ();
