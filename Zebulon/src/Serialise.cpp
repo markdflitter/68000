@@ -91,7 +91,9 @@ unsigned char* Serialise::deserialise (FAT::File& file, unsigned char* p)
 	p = deserialise (size, p);
 	file.setSize (size);
 
-	p = deserialise (file.chunks (), p);
+	std::list<SpaceManager::Chunk> chunks;
+	p = deserialise (chunks, p);
+	file.setChunks (chunks);
 
 	return p;
 }

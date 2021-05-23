@@ -58,10 +58,10 @@ public:
 		file_address_t size () const;
 		void setSize (file_address_t bytes);
 
-		std::list <SpaceManager::Chunk>& chunks ();
+		const std::list <SpaceManager::Chunk>& chunks () const;
+		void setChunks (const std::list <SpaceManager::Chunk>& chunks);
 
 		file_address_t allocSize () const;
-		const std::list <SpaceManager::Chunk>& chunks () const;
 
 		FAT::OpenFile open ();
 		FAT* fat;

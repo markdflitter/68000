@@ -122,7 +122,7 @@ bool FAT::OpenFile::findBlock (file_address_t filePointer, SpaceManager::block_a
 	unsigned long blockIndex = (filePointer / 512) + 1;
 	//printf ("block Index is %d\n\r", blockIndex);
 
-	std::list<SpaceManager::Chunk>::iterator i = m_file.chunks ().begin ();
+	std::list<SpaceManager::Chunk>::const_iterator i = m_file.chunks ().begin ();
 
 	while (i != m_file.chunks ().end ())
 	{
@@ -218,10 +218,16 @@ void FAT::File::setSize (file_address_t size)
 	m_size = size;
 }
 
-std::list <SpaceManager::Chunk>& FAT::File::chunks ()
+const std::list <SpaceManager::Chunk>& FAT::File::chunks () const
 {
 	return m_chunks;
 }
+
+void FAT::File::setChunks (const std::list <SpaceManager::Chunk>& chunks)
+{
+	m_chunks = chunks;
+}
+
 
 FAT::file_address_t FAT::File::allocSize () const
 {
@@ -233,11 +239,6 @@ FAT::file_address_t FAT::File::allocSize () const
 	return result;
 }
 	
-const std::list <SpaceManager::Chunk>& FAT::File::chunks () const
-{
-	return m_chunks;
-}
-
 FAT::OpenFile FAT::File::open ()
 {
 	return OpenFile (*this);
@@ -253,7 +254,7 @@ FAT::File FAT::createFile (const std::string& name, SpaceManager::block_address_
 {
 	File result;
 	result.setName (name);
-	result.chunks () = m_spaceManager.allocate (size);
+	result.setChunks (m_spaceManager.allocate (size));
 	result.fat = this;
 	
 	m_files.push_back (result);
