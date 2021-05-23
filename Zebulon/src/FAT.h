@@ -5,7 +5,7 @@
 #include <string>
 #include "file_handle.h"
 #include <list>
-#include "File.h"
+#include "FileHeader.h"
 #include "SpaceManager.h"
 #include <vector>
 #include "OpenFile.h"
@@ -22,11 +22,11 @@ public:
 	FILE open (const std::string& name);
 	void close (FILE file);
 
-	std::list<File::Ptr>& ls ();
+	std::list<FileHeader::Ptr>& ls ();
 
 	void save () const;
 private:
-	File::Ptr findFile (const std::string& name);
+	FileHeader::Ptr findFile (const std::string& name);
 
 	unsigned char* serialise (unsigned char* p) const;
 	unsigned char* deserialise (unsigned char* p);
@@ -34,7 +34,7 @@ private:
 	void load ();
 
 	SpaceManager m_spaceManager;	
-	std::list<File::Ptr> m_files;
+	std::list<FileHeader::Ptr> m_fileHeaders;
 	std::vector<OpenFile::Ptr> m_openFiles;
 };
 

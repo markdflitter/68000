@@ -44,7 +44,7 @@ unsigned char* Serialise::serialise (Chunk::Ptr chunk, unsigned char* p)
 	return copyTo (p, chunk.get_raw (), sz);
 }
 
-unsigned char* Serialise::serialise (File::Ptr file, unsigned char* p)
+unsigned char* Serialise::serialise (FileHeader::Ptr file, unsigned char* p)
 {
 	p = serialise (file->name (), p);
 	p = serialise (file->size (), p);
@@ -59,7 +59,7 @@ unsigned char* Serialise::serialise (Chunk::ConstPtr chunk, unsigned char* p)
 	return copyTo (p, chunk.get_raw (), sz);
 }
 
-unsigned char* Serialise::serialise (File::ConstPtr file, unsigned char* p)
+unsigned char* Serialise::serialise (FileHeader::ConstPtr file, unsigned char* p)
 {
 	p = serialise (file->name (), p);
 	p = serialise (file->size (), p);
@@ -97,7 +97,7 @@ unsigned char* Serialise::deserialise (Chunk::Ptr chunk, unsigned char* p)
 	return copyFrom (chunk.get_raw (), p, sz);
 }
 
-unsigned char* Serialise::deserialise (File::Ptr file, unsigned char* p)
+unsigned char* Serialise::deserialise (FileHeader::Ptr file, unsigned char* p)
 {
 	string name;	
 	p = deserialise (name, p, 20);

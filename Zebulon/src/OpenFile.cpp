@@ -5,8 +5,8 @@
 
 using namespace std;
 
-OpenFile::OpenFile (File::Ptr file)
-	: m_file (file), m_bufferPointer (0), m_bufferModified (false)
+OpenFile::OpenFile (FileHeader::Ptr fileHeader)
+	: m_fileHeader (fileHeader), m_bufferPointer (0), m_bufferModified (false)
 {
 	setFilePointer (0);
 }
@@ -14,7 +14,7 @@ OpenFile::OpenFile (File::Ptr file)
 OpenFile::~OpenFile ()
 {
 	flush ();
-	m_file->fat ()->save ();
+	m_fileHeader->fat ()->save ();
 }
 
 void OpenFile::read (unsigned char* data, file_address_t numBytes)	
@@ -49,8 +49,8 @@ void OpenFile::write (unsigned char* data, file_address_t numBytes)
 		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
 
 		p = copyToBuffer (p, bytesToCopy);
-		if (m_filePointer > m_file->size ())
-			m_file->setSize (m_filePointer);
+		if (m_filePointer > m_fileHeader->size ())
+			m_fileHeader->setSize (m_filePointer);
 
 		numBytes -= bytesToCopy;
 	}
@@ -58,7 +58,7 @@ void OpenFile::write (unsigned char* data, file_address_t numBytes)
 
 bool OpenFile::EOF () const
 {
-	return m_filePointer >= m_file->size ();
+	return m_filePointer >= m_fileHeader->size ();
 }
 
 unsigned char* OpenFile::copyFromBuffer (unsigned char* data, file_address_t bytesToCopy)
@@ -119,9 +119,9 @@ bool OpenFile::findBlock (file_address_t filePointer, block_address_t& block)
 	unsigned long blockIndex = (filePointer / 512) + 1;
 	//printf ("block Index is %d\n\r", blockIndex);
 
-	list<Chunk::Ptr>::const_iterator i = m_file->chunks ().begin ();
+	list<Chunk::Ptr>::const_iterator i = m_fileHeader->chunks ().begin ();
 
-	while (i != m_file->chunks ().end ())
+	while (i != m_fileHeader->chunks ().end ())
 	{
 		//printf ("check block from %d to %d\n\r", (*i).start, (*i).start + (*i).length - 1);
 
@@ -140,7 +140,7 @@ bool OpenFile::findBlock (file_address_t filePointer, block_address_t& block)
 		}
 	}
 	
-	if (i != m_file->chunks ().end ())
+	if (i != m_fileHeader->chunks ().end ())
 	{
 		//printf ("found block %d in chunk %d -> %d\n\r", block, (*i).start, (*i).start + (*i).length - 1);
 		return true;

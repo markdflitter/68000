@@ -3,7 +3,7 @@
 
 #include <string>
 #include "Chunk.h"
-#include "File.h"
+#include "FileHeader.h"
 #include <list>
 
 class Serialise
@@ -12,9 +12,9 @@ public:
 	static unsigned char* serialise (unsigned long l, unsigned char* p);
 	static unsigned char* serialise (const std::string& s, unsigned char* p);
 	static unsigned char* serialise (Chunk::Ptr chunk, unsigned char* p);
-	static unsigned char* serialise (File::Ptr file, unsigned char* p);
+	static unsigned char* serialise (FileHeader::Ptr file, unsigned char* p);
 	static unsigned char* serialise (Chunk::ConstPtr chunk, unsigned char* p);
-	static unsigned char* serialise (File::ConstPtr file, unsigned char* p);
+	static unsigned char* serialise (FileHeader::ConstPtr file, unsigned char* p);
 		template <class T> static unsigned char* serialise (const std::list<T>& list, unsigned char* p)
 	{
 		size_t num = list.size ();
@@ -30,7 +30,7 @@ public:
 	static unsigned char* deserialise (unsigned long& l, unsigned char* p);
 	static unsigned char* deserialise (std::string& s, unsigned char* p, size_t maxLength);
 	static unsigned char* deserialise (Chunk::Ptr chunk, unsigned char* p);
-	static unsigned char* deserialise (File::Ptr file, unsigned char* p);
+	static unsigned char* deserialise (FileHeader::Ptr file, unsigned char* p);
 	template <class T> static unsigned char* deserialise (std::list <T>& list, unsigned char* p)
 	{
 		size_t num = 0;

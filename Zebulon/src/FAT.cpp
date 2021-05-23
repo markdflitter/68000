@@ -1,6 +1,4 @@
 #include "FAT.h"
-#include "File.h"
-#include "OpenFile.h"
 #include <bsp.h>
 #include <stdio.h>
 #include "Serialise.h"
@@ -17,12 +15,12 @@ FAT::FAT ()
 FAT::~FAT()
 {
 	m_openFiles.clear ();
-	m_files.clear ();
+	m_fileHeaders.clear ();
 }
 
 void FAT::format (block_address_t size)
 {
-	m_files.clear ();
+	m_fileHeaders.clear ();
 	m_spaceManager.format (size);
 	save ();
 }
@@ -35,13 +33,13 @@ void FAT::create (const string& name, block_address_t initialSize)
 		return ;
 	}
 	
-	m_files.push_back (make_shared (new File (this, name, m_spaceManager.allocate (initialSize))));
+	m_fileHeaders.push_back (make_shared (new FileHeader (this, name, m_spaceManager.allocate (initialSize))));
 	save ();	
 }
 
 FILE FAT::open (const string& name)
 {
-	File::Ptr f = findFile (name);
+	FileHeader::Ptr f = findFile (name);
 	if (f.isNull ())
 	{
 		printf ("file not found\n\r");
@@ -64,18 +62,18 @@ void FAT::close (FILE file)
 	m_openFiles [file].reset ();
 }
 
-list<File::Ptr>& FAT::ls ()
+list<FileHeader::Ptr>& FAT::ls ()
 {
-	return m_files;
+	return m_fileHeaders;
 }
 
-File::Ptr FAT::findFile (const string& name)
+FileHeader::Ptr FAT::findFile (const string& name)
 {
-	for (list<File::Ptr>::iterator i = m_files.begin (); i != m_files.end (); i++)
+	for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
 		if ((*i)->name () == name)
 			return (*i);
 
-	return File::Ptr ();
+	return FileHeader::Ptr ();
 }
 
 const char* FatIdent = "__Zebulon_FAT__1__";
@@ -88,7 +86,7 @@ unsigned char* FAT::serialise (unsigned char* p) const
 
 	p = m_spaceManager.serialise (p);
 
-	p = Serialise::serialise (m_files, p);	
+	p = Serialise::serialise (m_fileHeaders, p);	
 
 	return p;
 }
@@ -96,7 +94,7 @@ unsigned char* FAT::serialise (unsigned char* p) const
 unsigned char* FAT::deserialise (unsigned char* p)
 {
 	m_openFiles.clear ();
-	m_files.clear ();
+	m_fileHeaders.clear ();
 
 	string readIdent;
 	p = Serialise::deserialise (readIdent, p, strlen (FatIdent));
@@ -116,11 +114,11 @@ unsigned char* FAT::deserialise (unsigned char* p)
 
 	p = m_spaceManager.deserialise (p);
 		
-	p = Serialise::deserialise (m_files, p);
-	for (list<File::Ptr>::iterator i = m_files.begin(); i != m_files.end (); i++)
+	p = Serialise::deserialise (m_fileHeaders, p);
+	for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin(); i != m_fileHeaders.end (); i++)
 		(*i)->setFat (this);
 
-	printf ("found %d files\n\r", m_files.size ());
+	printf ("found %d files\n\r", m_fileHeaders.size ());
 	
 	return p;
 }
