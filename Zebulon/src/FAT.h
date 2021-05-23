@@ -49,8 +49,10 @@ public:
 	class File
 	{
 	public:
-		File ();
-		File (const std::string& name);
+		File (FAT* fat = 0, const std::string& name = "", const std::list<SpaceManager::Chunk> chunks = std::list<SpaceManager::Chunk> ());
+
+		const FAT* fat () const;
+		void setFat (const FAT* fat);
 
 		std::string name () const;
 		void setName (const std::string& name);
@@ -64,8 +66,8 @@ public:
 		file_address_t allocSize () const;
 
 		FAT::OpenFile open ();
-		FAT* fat;
 	private:
+		const FAT* m_fat;
 		std::string m_name;
 		file_address_t  m_size;
 		std::list <SpaceManager::Chunk> m_chunks;

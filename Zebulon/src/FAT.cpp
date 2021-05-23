@@ -15,7 +15,7 @@ FAT::OpenFile::OpenFile (File& file)
 FAT::OpenFile::~OpenFile ()
 {
 	flush ();
-	m_file.fat->save ();
+	m_file.fat ()->save ();
 }
 
 void FAT::OpenFile::read (unsigned char* data, file_address_t numBytes)	
@@ -188,14 +188,20 @@ void FAT::OpenFile::setFilePointer (file_address_t filePointer)
 	m_filePointer = filePointer;
 }
 
-FAT::File::File ()
-	: m_size (0)
+FAT::File::File (FAT* fat, const std::string& name, const std::list<SpaceManager::Chunk> chunks)
+	: m_fat (fat), m_name (name), m_chunks (chunks), m_size (0)
 {
 }
 
-FAT::File::File (const std::string& name)
-	: m_name (name), m_size (0)
+const FAT* FAT::File::fat () const
 {
+	return m_fat;
+}
+
+
+void FAT::File::setFat (const FAT* fat)
+{
+	m_fat = fat;
 }
 
 std::string FAT::File::name () const
@@ -252,11 +258,7 @@ FAT::FAT ()
 
 FAT::File FAT::createFile (const std::string& name, SpaceManager::block_address_t size)
 {
-	File result;
-	result.setName (name);
-	result.setChunks (m_spaceManager.allocate (size));
-	result.fat = this;
-	
+	File result (this, name, m_spaceManager.allocate (size));
 	m_files.push_back (result);
 		
 	save ();
@@ -313,7 +315,7 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	
 	p = Serialise::deserialise (m_files, p);
 	for (std::list<File>::iterator i = m_files.begin(); i != m_files.end (); i++)
-		(*i).fat = this;
+		(*i).setFat (this);
 
 	printf ("found %d files\n\r", m_files.size ());
 	
