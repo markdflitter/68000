@@ -198,9 +198,14 @@ FAT::File::File (const std::string& name)
 {
 }
 
-std::string& FAT::File::name ()
+std::string FAT::File::name () const
 {
 	return m_name;
+}
+
+void FAT::File::setName (const std::string& name)
+{
+	m_name = name;
 }
 
 FAT::file_address_t& FAT::File::bytes ()
@@ -211,11 +216,6 @@ FAT::file_address_t& FAT::File::bytes ()
 std::list <SpaceManager::Chunk>& FAT::File::chunks ()
 {
 	return m_chunks;
-}
-
-const std::string& FAT::File::name () const
-{
-	return m_name;
 }
 
 FAT::file_address_t FAT::File::allocSize () const
@@ -252,7 +252,7 @@ FAT::FAT ()
 FAT::File FAT::createFile (const std::string& name, SpaceManager::block_address_t size)
 {
 	File result;
-	result.name () = name;
+	result.setName (name);
 	result.chunks () = m_spaceManager.allocate (size);
 	result.fat = this;
 	

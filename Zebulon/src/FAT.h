@@ -51,13 +51,14 @@ public:
 	public:
 		File ();
 		File (const std::string& name);
-		
-		std::string& name ();
+
+		std::string name () const;
+		void setName (const std::string& name);
+
 		file_address_t& bytes ();
 		std::list <SpaceManager::Chunk>& chunks ();
 
-		const std::string& name () const;
-		file_address_t allocSize () const;
+	file_address_t allocSize () const;
 		const file_address_t& bytes () const;
 		const std::list <SpaceManager::Chunk>& chunks () const;
 

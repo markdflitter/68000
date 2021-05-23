@@ -83,7 +83,10 @@ unsigned char* Serialise::deserialise (SpaceManager::Chunk& chunk, unsigned char
 
 unsigned char* Serialise::deserialise (FAT::File& file, unsigned char* p)
 {
-	p = deserialise (file.name (), p, 20);
+	std::string name;	
+	p = deserialise (name, p, 20);
+	file.setName (name);
+
 	p = deserialise (file.bytes (), p);
 	p = deserialise (file.chunks (), p);
 
