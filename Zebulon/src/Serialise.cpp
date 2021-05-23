@@ -1,6 +1,8 @@
 #include "Serialise.h"
 #include <string.h>
 
+using namespace std;
+
 namespace
 {
 
@@ -29,27 +31,43 @@ unsigned char* Serialise::serialise (unsigned long l, unsigned char* p)
 	return copyTo (p, &l, sz); 
 }
 
-unsigned char* Serialise::serialise (const std::string& s, unsigned char* p)
+unsigned char* Serialise::serialise (const string& s, unsigned char* p)
 {
 	size_t sz = s.length ();
 	p = serialise (sz, p);	
 	return copyTo (p, s.c_str (), sz);
 }
 
-unsigned char* Serialise::serialise (const Chunk& chunk, unsigned char* p)
+unsigned char* Serialise::serialise (Chunk::Ptr chunk, unsigned char* p)
 {
-	size_t sz = sizeof (chunk);
-	return copyTo (p, &chunk, sz);
+	size_t sz = sizeof (*chunk);
+	return copyTo (p, chunk.get_raw (), sz);
 }
 
-unsigned char* Serialise::serialise (const File& file, unsigned char* p)
+unsigned char* Serialise::serialise (File::Ptr file, unsigned char* p)
 {
-	p = serialise (file.name (), p);
-	p = serialise (file.size (), p);
-	p = serialise (file.chunks (), p);
+	p = serialise (file->name (), p);
+	p = serialise (file->size (), p);
+	p = serialise (file->chunks (), p);
 
 	return p;
 }
+
+unsigned char* Serialise::serialise (Chunk::ConstPtr chunk, unsigned char* p)
+{
+	size_t sz = sizeof (*chunk);
+	return copyTo (p, chunk.get_raw (), sz);
+}
+
+unsigned char* Serialise::serialise (File::ConstPtr file, unsigned char* p)
+{
+	p = serialise (file->name (), p);
+	p = serialise (file->size (), p);
+	p = serialise (file->chunks (), p);
+
+	return p;
+}
+
 
 unsigned char* Serialise::deserialise (unsigned long& l, unsigned char* p)
 {
@@ -57,7 +75,7 @@ unsigned char* Serialise::deserialise (unsigned long& l, unsigned char* p)
 	return copyFrom (&l, p, sz); 
 }
 
-unsigned char* Serialise::deserialise (std::string& s, unsigned char* p, size_t maxLength)
+unsigned char* Serialise::deserialise (string& s, unsigned char* p, size_t maxLength)
 {
 	size_t sz = 0;
 	p =	deserialise (sz, p);
@@ -68,30 +86,30 @@ unsigned char* Serialise::deserialise (std::string& s, unsigned char* p, size_t 
 
 	p = copyFrom (buf, p, sz);
 	
-	s = std::string (buf);
+	s = string (buf);
 				
 	return p;
 }
 
-unsigned char* Serialise::deserialise (Chunk& chunk, unsigned char* p)
+unsigned char* Serialise::deserialise (Chunk::Ptr chunk, unsigned char* p)
 {
-	size_t sz = sizeof (chunk);
-	return copyFrom (&chunk, p, sizeof (chunk));
+	size_t sz = sizeof (*chunk);
+	return copyFrom (chunk.get_raw (), p, sz);
 }
 
-unsigned char* Serialise::deserialise (File& file, unsigned char* p)
+unsigned char* Serialise::deserialise (File::Ptr file, unsigned char* p)
 {
-	std::string name;	
+	string name;	
 	p = deserialise (name, p, 20);
-	file.setName (name);
+	file->setName (name);
 
 	file_address_t size;	
 	p = deserialise (size, p);
-	file.setSize (size);
+	file->setSize (size);
 
-	std::list<Chunk> chunks;
+	list<Chunk::Ptr> chunks;
 	p = deserialise (chunks, p);
-	file.setChunks (chunks);
+	file->setChunks (chunks);
 
 	return p;
 }

@@ -1,0 +1,86 @@
+#ifndef SHAREDPTR_H
+#define SHAREDPTR_H
+
+namespace mdf
+{
+
+template <class T>
+class shared_ptr
+{
+public:
+	explicit shared_ptr ()
+		: m_t (0)
+	{
+		m_count = new int (1);	
+	}
+
+	explicit shared_ptr (T* t)
+		: m_t (t)
+	{
+		m_count = new int (1);	
+	}
+
+	~shared_ptr ()
+	{
+		decrement_count ();
+	}
+
+	template <class U>
+		shared_ptr (const shared_ptr<U>& other)
+			: m_t (other.m_t), m_count (other.m_count)
+		{	
+			increment_count ();
+		}
+
+	template <class U>
+		shared_ptr& operator= (const shared_ptr<U>& other)
+		{
+			if (&other != this)
+			{
+				decrement_count ();
+				m_t = other.m_t;
+				m_count = other.m_count;
+				increment_count ();
+			}
+		}
+
+	bool isNull () const { return m_t == 0; }
+	void reset () { decrement_count (); m_t == 0; }
+
+	T* operator-> () { return m_t; }
+	const T* operator-> () const { return m_t; }
+
+	T& operator* () { return *m_t; }
+	const T& operator* () const { return *m_t; }
+
+	T* get_raw () { return m_t; }
+	const T* get_raw () const { return m_t; }
+private:
+	void increment_count ()
+	{
+		*m_count++;
+	}
+
+	void decrement_count ()
+	{
+		*m_count--;
+		if (*m_count == 0)
+		{
+			delete m_count;
+			m_count = 0;
+		
+			delete m_t;
+			m_t = 0;
+		}
+	}
+
+	T* m_t;
+	int* m_count;
+};
+
+template <class T>
+shared_ptr <T> make_shared (T* t) {return shared_ptr<T> (t);}
+
+}
+
+#endif

@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "FAT.h"
 #include "ctype.h"
-
+/*
 extern char* __begin;
 extern char* __end;
 extern char* start;
@@ -199,7 +199,7 @@ void stat (const File& file)
 {
 	printf ("%s : %d bytes : ",file.name ().c_str (), file.size ());
 	for (std::list<Chunk>::const_iterator i = file.chunks ().begin (); i != file.chunks() .end (); i++)
-		printf ("%d -> %d (length %d)\n\r", (*i).m_start, (*i).m_start + (*i).m_length - 1, (*i).m_length);
+		printf ("%d -> %d (length %d)\n\r", (*i).start, (*i).start + (*i).length - 1, (*i).length);
 }
 
 void create (FAT& fat, const std::string& filename, block_address_t size)
@@ -246,12 +246,10 @@ void write (FAT& fat, const std::string& filename)
 			}
 		}
 	}
-*/
 }
 
 void read (FAT& fat, const std::string& filename)
 {
-/*
 	std::list<File>& files = fat.ls ();
 	
 	for (std::list<File>::iterator i = files.begin (); i != files.end (); i++)
@@ -281,7 +279,6 @@ void read (FAT& fat, const std::string& filename)
 			break;
 		}
 	}
-*/
 }
 
 void ls (FAT& fat)
@@ -396,3 +393,4 @@ void Shell::run () const
 
 	return ;
 }
+*/

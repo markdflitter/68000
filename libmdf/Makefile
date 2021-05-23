@@ -34,7 +34,7 @@ LINK_LINE := -lgcc -lcpp -lbsp -lc -lbsp -lgcc -Wl,--whole-archive -litanium -lc
 
 #top level build targets
 TOP_LEVEL_TARGET := Zebulon
-DEPENDENCIES := libbsp libc libitanium libcpp libmdf libstart libcrt
+DEPENDENCIES := libbsp libc libitanium libcpp libstart libcrt
 
 #find the source files and which object files they produce
 SRC_FILES := $(wildcard $(SRC_DIRECTORY)/*.c $(SRC_DIRECTORY)/*.cpp $(SRC_DIRECTORY)/*.s)

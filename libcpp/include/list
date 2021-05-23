@@ -152,7 +152,7 @@ public:
 		bool operator== (const const_iterator& other) const {return cur == other.cur;}
 		bool operator!= (const const_iterator& other) const {return !(*this == other);}
 
-		const T& operator* () const {return cur->value;}
+		const T& operator* () {return cur->value;}
 	private:
 		const_iterator (node * start) : cur (start) {}
 
