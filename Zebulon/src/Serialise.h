@@ -45,6 +45,20 @@ public:
 
 		return p;
 	}
+	template <class T> static unsigned char* deserialise (std::list <mdf::shared_ptr <T> >& list, unsigned char* p)
+	{
+		size_t num = 0;
+		p = deserialise (num, p);
+
+		for (int i = 0; i < num; i++)
+		{
+			mdf::shared_ptr <T> t = mdf::make_shared (new T);
+			p = deserialise (t, p);
+			list.push_back (t);
+		}
+
+		return p;
+	}
 };	
 
 #endif
