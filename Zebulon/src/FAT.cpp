@@ -6,7 +6,7 @@
 #include "Serialise.h"
 
 
-FAT::OpenFile::OpenFile (File& file)
+FAT::OpenFile::OpenFile (File* file)
 	: m_file (file), m_bufferPointer (0), m_bufferModified (false)
 {
 	setFilePointer (0);
@@ -15,7 +15,7 @@ FAT::OpenFile::OpenFile (File& file)
 FAT::OpenFile::~OpenFile ()
 {
 	flush ();
-	m_file.fat ()->save ();
+	m_file->fat ()->save ();
 }
 
 void FAT::OpenFile::read (unsigned char* data, file_address_t numBytes)	
@@ -50,8 +50,8 @@ void FAT::OpenFile::write (unsigned char* data, file_address_t numBytes)
 		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
 
 		p = copyToBuffer (p, bytesToCopy);
-		if (m_filePointer > m_file.size ())
-			m_file.setSize (m_filePointer);
+		if (m_filePointer > m_file->size ())
+			m_file->setSize (m_filePointer);
 
 		numBytes -= bytesToCopy;
 	}
@@ -59,7 +59,7 @@ void FAT::OpenFile::write (unsigned char* data, file_address_t numBytes)
 
 bool FAT::OpenFile::EOF () const
 {
-	return m_filePointer >= m_file.size ();
+	return m_filePointer >= m_file->size ();
 }
 
 unsigned char* FAT::OpenFile::copyFromBuffer (unsigned char* data, file_address_t bytesToCopy)
@@ -122,9 +122,9 @@ bool FAT::OpenFile::findBlock (file_address_t filePointer, SpaceManager::block_a
 	unsigned long blockIndex = (filePointer / 512) + 1;
 	//printf ("block Index is %d\n\r", blockIndex);
 
-	std::list<SpaceManager::Chunk>::const_iterator i = m_file.chunks ().begin ();
+	std::list<SpaceManager::Chunk>::const_iterator i = m_file->chunks ().begin ();
 
-	while (i != m_file.chunks ().end ())
+	while (i != m_file->chunks ().end ())
 	{
 		//printf ("check block from %d to %d\n\r", (*i).m_start, (*i).m_start + (*i).m_length - 1);
 
@@ -143,7 +143,7 @@ bool FAT::OpenFile::findBlock (file_address_t filePointer, SpaceManager::block_a
 		}
 	}
 	
-	if (i != m_file.chunks ().end ())
+	if (i != m_file->chunks ().end ())
 	{
 		//printf ("found block %d in chunk %d -> %d\n\r", block, (*i).m_start, (*i).m_start + (*i).m_length - 1);
 		return true;
@@ -247,7 +247,7 @@ FAT::file_address_t FAT::File::allocSize () const
 	
 FAT::OpenFile FAT::File::open ()
 {
-	return OpenFile (*this);
+	return OpenFile (this);
 }
 
 

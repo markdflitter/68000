@@ -18,7 +18,7 @@ public:
 	class OpenFile
 	{
 	public:
-		OpenFile (File& file);
+		OpenFile (File* file);
 		~OpenFile ();
 
 		void read (unsigned char* data, file_address_t numBytes);	
@@ -36,7 +36,7 @@ public:
 		unsigned char* copyFromBuffer (unsigned char* data, file_address_t bytesToCopy);
 		unsigned char* copyToBuffer (unsigned char* data, file_address_t bytesToCopy);
 	
-		File& m_file;
+		File* m_file;
 		unsigned char m_buffer [512];
 		unsigned char* m_bufferPointer;
 		
