@@ -50,8 +50,8 @@ void FAT::OpenFile::write (unsigned char* data, file_address_t numBytes)
 		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
 
 		p = copyToBuffer (p, bytesToCopy);
-		if (m_filePointer > m_file.bytes ())
-			m_file.bytes () = m_filePointer;
+		if (m_filePointer > m_file.size ())
+			m_file.setSize (m_filePointer);
 
 		numBytes -= bytesToCopy;
 	}
@@ -59,7 +59,7 @@ void FAT::OpenFile::write (unsigned char* data, file_address_t numBytes)
 
 bool FAT::OpenFile::EOF () const
 {
-	return m_filePointer >= m_file.bytes ();
+	return m_filePointer >= m_file.size ();
 }
 
 unsigned char* FAT::OpenFile::copyFromBuffer (unsigned char* data, file_address_t bytesToCopy)
@@ -189,12 +189,12 @@ void FAT::OpenFile::setFilePointer (file_address_t filePointer)
 }
 
 FAT::File::File ()
-	: m_bytes (0)
+	: m_size (0)
 {
 }
 
 FAT::File::File (const std::string& name)
-	: m_name (name), m_bytes (0)
+	: m_name (name), m_size (0)
 {
 }
 
@@ -208,9 +208,14 @@ void FAT::File::setName (const std::string& name)
 	m_name = name;
 }
 
-FAT::file_address_t& FAT::File::bytes ()
+FAT::file_address_t FAT::File::size () const
 {
-	return m_bytes;
+	return m_size;
+}
+
+void FAT::File::setSize (file_address_t size)
+{
+	m_size = size;
 }
 
 std::list <SpaceManager::Chunk>& FAT::File::chunks ()
@@ -228,11 +233,6 @@ FAT::file_address_t FAT::File::allocSize () const
 	return result;
 }
 	
-const FAT::file_address_t& FAT::File::bytes () const
-{
-	return m_bytes;
-}
-
 const std::list <SpaceManager::Chunk>& FAT::File::chunks () const
 {
 	return m_chunks;

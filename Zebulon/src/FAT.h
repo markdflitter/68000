@@ -55,19 +55,20 @@ public:
 		std::string name () const;
 		void setName (const std::string& name);
 
-		file_address_t& bytes ();
+		file_address_t size () const;
+		void setSize (file_address_t bytes);
+
 		std::list <SpaceManager::Chunk>& chunks ();
 
-	file_address_t allocSize () const;
-		const file_address_t& bytes () const;
+		file_address_t allocSize () const;
 		const std::list <SpaceManager::Chunk>& chunks () const;
 
 		FAT::OpenFile open ();
 		FAT* fat;
 	private:
 		std::string m_name;
+		file_address_t  m_size;
 		std::list <SpaceManager::Chunk> m_chunks;
-		file_address_t  m_bytes;
 	};
 
 	File createFile (const std::string& name, size_t size);

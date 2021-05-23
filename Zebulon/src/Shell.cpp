@@ -197,7 +197,7 @@ void format (FAT& fat, SpaceManager::block_address_t size)
 
 void stat (const FAT::File& file)
 {
-	printf ("%s : %d bytes : ",file.name ().c_str (), file.bytes ());
+	printf ("%s : %d bytes : ",file.name ().c_str (), file.size ());
 	for (std::list<SpaceManager::Chunk>::const_iterator i = file.chunks ().begin (); i != file.chunks() .end (); i++)
 		printf ("%d -> %d (length %d)\n\r", (*i).m_start, (*i).m_start + (*i).m_length - 1, (*i).m_length);
 }
@@ -255,7 +255,7 @@ void read (FAT& fat, const std::string& filename)
 	{
 		if ((*i).name () == filename)
 		{
-			FAT::file_address_t bytesLeftToRead = (*i).bytes ();
+			FAT::file_address_t bytesLeftToRead = (*i).size ();
 			
 			FAT::OpenFile f = (*i).open ();
 

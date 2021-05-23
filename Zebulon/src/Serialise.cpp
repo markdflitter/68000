@@ -47,7 +47,7 @@ unsigned char* Serialise::serialise (const SpaceManager::Chunk& chunk, unsigned 
 unsigned char* Serialise::serialise (const FAT::File& file, unsigned char* p)
 {
 	p = serialise (file.name (), p);
-	p = serialise (file.bytes (), p);
+	p = serialise (file.size (), p);
 	p = serialise (file.chunks (), p);
 
 	return p;
@@ -87,7 +87,10 @@ unsigned char* Serialise::deserialise (FAT::File& file, unsigned char* p)
 	p = deserialise (name, p, 20);
 	file.setName (name);
 
-	p = deserialise (file.bytes (), p);
+	FAT::file_address_t size;	
+	p = deserialise (size, p);
+	file.setSize (size);
+
 	p = deserialise (file.chunks (), p);
 
 	return p;
