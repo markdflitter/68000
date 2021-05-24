@@ -24,7 +24,7 @@ public:
 private:
 	void writeCurBlock ();
 	void readCurBlock ();
-	bool findBlock (file_address_t filePointer, block_address_t & block);
+	block_address_t findBlock (file_address_t filePointer);
 		
 	void setFilePointer (file_address_t filePointer);
 	unsigned char* copyFromBuffer (unsigned char* data, file_address_t bytesToCopy);

@@ -125,8 +125,10 @@ void OpenFile::readCurBlock ()
 	}
 }
 
-bool OpenFile::findBlock (file_address_t filePointer, block_address_t& block)
+block_address_t OpenFile::findBlock (file_address_t filePointer)
 {
+	block_address_t result;
+
 	//printf ("find block for file pointer %d\n\r", filePointer);
 	unsigned long blockIndex = (filePointer / 512) + 1;
 	//printf ("block Index is %d\n\r", blockIndex);
@@ -140,7 +142,7 @@ bool OpenFile::findBlock (file_address_t filePointer, block_address_t& block)
 		if ((*i)->length >= blockIndex)
 		{
 			//printf ("match!\n\r");
-			block = (*i)->start + blockIndex -1;
+			result = (*i)->start + blockIndex -1;
 			break;
 		}
 		else
@@ -154,23 +156,21 @@ bool OpenFile::findBlock (file_address_t filePointer, block_address_t& block)
 	
 	if (i != m_fileHeader->chunks ().end ())
 	{
-		//printf ("found block %d in chunk %d -> %d\n\r", block, (*i)->start, (*i)->start + (*i)->length - 1);
-		return true;
+		//printf ("found block %d in chunk %d -> %d\n\r", result, (*i)->start, (*i)->start + (*i)->length - 1);
 	}
 	else
 	{
 		//printf ("[ERROR] FAT - not enough space\n\r");
-		return false;
 	}
+
+	return result;
 }
 
 void OpenFile::setFilePointer (file_address_t filePointer)
 {
 	//printf ("setting file pointer to %d, was %d\n\r", filePointer, m_filePointer);
 
-	block_address_t newBlock;
-	bool validBlock = findBlock (filePointer, newBlock);
-
+	block_address_t newBlock = findBlock (filePointer);
 	//printf ("new block is %d, was %d\n\r", newBlock, m_curBlock);
 
 	if (m_bufferPointer == 0 || (newBlock != m_curBlock))
