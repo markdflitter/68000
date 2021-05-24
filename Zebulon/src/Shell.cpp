@@ -328,7 +328,7 @@ const char* version = "Z-Shell V1.15";
 	
 void Shell::run () const
 {
-	printf ("%s\n\r\n\r", banner);	
+	printf ("%s\n\r", banner);	
 
 	FAT fat;
 

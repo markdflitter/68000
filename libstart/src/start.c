@@ -38,7 +38,7 @@ extern "C" int __main (void)
   	call_static_constructors ();
 	asm ("MOVE.B #8,0xE00001");
 	
-	printf ("%s", "handing off to main()\n\r\");
+	printf ("%s", "handing off to main()\n\r");
 	return main ();
 }
 
