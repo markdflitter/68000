@@ -182,6 +182,30 @@ public:
 		for (const_iterator i = other.begin ();	i != other.end (); i++)
 			push_back (*i);
 	}
+
+	void splice (iterator position, list& other)
+	{
+		if (other.empty ()) return ;
+
+		node* insertBefore = position.cur;
+		node* otherHead = other.begin ().cur;
+		node* otherEnd = other.end ().cur->prev;
+		
+		insertBefore->prev->next = otherHead;
+		otherHead->prev = insertBefore->prev;
+
+		insertBefore->prev = otherEnd;
+		otherEnd->next = insertBefore;
+
+		m_size += other.m_size;
+
+		other.m_end->prev = other.m_rend;
+		other.m_rend->next = other.m_end;
+
+		other.m_size = 0;
+	}
+
+
 private:
 	void init ()
 	{

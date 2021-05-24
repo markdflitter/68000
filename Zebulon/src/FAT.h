@@ -33,6 +33,7 @@ public:
 	std::list<std::string> ls () const;
 	FileStat stat (const std::string& name) const;
 
+	void extend (FileHeader::Ptr fileHeader, block_address_t numBlocks = 1);	
 	void save () const;
 private:
 	FileHeader::ConstPtr findFile (const std::string& name) const;

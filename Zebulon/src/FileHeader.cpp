@@ -7,13 +7,13 @@ FileHeader::FileHeader (FAT* fat, const string& name, const list<Chunk::Ptr> chu
 {
 }
 
-const FAT* FileHeader::fat () const
+FAT* FileHeader::fat () 
 {
 	return m_fat;
 }
 
 
-void FileHeader::setFat (const FAT* fat)
+void FileHeader::setFat (FAT* fat)
 {
 	m_fat = fat;
 }
@@ -53,7 +53,12 @@ file_address_t FileHeader::allocSize () const
 	file_address_t result = 0;
 
 	for (list<Chunk::Ptr>::const_iterator i = m_chunks.begin (); i != m_chunks.end (); i++)
-		result = (*i)->length * 512;
+		result = result + (*i)->length * 512;
 	
 	return result;
+}
+
+void FileHeader::extend (std::list<Chunk::Ptr>& newAllocation)
+{
+	m_chunks.splice (m_chunks.end (), newAllocation);
 }

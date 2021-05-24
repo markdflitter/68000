@@ -57,7 +57,6 @@ void FAT::close (FILE file)
 	m_openFiles [file].reset ();
 }
 
-
 void FAT::read (FILE file, unsigned char* data, file_address_t numBytes) const
 {
 	OpenFile::Ptr of = getOpenFile (file);
@@ -137,7 +136,6 @@ OpenFile::ConstPtr FAT::getOpenFile (FILE file) const
 	return m_openFiles [file];
 }
 
-
 OpenFile::Ptr FAT::getOpenFile (FILE file)
 {
 	if ((file >= m_openFiles.size ()) || (m_openFiles [file].isNull ()))
@@ -195,6 +193,12 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	printf (">> found %d files\n\r", m_fileHeaders.size ());
 	
 	return p;
+}
+void FAT::extend (FileHeader::Ptr fileHeader, block_address_t numBlocks)
+{
+	list<Chunk::Ptr> newAllocation = m_spaceManager.allocate (numBlocks);
+	fileHeader->extend (newAllocation);
+	save ();
 }
 	
 void FAT::save () const

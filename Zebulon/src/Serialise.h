@@ -5,6 +5,7 @@
 #include "Chunk.h"
 #include "FileHeader.h"
 #include <list>
+#include <stdio.h>
 
 class Serialise
 {
@@ -21,7 +22,7 @@ public:
 		p = (unsigned char*) serialise (num, p);
 
 		for (typename std::list<T>::const_iterator i = list.begin (); i != list.end (); i++)
-			p = serialise (*i, p);
+				p = serialise (*i, p);
 
 		return p;
 	}

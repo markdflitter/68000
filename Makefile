@@ -129,7 +129,7 @@ $(INSTALLED_TARGET): $(BUILD_TARGET)
 	$(CP) $^ $@
 
 _copy: $(BUILD_TARGET) 
-	$(STTY) $(BAUD) -F $(TTY) && $(CAT) $^ > $(TTY)
+	$(STTY) $(BAUD) clocal -cread -crtscts -echo -F $(TTY) && $(CAT) $^ > $(TTY)
 
 _clean:
 	$(RM) $(BUILD_DIRECTORY)

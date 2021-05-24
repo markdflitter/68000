@@ -106,7 +106,17 @@ void OpenFile::writeCurBlock ()
 void OpenFile::readCurBlock ()
 {
 	if (!m_bufferLoaded)
-	{	
+	{
+		//printf ("%d %d\n\r", m_fileHeader->size (), m_fileHeader->allocSize ());
+		if (m_filePointer >= m_fileHeader->allocSize ())
+		{
+			//printf ("extending file\n\r");
+			m_fileHeader->fat ()->extend (m_fileHeader, 1);
+		
+			m_bufferPointer = 0;
+			setFilePointer (m_filePointer);
+		}
+	
 		//printf ("buffer not loaded - reading block %d\n\r", m_curBlock);	
 		__ide_read (m_curBlock, m_buffer);
 		m_bufferLoaded = true;
@@ -123,7 +133,7 @@ bool OpenFile::findBlock (file_address_t filePointer, block_address_t& block)
 
 	while (i != m_fileHeader->chunks ().end ())
 	{
-		//printf ("check block from %d to %d\n\r", (*i).start, (*i).start + (*i).length - 1);
+		//printf ("check block from %d to %d\n\r", (*i)->start, (*i)->start + (*i)->length - 1);
 
 		if ((*i)->length >= blockIndex)
 		{
@@ -142,7 +152,7 @@ bool OpenFile::findBlock (file_address_t filePointer, block_address_t& block)
 	
 	if (i != m_fileHeader->chunks ().end ())
 	{
-		//printf ("found block %d in chunk %d -> %d\n\r", block, (*i).start, (*i).start + (*i).length - 1);
+		//printf ("found block %d in chunk %d -> %d\n\r", block, (*i)->start, (*i)->start + (*i)->length - 1);
 		return true;
 	}
 	else
@@ -174,7 +184,7 @@ void OpenFile::setFilePointer (file_address_t filePointer)
 			flush ();		
 		}
 
-		m_bufferLoaded = !validBlock;
+		m_bufferLoaded = false;
 		
 		m_bufferPointer = m_buffer + (filePointer % 512);
 		//printf ("set buffer pointer to %d\n\r", m_bufferPointer - m_buffer);

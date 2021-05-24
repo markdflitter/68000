@@ -211,12 +211,12 @@ void create (FAT& fat, const string& filename, block_address_t size)
 	stat (fat, filename);
 }
 
-void write (FAT& fat, const string& filename)
+void write (FAT& fat, const string& filename, block_address_t size)
 {
 	FILE f = fat.open (filename);
 	if (f == file_not_found) return ;
 
-	file_address_t bytesLeftToWrite = fat.stat (filename).allocSize;
+	file_address_t bytesLeftToWrite = size;
 
 	unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
 
@@ -379,10 +379,11 @@ void Shell::run () const
 				block_address_t size = atol (tokens [2].c_str ());
 				create (fat, filename, size);
 			}
-			if (tokens [0] == "write" && tokens.size () > 1)
+			if (tokens [0] == "write" && tokens.size () > 2)
 			{
 				string filename (tokens [1].c_str ());
-				write (fat, filename);
+				block_address_t size = atol (tokens [2].c_str ());
+				write (fat, filename, size);
 			}
 			if (tokens [0] == "read" && tokens.size () > 1)
 			{

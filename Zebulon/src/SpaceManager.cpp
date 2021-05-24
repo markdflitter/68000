@@ -14,14 +14,17 @@ std::list<Chunk::Ptr> SpaceManager::allocate (block_address_t size)
 {
 	std::list<Chunk::Ptr> allocation;
 
-	if (m_free.size () > 0)
+	if (size > 0)
 	{
-		Chunk::Ptr first = *(m_free.begin ());
-		if (first->length >= size)
+		if (m_free.size () > 0)
 		{
-			allocation.push_back (make_shared (new Chunk (first->start, size)));
-			first->start += size;
-			first->length -= size;
+			Chunk::Ptr first = *(m_free.begin ());
+			if (first->length >= size)
+			{
+				allocation.push_back (make_shared (new Chunk (first->start, size)));
+				first->start += size;
+				first->length -= size;
+			}
 		}
 	}
 

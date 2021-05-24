@@ -17,8 +17,8 @@ public:
 
 	FileHeader (FAT* fat = 0, const std::string& name = "", const std::list<Chunk::Ptr> chunks = std::list<Chunk::Ptr> ());
 
-	const FAT* fat () const;
-	void setFat (const FAT* fat);
+	FAT* fat ();
+	void setFat (FAT* fat);
 
 	std::string name () const;
 	void setName (const std::string& name);
@@ -30,8 +30,10 @@ public:
 	void setChunks (const std::list <Chunk::Ptr>& chunks);
 
 	file_address_t allocSize () const;
+	
+	void extend (std::list<Chunk::Ptr>& newAllocation);
 private:
-	const FAT* m_fat;
+	FAT* m_fat;
 	std::string m_name;
 	file_address_t  m_size;
 	std::list <Chunk::Ptr> m_chunks;
