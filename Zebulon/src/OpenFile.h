@@ -23,7 +23,7 @@ public:
 	void flush ();
 private:
 	void writeCurBlock ();
-	void readCurBlock ();
+	bool readCurBlock ();
 	block_address_t findBlock (file_address_t filePointer);
 		
 	void setFilePointer (file_address_t filePointer);

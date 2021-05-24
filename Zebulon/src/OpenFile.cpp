@@ -2,6 +2,7 @@
 #include "FAT.h"
 #include <string.h>
 #include <bsp.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ void OpenFile::read (unsigned char* data, file_address_t numBytes)
 	unsigned char* p = data;
 	while (numBytes > 0)
 	{
-		readCurBlock ();
+		if (!readCurBlock ()) return ;
 
 		file_address_t bytesToCopy = numBytes;
 	
@@ -41,7 +42,7 @@ void OpenFile::write (unsigned char* data, file_address_t numBytes)
 	unsigned char* p = data;
 	while (numBytes > 0)
 	{
-		readCurBlock ();
+		if (!readCurBlock ()) return ;
 
 		file_address_t bytesToCopy = numBytes;
 	
@@ -95,7 +96,7 @@ void OpenFile::flush ()
 
 void OpenFile::writeCurBlock ()
 {
-	if (m_bufferModified)
+	if (m_bufferModified && (m_curBlock > 0))
 	{
 		//printf ("buffer modified - writing block %d\n\r", m_curBlock);	
 		__ide_write (m_curBlock, m_buffer);
@@ -103,7 +104,7 @@ void OpenFile::writeCurBlock ()
 	}
 }
 
-void OpenFile::readCurBlock ()
+bool OpenFile::readCurBlock ()
 {
 	if (!m_bufferLoaded)
 	{
@@ -111,7 +112,8 @@ void OpenFile::readCurBlock ()
 		if (m_filePointer >= m_fileHeader->allocSize ())
 		{
 			//printf ("extending file\n\r");
-			m_fileHeader->fat ()->extend (m_fileHeader, 1);
+			if (!m_fileHeader->fat ()->extend (m_fileHeader, 1))
+				return false;
 		
 			m_bufferPointer = 0;
 			setFilePointer (m_filePointer);
@@ -123,11 +125,13 @@ void OpenFile::readCurBlock ()
 		}
 		m_bufferLoaded = true;
 	}
+
+	return true;
 }
 
 block_address_t OpenFile::findBlock (file_address_t filePointer)
 {
-	block_address_t result;
+	block_address_t result = 0;
 
 	//printf ("find block for file pointer %d\n\r", filePointer);
 	unsigned long blockIndex = (filePointer / 512) + 1;

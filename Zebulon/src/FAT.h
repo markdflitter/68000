@@ -20,7 +20,7 @@ public:
 		
 	void format (block_address_t size);
 	
-	void create (const std::string& name, block_address_t initialSize = 0);
+	bool create (const std::string& name, block_address_t initialSize = 0);
 
 	FILE open (const std::string& name);
 	void close (FILE file);
@@ -33,7 +33,7 @@ public:
 	std::list<std::string> ls () const;
 	FileStat stat (const std::string& name) const;
 
-	void extend (FileHeader::Ptr fileHeader, block_address_t numBlocks = 1);	
+	bool extend (FileHeader::Ptr fileHeader, block_address_t numBlocks = 1);	
 	void save () const;
 private:
 	FileHeader::ConstPtr findFile (const std::string& name) const;

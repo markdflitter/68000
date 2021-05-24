@@ -25,16 +25,25 @@ void FAT::format (block_address_t size)
 	save ();
 }
 
-void FAT::create (const string& name, block_address_t initialSize)
+bool FAT::create (const string& name, block_address_t initialSize)
 {
 	if (!findFile (name).isNull ())
 	{
 		printf (">> file already exists\n\r");
-		return ;
+		return false;
 	}
-	
-	m_fileHeaders.push_back (make_shared (new FileHeader (this, name, m_spaceManager.allocate (initialSize))));
+
+	list<Chunk::Ptr> allocation = m_spaceManager.allocate (initialSize);
+	if ((initialSize > 0) && (allocation.size () == 0))
+	{
+		printf (">>> disk full\n\r");
+		return false;
+	}
+
+	m_fileHeaders.push_back (make_shared (new FileHeader (this, name, allocation)));
+
 	save ();	
+	return true;
 }
 
 FILE FAT::open (const string& name)
@@ -194,11 +203,19 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	
 	return p;
 }
-void FAT::extend (FileHeader::Ptr fileHeader, block_address_t numBlocks)
+bool FAT::extend (FileHeader::Ptr fileHeader, block_address_t numBlocks)
 {
 	list<Chunk::Ptr> newAllocation = m_spaceManager.allocate (numBlocks);
+
+	if ((numBlocks > 0) && (newAllocation.size () == 0))
+	{
+		printf (">>> disk full\n\r");
+		return false;
+	}
+
 	fileHeader->extend (newAllocation);
 	save ();
+	return true;
 }
 	
 void FAT::save () const
@@ -208,7 +225,7 @@ void FAT::save () const
 	
 	p = serialise (p);
 	
-	printf ("FAT size %d\n\r", p - block);
+	printf ("saved FAT: size %d\n\r", p - block);
 	if ((p - block) > 512)
 		printf (">>> FAT Block is full!!!!\n\r");
 

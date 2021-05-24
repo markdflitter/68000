@@ -192,7 +192,7 @@ void save (block_address_t startBlock)
 
 void format (FAT& fat, block_address_t size)
 {
-	printf ("formatting to %d\n\r", size);	
+	printf ("formatting: size %d blocks\n\r", size);	
 	fat.format (size);
 }
 
@@ -215,8 +215,7 @@ void stat (const FAT& fat, const string& name)
 void create (FAT& fat, const string& filename, block_address_t size)
 {
 	printf ("creating file '%s' of size %d\n\r", filename.c_str (), size);
-	fat.create (filename, size);
-	stat (fat, filename);
+	if (fat.create (filename, size)) stat (fat, filename);
 }
 
 void write (FAT& fat, const string& filename, block_address_t size)
