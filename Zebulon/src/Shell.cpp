@@ -314,14 +314,26 @@ Shell::Shell (unsigned int& tick) : m_tick (tick)
 {
 }
 
+const char* banner = 
+"  ____\n\r"
+" |    / ____________________________________\n\r"
+"     /  ___  ___                ___         \n\r"
+"    /  |    |   \\  |   |  |    /   \\  |\\   |\n\r"
+" __/__ |__  | __/  |   |  |    | | |  | \\  |\n\r"
+"  /    |    |   \\  |   |  |    | | |  |  \\ |\n\r" 
+" /     |___ |___/  \\___/  |___ \\___/  |   \\|\n\r"
+"/____| _____________________________________\n\r";
+
+const char* version = "Z-Shell V1.15";
+	
 void Shell::run () const
 {
+	printf ("%s\n\r\n\r", banner);	
+
 	FAT fat;
 
-	const char* version = "Z-Shell V1.14";
-	printf ("\n\r");
-	printf ("%s\n\r",version);
-	printf ("type help for help\n\r");
+	printf ("\n\r%s\n\r",version);
+	printf ("type help for help\n\r\n\r");
 
 	char buf [255];
 	int exit = 0;

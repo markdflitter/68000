@@ -192,7 +192,7 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin(); i != m_fileHeaders.end (); i++)
 		(*i)->setFat (this);
 
-	printf ("found %d files\n\r", m_fileHeaders.size ());
+	printf (">> found %d files\n\r", m_fileHeaders.size ());
 	
 	return p;
 }
