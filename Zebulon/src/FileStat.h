@@ -9,8 +9,8 @@
 struct FileStat
 {
 	FileStat () {}
-	FileStat (const std::string& _name, file_address_t _size, file_address_t allocSize)
-		: name (_name), size (_size) {}
+	FileStat (const std::string& _name, file_address_t _size, file_address_t _allocSize)
+		: name (_name), size (_size), allocSize (_allocSize) {}
 
 	std::string name;
 	file_address_t size;	
