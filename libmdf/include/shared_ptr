@@ -14,13 +14,13 @@ public:
 	explicit shared_ptr ()
 		: m_t (0)
 	{
-		m_count = new int (1);	
+			m_count = new int (1);	
 	}
 
 	explicit shared_ptr (T* t)
 		: m_t (t)
 	{
-		m_count = new int (1);	
+			m_count = new int (1);	
 	}
 
 	~shared_ptr ()
@@ -28,15 +28,32 @@ public:
 		decrement_count ();
 	}
 
-	template <class U>
-		shared_ptr (const shared_ptr<U>& other)
+	shared_ptr (const shared_ptr& other)
 			: m_t (other.m_t), m_count (other.m_count)
 		{	
 			increment_count ();
 		}
 
-	template <class U>
-		shared_ptr& operator= (const shared_ptr<U>& other)
+	template <class U> shared_ptr (const shared_ptr<U>& other)
+			: m_t (other.m_t), m_count (other.m_count)
+		{	
+			increment_count ();
+		}
+
+	shared_ptr& operator= (const shared_ptr& other)
+	{
+		if (&other != this)
+		{
+			decrement_count ();
+			m_t = other.m_t;
+			m_count = other.m_count;
+			increment_count ();
+		}
+
+		return *this;
+	}
+
+	template <class U> shared_ptr& operator= (const shared_ptr<U>& other)
 		{
 			if (&other != this)
 			{
@@ -48,7 +65,7 @@ public:
 		}
 
 	bool isNull () const { return m_t == 0; }
-	void reset () { decrement_count (); m_t == 0; }
+	void reset () { decrement_count (); m_t = 0; }
 
 	T* operator-> () { return m_t; }
 	const T* operator-> () const { return m_t; }
@@ -61,12 +78,14 @@ public:
 private:
 	void increment_count ()
 	{
-		*m_count++;
+		if (!m_count) return ;
+		(*m_count)++;
 	}
 
 	void decrement_count ()
 	{
-		*m_count--;
+		if (!m_count || (*m_count == 0)) return ;
+		(*m_count)--;
 		if (*m_count == 0)
 		{
 			delete m_count;
