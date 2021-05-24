@@ -42,7 +42,7 @@ FILE FAT::open (const string& name)
 	FileHeader::Ptr f = findFile (name);
 	if (f.isNull ())
 	{
-		printf ("file not found\n\r");
+		printf ("> file not found\n\r");
 		return file_not_found;
 	}
 	

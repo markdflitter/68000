@@ -199,9 +199,17 @@ void format (FAT& fat, block_address_t size)
 void stat (const FAT& fat, const string& name)
 {
 	FileStat fileStat = fat.stat (name);
-	printf ("%s : %d bytes : ",fileStat.name.c_str (), fileStat.size);
+	printf ("%s\t\t : %d bytes\t : ",fileStat.name.c_str (), fileStat.size);
+	
+	bool first = true;
 	for (auto i = fileStat.chunks.begin (); i != fileStat.chunks.end (); i++)
-		printf ("%d -> %d (length %d)\n\r", (*i).start, (*i).start + (*i).length - 1, (*i).length);
+	{
+		if (!first) printf (", ");
+		printf ("%d->%d=%d", (*i).start, (*i).start + (*i).length - 1, (*i).length);
+		first = false;
+	}
+	
+	printf ("\n\r");
 }
 
 void create (FAT& fat, const string& filename, block_address_t size)
