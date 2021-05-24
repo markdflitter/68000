@@ -20,7 +20,7 @@ public:
 		
 	void format (block_address_t size);
 	
-	void create (const std::string& name, block_address_t initialSize);
+	void create (const std::string& name, block_address_t initialSize = 0);
 
 	FILE open (const std::string& name);
 	void close (FILE file);

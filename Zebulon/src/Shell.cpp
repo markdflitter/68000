@@ -373,10 +373,11 @@ void Shell::run () const
 				block_address_t size = atol (tokens [1].c_str ());			
 				format (fat, size);
 			}
-			if (tokens [0] == "create" && tokens.size () > 2)
+			if (tokens [0] == "create" && tokens.size () > 1)
 			{
 				string filename (tokens [1].c_str ());
-				block_address_t size = atol (tokens [2].c_str ());
+				block_address_t size = 0;
+				if (tokens.size () > 2) size = atol (tokens [2].c_str ());
 				create (fat, filename, size);
 			}
 			if (tokens [0] == "write" && tokens.size () > 2)
