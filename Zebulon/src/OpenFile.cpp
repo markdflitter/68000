@@ -116,9 +116,11 @@ void OpenFile::readCurBlock ()
 			m_bufferPointer = 0;
 			setFilePointer (m_filePointer);
 		}
-	
-		//printf ("buffer not loaded - reading block %d\n\r", m_curBlock);	
-		__ide_read (m_curBlock, m_buffer);
+		else
+		{	
+			//printf ("buffer not loaded - reading block %d\n\r", m_curBlock);	
+			__ide_read (m_curBlock, m_buffer);
+		}
 		m_bufferLoaded = true;
 	}
 }
