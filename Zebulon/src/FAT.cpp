@@ -29,7 +29,7 @@ void FAT::create (const string& name, block_address_t initialSize)
 {
 	if (!findFile (name).isNull ())
 	{
-		printf ("file already exists\n\r");
+		printf (">> file already exists\n\r");
 		return ;
 	}
 	
@@ -42,7 +42,7 @@ FILE FAT::open (const string& name)
 	FileHeader::Ptr f = findFile (name);
 	if (f.isNull ())
 	{
-		printf ("> file not found\n\r");
+		printf (">> file not found\n\r");
 		return file_not_found;
 	}
 	
@@ -129,7 +129,7 @@ OpenFile::ConstPtr FAT::getOpenFile (FILE file) const
 {
 	if ((file >= m_openFiles.size ()) || (m_openFiles [file].isNull ()))
 	{
-		printf ("not open\n\r");
+		printf (">> file not open\n\r");
 		return OpenFile::ConstPtr ();
 	}
 
@@ -140,7 +140,7 @@ OpenFile::Ptr FAT::getOpenFile (FILE file)
 {
 	if ((file >= m_openFiles.size ()) || (m_openFiles [file].isNull ()))
 	{
-		printf ("not open\n\r");
+		printf (">> file not open\n\r");
 		return OpenFile::Ptr ();
 	}
 
@@ -172,7 +172,7 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	p = Serialise::deserialise (readIdent, p, strlen (FatIdent));
 	if (string (FatIdent) != readIdent)
 	{
-		printf ("[ERROR] FAT - ident mismatch.  Expected %s, got %s\n\r", FatIdent, readIdent.c_str ());
+		printf (">>> FAT - ident mismatch.  Expected %s, got %s\n\r", FatIdent, readIdent.c_str ());
 		return p;
 	}
 
@@ -180,7 +180,7 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	p = Serialise::deserialise (readVersion, p, strlen (FatVersion));
 	if (string (FatVersion) != readVersion)
 	{
-		printf ("[ERROR] FAT - version mismatch.  Expected %s, got %s\n\r", FatVersion, readVersion);
+		printf (">>> FAT - version mismatch.  Expected %s, got %s\n\r", FatVersion, readVersion);
 		return p;
 	}
 
@@ -190,7 +190,7 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin(); i != m_fileHeaders.end (); i++)
 		(*i)->setFat (this);
 
-	printf (">> found %d files\n\r", m_fileHeaders.size ());
+	printf ("> found %d files\n\r", m_fileHeaders.size ());
 	
 	return p;
 }
@@ -203,10 +203,14 @@ void FAT::extend (FileHeader::Ptr fileHeader, block_address_t numBlocks)
 	
 void FAT::save () const
 {
-	unsigned char block [512];
+	unsigned char block [1024];
 	unsigned char* p = block;
 	
 	p = serialise (p);
+	
+	printf ("FAT size %d\n\r", p - block);
+	if ((p - block) > 512)
+		printf (">>> FAT Block is full!!!!\n\r");
 
 	__ide_write (0, block);	
 }
