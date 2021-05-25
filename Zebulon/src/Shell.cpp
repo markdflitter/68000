@@ -184,7 +184,7 @@ void save (block_address_t startBlock)
 			b += 512;
 		}
 
-		printf ("writing block %d of %d\n\r", curBlock - startBlock + 1, numBlocks);
+		printf ("writing block %d of %d to %d\n\r", curBlock - startBlock + 1, numBlocks, curBlock);
 		__ide_write (curBlock, block);
 		curBlock++;
 	}
@@ -342,7 +342,7 @@ const char* banner =
 " /     |___ |___/  \\___/  |___ \\___/  |   \\|\n\r"
 "/____| _____________________________________\n\r";
 
-const char* version = "Z-Shell V1.15";
+const char* version = "Z-Shell V1.17";
 	
 void Shell::run () const
 {
