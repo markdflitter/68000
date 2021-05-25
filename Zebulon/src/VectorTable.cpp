@@ -19,14 +19,8 @@ VectorTable::VectorTable (unsigned char* baseAddress)
 	printf ("set vectors\n\r");
 
 	asm volatile ("move #0x2700, %sr");
-	printf ("set sr\n\r");
-
-	asm volatile ("move.l #0x200000, %a0");
-// : : "m" (base_address));
-	printf ("0 -> d0\n\r");
-
+ 	asm volatile ("move.l #0x200004, %a0");
 	asm volatile ("movec.l %a0, %vbr");
-	printf ("set vbr\n\r");
 }
 
 VectorTable::~VectorTable ()

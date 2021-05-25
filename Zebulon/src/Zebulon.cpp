@@ -25,11 +25,13 @@ void runShell ()
 
 int main ()
 {
-	//VectorTable v (__vector_table);
-	//v.setVector (64, &tick);	
+	VectorTable v (__vector_table);
+	
+	for (int i = 0; i < 256; i++)
+		v.setVector (i, &tick);	
 
-	//__set_interrupt_vector (64);
-	//__enable_interrupts ();
+	__set_interrupt_vector (64);
+	__enable_interrupts ();
 
 	runShell ();
 

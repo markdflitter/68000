@@ -414,7 +414,8 @@ void Shell::run () const
 				read (fat, filename);
 			}
 			if (tokens [0] == "ls") ls (fat);
-		}
+			if (tokens [0] == "uptime") {printf ("%d\n\r",m_tick);}
+			}
 	}
 
 	return ;

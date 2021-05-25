@@ -25,7 +25,7 @@ void FAT::format (block_address_t size)
 	save ();
 }
 
-bool FAT::create (const string& name, block_address_t initialSize)
+bool FAT::create (const string& name, block_address_t initialSize, bool contiguous)
 {
 	if (!findFile (name).isNull ())
 	{
@@ -33,7 +33,7 @@ bool FAT::create (const string& name, block_address_t initialSize)
 		return false;
 	}
 
-	list<Chunk::Ptr> allocation = m_spaceManager.allocate (initialSize);
+	list<Chunk::Ptr> allocation = m_spaceManager.allocate (initialSize, contiguous);
 	if ((initialSize > 0) && (allocation.size () == 0))
 	{
 		printf (">>> disk full\n\r");

@@ -50,12 +50,15 @@ void __set_interrupt_vector (unsigned int vector)
 
 void __enable_interrupts ()
 {
-	return the_duart ().enableInterrupts ();
+	asm volatile ("and.l #0xF8FF, %sr");
+	
+	the_duart ().enableInterrupts ();
 }
 
 void __disable_interrupts ()
 {
-	return the_duart ().disableInterrupts ();
+	asm volatile ("or.l #0x0700, %sr");
+	the_duart ().disableInterrupts ();
 }
 
 
