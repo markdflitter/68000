@@ -342,7 +342,7 @@ const char* banner =
 " /     |___ |___/  \\___/  |___ \\___/  |   \\|\n\r"
 "/____| _____________________________________\n\r";
 
-const char* version = "Z-Shell V1.17";
+const char* version = "Z-Shell V1.18";
 	
 void Shell::run () const
 {
@@ -361,7 +361,6 @@ void Shell::run () const
 		char* p = gets (buf);
 		*p = '\0';
 		printf ("\n\r");
-
 		string command (buf);
 		vector<string> tokens = tokenize (command);
 

@@ -15,10 +15,14 @@ char* gets (char* s)
  		char c = __getch ();
 		__putch (c);
 
- 		if (c == '\r')
- 			break;
-
- 		*buf++ = c;
+		if (c == '\r')
+			break;		
+ 		else if (c == 127) //backspace
+		{
+			if (buf > s) buf--;
+		}
+		else
+			*buf++ = c;
  	}
  
 	return buf;
