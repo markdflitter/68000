@@ -28,6 +28,7 @@ void printHelp (void)
 	printf ("save <block>\t\t - save code to disk\n\r");
 	printf ("format <size>\t\t - format the filing system\n\r");
 	printf ("create <name> <size>\t - create a file\n\r");
+	printf ("delete <name>\t\t - delete a file\n\r");
 	printf ("write <name>\t\t - fill file with stuff\n\r");
 	printf ("read <name>\t\t - read file from disk\n\r");
 	printf ("ls\t\t\t - list files\n\r");
@@ -218,8 +219,16 @@ void create (FAT& fat, const string& filename, block_address_t size)
 	if (fat.create (filename, size)) stat (fat, filename);
 }
 
+void deleteFile (FAT& fat, const string& filename)
+{
+	printf ("deleting file '%s'\n\r", filename.c_str ());
+	fat.deleteFile (filename);
+}
+
 void write (FAT& fat, const string& filename, block_address_t size)
 {
+	printf ("writing %d bytes to file '%s'\n\r", size, filename.c_str ());
+
 	FILE f = fat.open (filename);
 	if (f == file_not_found) return ;
 
@@ -253,6 +262,8 @@ void write (FAT& fat, const string& filename, block_address_t size)
 
 void read (FAT& fat, const string& filename)
 {
+	printf ("reading file '%s'\n\r", filename.c_str ());
+
 	FILE f = fat.open (filename);
 	if (f == file_not_found) return ;
 
@@ -386,6 +397,11 @@ void Shell::run () const
 				block_address_t size = 0;
 				if (tokens.size () > 2) size = atol (tokens [2].c_str ());
 				create (fat, filename, size);
+			}
+			if (tokens [0] == "delete" && tokens.size () > 1)
+			{
+				string filename (tokens [1].c_str ());
+				deleteFile (fat, filename);
 			}
 			if (tokens [0] == "write" && tokens.size () > 2)
 			{

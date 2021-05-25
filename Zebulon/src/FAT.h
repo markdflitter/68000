@@ -21,6 +21,7 @@ public:
 	void format (block_address_t size);
 	
 	bool create (const std::string& name, block_address_t initialSize = 0);
+	void deleteFile (const std::string& name);
 
 	FILE open (const std::string& name);
 	void close (FILE file);

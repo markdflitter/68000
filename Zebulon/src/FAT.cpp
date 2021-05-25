@@ -46,6 +46,15 @@ bool FAT::create (const string& name, block_address_t initialSize)
 	return true;
 }
 
+void FAT::deleteFile (const string& name)
+{
+	if (findFile (name).isNull ())
+	{
+		printf (">> file not found\n\r");
+		return ;
+	}
+}
+
 FILE FAT::open (const string& name)
 {
 	FileHeader::Ptr f = findFile (name);
