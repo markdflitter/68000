@@ -39,6 +39,7 @@ private:
 	block_address_t m_curBlock;
 	bool m_bufferModified;
 	bool m_bufferLoaded;
+	bool m_fileHeaderModified;
 };
 
 #endif
