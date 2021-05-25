@@ -165,7 +165,6 @@ public:
 	const_iterator begin () const { return const_iterator (m_head->next); }
 	const_iterator end () const { return const_iterator (m_end);}
 
-
 	list<T>& operator= (const list& other)
 	{
 		if (&other != this)
@@ -174,6 +173,20 @@ public:
 		}
 		
 		return *this;
+	}
+
+	iterator erase (iterator pos)
+	{
+		node* nodeToErase = pos.cur;
+		nodeToErase->prev->next = nodeToErase->next;
+		nodeToErase->next->prev = nodeToErase->prev;
+		m_size--;
+
+		iterator result (nodeToErase->next);
+
+		delete nodeToErase;
+
+		return result;
 	}
 	
 	void assign (const list& other)

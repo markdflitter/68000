@@ -43,6 +43,11 @@ const list <Chunk::Ptr>& FileHeader::chunks () const
 	return m_chunks;
 }
 
+list <Chunk::Ptr>& FileHeader::chunks ()
+{
+	return m_chunks;
+}
+
 void FileHeader::setChunks (const list <Chunk::Ptr>& chunks)
 {
 	m_chunks = chunks;

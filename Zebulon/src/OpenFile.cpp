@@ -129,7 +129,7 @@ bool OpenFile::readCurBlock ()
 	return true;
 }
 
-block_address_t OpenFile::findBlock (file_address_t filePointer)
+block_address_t OpenFile::findBlock (file_address_t filePointer) const
 {
 	block_address_t result = 0;
 

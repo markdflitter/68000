@@ -48,11 +48,18 @@ bool FAT::create (const string& name, block_address_t initialSize)
 
 void FAT::deleteFile (const string& name)
 {
-	if (findFile (name).isNull ())
-	{
-		printf (">> file not found\n\r");
-		return ;
-	}
+	list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin ();
+
+	for ( ; i != m_fileHeaders.end (); i++)
+		if ((*i)->name () == name)
+		{
+			m_spaceManager.deallocate ((*i)->chunks ());
+			m_fileHeaders.erase (i);
+			save ();
+	 		return ;
+		}
+
+	printf (">> file not found\n\r");
 }
 
 FILE FAT::open (const string& name)

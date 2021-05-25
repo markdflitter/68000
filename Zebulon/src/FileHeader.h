@@ -26,6 +26,7 @@ public:
 	file_address_t size () const;
 	void setSize (file_address_t bytes);
 
+	std::list <Chunk::Ptr>& chunks ();
 	const std::list <Chunk::Ptr>& chunks () const;
 	void setChunks (const std::list <Chunk::Ptr>& chunks);
 

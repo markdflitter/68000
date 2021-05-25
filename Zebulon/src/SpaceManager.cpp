@@ -31,6 +31,11 @@ std::list<Chunk::Ptr> SpaceManager::allocate (block_address_t size)
 	return allocation;
 }	
 
+void SpaceManager::deallocate (std::list<Chunk::Ptr>& chunks)
+{
+	m_free.splice (m_free.end (), chunks);
+}
+
 unsigned char* SpaceManager::serialise (unsigned char* p) const
 {
 	return Serialise::serialise (m_free, p);
