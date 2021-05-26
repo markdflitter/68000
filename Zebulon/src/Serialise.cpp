@@ -55,6 +55,21 @@ unsigned char* Serialise::serialise (FileHeader::Ptr file, unsigned char* p)
 	return p;
 }
 
+unsigned char* Serialise::serialise (BootTableEntry::Ptr bte, unsigned char* p)
+{
+	if (bte.isNull ()) bte = mdf::make_shared (new BootTableEntry ());
+
+	p = serialise ((unsigned long) bte->empty, p);
+	p = serialise (string (bte->shortName), p);
+	p = serialise ((unsigned long) bte->index, p);
+	p = serialise ((unsigned long) bte->length, p);
+	p = serialise ((unsigned long) bte->loadAddress, p);
+	p = serialise ((unsigned long) bte->goAddress, p);
+	p = serialise ((unsigned long) bte->startBlock, p);
+	
+	return p;
+}
+
 unsigned char* Serialise::serialise (Chunk::ConstPtr chunk, unsigned char* p)
 {
 	size_t sz = sizeof (*chunk);
@@ -120,6 +135,39 @@ unsigned char* Serialise::deserialise (FileHeader::Ptr file, unsigned char* p)
 	list<Chunk::Ptr> chunks;
 	p = deserialise (chunks, p);
 	file->setChunks (chunks);
+
+	return p;
+}
+
+unsigned char* Serialise::deserialise (BootTableEntry::Ptr bte, unsigned char* p)
+{
+	unsigned long empty;
+	p = deserialise (empty, p);
+	bte->empty = empty;
+
+	string name;
+	p = deserialise (name, p, 21);
+	memcpy (bte->shortName, name.c_str (), name.length () + 1);
+	
+	unsigned long index;
+	p = deserialise (index, p);
+	bte->index = index;
+	
+	unsigned long length;
+	p = deserialise (length, p);
+	bte->length = length;
+
+	unsigned long loadAddress;
+	p = deserialise (loadAddress, p);
+	bte->loadAddress = loadAddress;
+
+	unsigned long goAddress;
+	p = deserialise (goAddress, p);
+	bte->goAddress = goAddress;
+
+	unsigned long startBlock;
+	p = deserialise (startBlock, p);
+	bte->startBlock = startBlock;
 
 	return p;
 }

@@ -38,6 +38,7 @@ public:
 		delete m_Ts;
 		m_Ts = 0;
 		reserve (m_capacity);
+		m_size = 0;
 	}
 
 	const T& front () const {return m_Ts [0];}
@@ -49,10 +50,10 @@ public:
 	const T& operator[] (size_t pos) const
 	{
 		if (pos + 1 >= m_capacity)
-		{
 			reserve (pos + 1);
+		
+		if (pos + 1 > m_size)
 			m_size = pos + 1;
-		}
 
 		return m_Ts [pos];
 	}
@@ -60,10 +61,10 @@ public:
 	T& operator[] (size_t pos)
 	{
 		if (pos + 1 >= m_capacity)
-		{
 			reserve (pos + 1);
+
+		if (pos + 1 > m_size)
 			m_size = pos + 1;
-		}
 
 		return m_Ts [pos];
 	}

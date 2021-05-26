@@ -225,7 +225,7 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 	block_address_t numBlocks = (length / 512) + 1;
 
 	fat.deleteFile (name);
-	if (fat.create (name, length))
+	if (fat.create (name, numBlocks))
 		stat (fat, name);
 	else
 		return ;
@@ -243,17 +243,21 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 		if (bytesLeftToWrite >= 512)
 		{
 			memcpy (buffer, p, 512);
-			fat.write (f, buffer, 512);
+			//fat.write (f, buffer, 512);
 			bytesLeftToWrite -= 512;
 			p += 512;
 		}
 		else
 		{
 			memcpy (buffer, p, bytesLeftToWrite);
-			fat.write (f, buffer, bytesLeftToWrite);
+			//fat.write (f, buffer, bytesLeftToWrite);
 			bytesLeftToWrite -= bytesLeftToWrite;
 		}
+
+		printf (".");
 	}
+
+	printf ("\n\r");
 
 	fat.close (f);
 
@@ -263,7 +267,7 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 
 void unboot (FAT& fat, unsigned int bootNumber)
 {
-	printf ("clearing boot file %d", bootNumber);
+	printf ("clearing boot file %d\n\r", bootNumber);
 	fat.unboot (bootNumber);
 }
 
@@ -408,7 +412,8 @@ const char* banner =
 " /     |___ |___/  \\___/  |___ \\___/  |   \\|\n\r"
 "/____| _____________________________________\n\r";
 
-const char* version = "Z-Shell V1.18";
+const char* version = "Z-Shell V1.21";
+const char* filename = "Zebulon_V1.21";
 	
 void Shell::run () const
 {
@@ -454,7 +459,7 @@ void Shell::run () const
 			if (tokens [0] == "save" && tokens.size () > 1)
 			{
 				unsigned long bootNumber = atol (tokens [1].c_str ());
-				save (fat, version, (unsigned int) bootNumber);
+				save (fat, filename, (unsigned int) bootNumber);
 			}
 			if (tokens [0] == "unboot" && tokens.size () > 1)
 			{

@@ -22,6 +22,7 @@ FAT::~FAT()
 
 void FAT::format (block_address_t size)
 {
+	m_lastIndex = 0;
 	m_fileHeaders.clear ();
 	m_spaceManager.format (size);
 	m_bootTable.clear ();
@@ -64,7 +65,7 @@ void FAT::deleteFile (const string& name)
 			}
 			else
 			{
-				printf (">>  cannot delete bootable file, unboot first\n\r");
+				printf (">> cannot delete bootable file, unboot first\n\r");
 			}
 
 	 		return ;
@@ -166,13 +167,13 @@ void FAT::boot (const std::string& name, unsigned int index, unsigned int loadAd
 
 	block_address_t startBlock = (*(fileHeader->chunks ().begin ()))->start;
 	
+	printf ("creating boot table entry\n\r");
 	m_bootTable [index] = make_shared (
 		new BootTableEntry (name, fileHeader->index (),
 			fileHeader->size (), loadAddress, goAddress, startBlock));
 
 	fileHeader->setBootable (true);	
 	save ();
-	
 }
 
 void FAT::unboot (unsigned int index)
@@ -198,8 +199,10 @@ void FAT::index () const
 	for (size_t i = 0; i < m_bootTable.size (); i++)
 	{
 		BootTableEntry::Ptr bte = m_bootTable [i];
-		printf ("%d :\t%s :\t%d :\t%x :\t%d: \t%x :\t%d\n\r", 
-			i, bte->shortName, bte->index, bte->loadAddress, bte->length, bte->goAddress, bte->startBlock);
+		
+		if (!bte.isNull () && !bte->empty)
+			printf ("%d : %s : %d : 0x%x : %d : 0x%x : %d\n\r", 
+				i, bte->shortName, bte->index, bte->loadAddress, bte->length, bte->goAddress, bte->startBlock);
 	}
 }
 
@@ -246,13 +249,15 @@ OpenFile::Ptr FAT::getOpenFile (FILE file)
 
 
 const char* FatIdent = "__Zebulon_FAT__1__";
-const char* FatVersion = "1.1";
+const char* FatVersion = "1.3";
 
 unsigned char* FAT::serialise (unsigned char* p) const
 {
 	p = Serialise::serialise (FatIdent, p);
 	p = Serialise::serialise (FatVersion, p);
 	p = Serialise::serialise ((unsigned long) m_lastIndex, p);
+
+	p = Serialise::serialise (m_bootTable, p);
 
 	p = m_spaceManager.serialise (p);
 
@@ -278,7 +283,7 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	p = Serialise::deserialise (readVersion, p, strlen (FatVersion));
 	if (string (FatVersion) != readVersion)
 	{
-		printf (">>> FAT - version mismatch.  Expected %s, got %s\n\r", FatVersion, readVersion);
+		printf (">>> FAT - version mismatch.  Expected %s, got %s\n\r", FatVersion, readVersion.c_str());
 		return p;
 	}
 
@@ -286,6 +291,8 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	p = Serialise::deserialise (lastIndex, p);
 	m_lastIndex = lastIndex;
 	
+	p = Serialise::deserialise (m_bootTable, p);
+
 	p = m_spaceManager.deserialise (p);
 		
 	p = Serialise::deserialise (m_fileHeaders, p);
