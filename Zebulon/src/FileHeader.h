@@ -15,13 +15,19 @@ public:
 	typedef mdf::shared_ptr <FileHeader> Ptr;
 	typedef mdf::shared_ptr <const FileHeader> ConstPtr;
 
-	FileHeader (FAT* fat = 0, const std::string& name = "", const std::list<Chunk::Ptr> chunks = std::list<Chunk::Ptr> ());
+	FileHeader (FAT* fat = 0, const std::string& name = "", unsigned int index = 0, const std::list<Chunk::Ptr> chunks = std::list<Chunk::Ptr> ());
 
 	FAT* fat ();
 	void setFat (FAT* fat);
 
 	std::string name () const;
 	void setName (const std::string& name);
+
+	unsigned int index () const;
+	void setIndex (unsigned int index);
+
+	bool bootable () const;
+	void setBootable (bool bootable);
 
 	file_address_t size () const;
 	void setSize (file_address_t bytes);
@@ -36,6 +42,8 @@ public:
 private:
 	FAT* m_fat;
 	std::string m_name;
+	unsigned int m_index;
+	bool m_bootable;
 	file_address_t  m_size;
 	std::list <Chunk::Ptr> m_chunks;
 };

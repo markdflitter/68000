@@ -2,8 +2,8 @@
 
 using namespace std;
 
-FileHeader::FileHeader (FAT* fat, const string& name, const list<Chunk::Ptr> chunks)
-	: m_fat (fat), m_name (name), m_chunks (chunks), m_size (0)
+FileHeader::FileHeader (FAT* fat, const string& name, unsigned int index, const list<Chunk::Ptr> chunks)
+	: m_fat (fat), m_name (name), m_index (index), m_bootable (false), m_chunks (chunks), m_size (0)
 {
 }
 
@@ -27,6 +27,27 @@ void FileHeader::setName (const string& name)
 {
 	m_name = name;
 }
+
+unsigned int FileHeader::index () const
+{
+	return m_index;
+}
+
+void FileHeader::setIndex (unsigned int index)
+{
+	m_index = index;
+}
+
+bool FileHeader::bootable () const
+{
+	return m_bootable;
+}
+
+void FileHeader::setBootable (bool bootable)
+{
+	m_bootable = bootable;
+}
+
 
 file_address_t FileHeader::size () const
 {

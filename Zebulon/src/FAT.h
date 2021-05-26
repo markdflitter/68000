@@ -11,6 +11,7 @@
 #include "SpaceManager.h"
 #include <vector>
 #include "OpenFile.h"
+#include "BootTableEntry.h"
 
 class FAT
 {
@@ -34,6 +35,9 @@ public:
 	std::list<std::string> ls () const;
 	FileStat stat (const std::string& name) const;
 
+	void boot (const std::string& name, unsigned int index);
+	void unboot (unsigned int index);
+
 	bool extend (FileHeader::Ptr fileHeader, block_address_t numBlocks = 1);	
 	void save () const;
 private:
@@ -51,6 +55,9 @@ private:
 	SpaceManager m_spaceManager;	
 	std::list<FileHeader::Ptr> m_fileHeaders;
 	std::vector<OpenFile::Ptr> m_openFiles;
+	std::vector<BootTableEntry::Ptr> m_bootTable;
+	
+	static unsigned int m_lastIndex;
 };
 
 #endif

@@ -7,6 +7,8 @@
 using namespace mdf;
 using namespace std;
 
+unsigned int FAT::m_lastIndex = 0;
+
 FAT::FAT ()
 {
 	load ();
@@ -22,6 +24,7 @@ void FAT::format (block_address_t size)
 {
 	m_fileHeaders.clear ();
 	m_spaceManager.format (size);
+	m_bootTable.clear ();
 	save ();
 }
 
@@ -40,7 +43,7 @@ bool FAT::create (const string& name, block_address_t initialSize, bool contiguo
 		return false;
 	}
 
-	m_fileHeaders.push_back (make_shared (new FileHeader (this, name, allocation)));
+	m_fileHeaders.push_back (make_shared (new FileHeader (this, name, m_lastIndex++, allocation)));
 
 	save ();	
 	return true;
@@ -53,9 +56,17 @@ void FAT::deleteFile (const string& name)
 	for ( ; i != m_fileHeaders.end (); i++)
 		if ((*i)->name () == name)
 		{
-			m_spaceManager.deallocate ((*i)->chunks ());
-			m_fileHeaders.erase (i);
-			save ();
+			if (!(*i)->bootable ())
+			{
+				m_spaceManager.deallocate ((*i)->chunks ());
+				m_fileHeaders.erase (i);
+				save ();
+			}
+			else
+			{
+				printf (">>  cannot delete bootable file, use unboot\n\r");
+			}
+
 	 		return ;
 		}
 
@@ -122,7 +133,7 @@ FileStat FAT::stat (const string& name) const
 	FileHeader::ConstPtr file = findFile (name);
 	if (!file.isNull ())
 	{
-		FileStat stat (file->name (), file->size (), file->allocSize ());
+		FileStat stat (file->name (), file->index (), file->bootable (), file->size (), file->allocSize ());
 
 		for (list<Chunk::Ptr>::const_iterator j = file->chunks ().begin (); j != file->chunks ().end (); j++)
 			stat.chunks.push_back (Chunk ((*j)->start, (*j)->length));
@@ -130,6 +141,32 @@ FileStat FAT::stat (const string& name) const
 	}
 	else
 		return FileStat ();
+}
+
+void FAT::boot (const std::string& name, unsigned int index)
+{
+	// create boot table record: going to need to more parameters here
+	// make the file bootable
+	save ();
+	
+}
+
+void FAT::unboot (unsigned int index)
+{
+	if ((index < m_bootTable.size ()) && !m_bootTable[index].isNull ())
+	{
+		BootTableEntry::Ptr p = m_bootTable [index];
+		unsigned int fileIndex = p->index;
+
+		for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
+			if ((*i)->index () == fileIndex)
+			{
+				printf ("marking file '%s' as unbootable\n\r", (*i)->name ().c_str ());
+				(*i)->setBootable (false);
+			}
+		m_bootTable[index].reset ();
+		save ();
+	}
 }
 
 FileHeader::Ptr FAT::findFile (const string& name)
@@ -174,12 +211,13 @@ OpenFile::Ptr FAT::getOpenFile (FILE file)
 
 
 const char* FatIdent = "__Zebulon_FAT__1__";
-const char* FatVersion = "1.0";
+const char* FatVersion = "1.1";
 
 unsigned char* FAT::serialise (unsigned char* p) const
 {
 	p = Serialise::serialise (FatIdent, p);
 	p = Serialise::serialise (FatVersion, p);
+	p = Serialise::serialise ((unsigned long) m_lastIndex, p);
 
 	p = m_spaceManager.serialise (p);
 
@@ -209,6 +247,10 @@ unsigned char* FAT::deserialise (unsigned char* p)
 		return p;
 	}
 
+	unsigned long lastIndex;
+	p = Serialise::deserialise (lastIndex, p);
+	m_lastIndex = lastIndex;
+	
 	p = m_spaceManager.deserialise (p);
 		
 	p = Serialise::deserialise (m_fileHeaders, p);
@@ -219,6 +261,7 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	
 	return p;
 }
+
 bool FAT::extend (FileHeader::Ptr fileHeader, block_address_t numBlocks)
 {
 	list<Chunk::Ptr> newAllocation = m_spaceManager.allocate (numBlocks);

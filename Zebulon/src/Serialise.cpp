@@ -47,6 +47,8 @@ unsigned char* Serialise::serialise (Chunk::Ptr chunk, unsigned char* p)
 unsigned char* Serialise::serialise (FileHeader::Ptr file, unsigned char* p)
 {
 	p = serialise (file->name (), p);
+	p = serialise ((unsigned long) file->index (), p);
+	p = serialise ((unsigned long) file->bootable (), p);
 	p = serialise (file->size (), p);
 	p = serialise (file->chunks (), p);
 
@@ -100,9 +102,17 @@ unsigned char* Serialise::deserialise (Chunk::Ptr chunk, unsigned char* p)
 unsigned char* Serialise::deserialise (FileHeader::Ptr file, unsigned char* p)
 {
 	string name;	
-	p = deserialise (name, p, 20);
+	p = deserialise (name, p, 255);
 	file->setName (name);
 
+	unsigned long index;
+	p = deserialise (index, p);
+	file->setIndex ((unsigned int) index);
+
+	unsigned long bootable;
+	p = deserialise (bootable, p);
+	file->setBootable ((bool) bootable);
+	
 	file_address_t size;	
 	p = deserialise (size, p);
 	file->setSize (size);

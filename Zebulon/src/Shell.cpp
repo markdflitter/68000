@@ -25,7 +25,8 @@ void printHelp (void)
 	printf ("ident\t\t\t - ident the disk\n\r");
 	printf ("readB <block>\t\t - read block from disk\n\r");
 	printf ("writeB <block>\t\t - write block to disk\n\r");
-	printf ("save <block>\t\t - save code to disk\n\r");
+	printf ("save <bootNumber>\t - save code to disk\n\r");
+	printf ("unboot <bootNumber>\t - empty boot slot\n\r");
 	printf ("format <size>\t\t - format the filing system\n\r");
 	printf ("create <name> <size>\t - create a file\n\r");
 	printf ("delete <name>\t\t - delete a file\n\r");
@@ -152,7 +153,7 @@ void writeB (block_address_t block)
 	__ide_write (block, data);
 }
 
-void save (block_address_t startBlock)
+void oldsave (block_address_t startBlock)
 {
 	block_address_t curBlock = startBlock;
 
@@ -190,17 +191,16 @@ void save (block_address_t startBlock)
 	}
 }
 
-
-void format (FAT& fat, block_address_t size)
-{
-	printf ("formatting: size %d blocks\n\r", size);	
-	fat.format (size);
-}
-
 void stat (const FAT& fat, const string& name)
 {
 	FileStat fileStat = fat.stat (name);
+	printf ("%d: \t ",fileStat.index);
+
 	printf ("%s\t\t : %d bytes\t : ",fileStat.name.c_str (), fileStat.size);
+
+	if (fileStat.bootable)
+		printf ("b");
+	printf (" : ");	
 	
 	bool first = true;
 	for (auto i = fileStat.chunks.begin (); i != fileStat.chunks.end (); i++)
@@ -211,6 +211,66 @@ void stat (const FAT& fat, const string& name)
 	}
 	
 	printf ("\n\r");
+}
+
+void save (FAT& fat, const std::string& name, unsigned int bootNumber)
+{
+	static unsigned char* begin = (unsigned char*) &__begin;
+	static unsigned char* end = (unsigned char*) &__end;
+	static unsigned char* entry = (unsigned char*) &start;
+
+	printf ("saving code: start 0x%x end 0x%x entry 0x%x\n\r", begin, end, entry);
+
+	file_address_t length = end - begin;
+	block_address_t numBlocks = (length / 512) + 1;
+
+	fat.deleteFile (name);
+	if (fat.create (name, length))
+		stat (fat, name);
+	else
+		return ;
+
+	FILE f = fat.open (name);
+	if (f == file_not_found) return ;
+
+	file_address_t bytesLeftToWrite = length;
+
+	unsigned char* p = begin;
+
+	while (bytesLeftToWrite > 0)
+	{
+		unsigned char buffer [512];
+		if (bytesLeftToWrite >= 512)
+		{
+			memcpy (buffer, p, 512);
+			fat.write (f, buffer, 512);
+			bytesLeftToWrite -= 512;
+			p += 512;
+		}
+		else
+		{
+			memcpy (buffer, p, bytesLeftToWrite);
+			fat.write (f, buffer, bytesLeftToWrite);
+			bytesLeftToWrite -= bytesLeftToWrite;
+		}
+	}
+
+	fat.close (f);
+
+	fat.unboot (bootNumber);
+	fat.boot (name, bootNumber);
+}
+
+void unboot (FAT& fat, unsigned int bootNumber)
+{
+	printf ("clearing boot file %d", bootNumber);
+	fat.unboot (bootNumber);
+}
+	
+void format (FAT& fat, block_address_t size)
+{
+	printf ("formatting: size %d blocks\n\r", size);	
+	fat.format (size);
 }
 
 void create (FAT& fat, const string& filename, block_address_t size)
@@ -380,12 +440,22 @@ void Shell::run () const
 				block_address_t block = atol (tokens [1].c_str ());
 				writeB (block);
 			}
-			if (tokens [0] == "save" && tokens.size () > 1)
+			if (tokens [0] == "oldsave" && tokens.size () > 1)
 			{
 				block_address_t block = atol (tokens [1].c_str ());			
-				save (block);
+				oldsave (block);
 			}
-			if (tokens [0] == "format" && tokens.size () > 1)
+			if (tokens [0] == "save" && tokens.size () > 1)
+			{
+				unsigned long bootNumber = atol (tokens [1].c_str ());
+				save (fat, version, (unsigned int) bootNumber);
+			}
+			if (tokens [0] == "unboot" && tokens.size () > 1)
+			{
+				unsigned long bootNumber = atol (tokens [1].c_str ());
+				unboot (fat, (unsigned int ) bootNumber);
+			}
+				if (tokens [0] == "format" && tokens.size () > 1)
 			{
 				block_address_t size = atol (tokens [1].c_str ());			
 				format (fat, size);

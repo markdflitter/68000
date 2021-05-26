@@ -27,7 +27,6 @@ public:
 		return p;
 	}
 
-	static unsigned char* deserialise (unsigned int& i, unsigned char* p);
 	static unsigned char* deserialise (unsigned long& l, unsigned char* p);
 	static unsigned char* deserialise (std::string& s, unsigned char* p, size_t maxLength);
 	static unsigned char* deserialise (Chunk::Ptr chunk, unsigned char* p);
