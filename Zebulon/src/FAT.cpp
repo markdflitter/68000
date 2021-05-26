@@ -64,7 +64,7 @@ void FAT::deleteFile (const string& name)
 			}
 			else
 			{
-				printf (">>  cannot delete bootable file, use unboot\n\r");
+				printf (">>  cannot delete bootable file, unboot first\n\r");
 			}
 
 	 		return ;
@@ -143,10 +143,34 @@ FileStat FAT::stat (const string& name) const
 		return FileStat ();
 }
 
-void FAT::boot (const std::string& name, unsigned int index)
+void FAT::boot (const std::string& name, unsigned int index, unsigned int loadAddress, unsigned int goAddress)
 {
-	// create boot table record: going to need to more parameters here
-	// make the file bootable
+	if (!m_bootTable [index].isNull ())
+	{
+		printf (">> boot slot %d is full, unboot first\n\r", index);
+		return ;
+	}
+	
+	FileHeader::Ptr fileHeader = findFile (name);
+	if (fileHeader.isNull ())
+	{
+		printf (">> file not found\n\r");
+		return ;
+	}
+	
+	if (fileHeader->chunks ().size () == 0)
+	{
+		printf (">> file empty\n\r");
+		return ;
+	}
+
+	block_address_t startBlock = (*(fileHeader->chunks ().begin ()))->start;
+	
+	m_bootTable [index] = make_shared (
+		new BootTableEntry (name, fileHeader->index (),
+			fileHeader->size (), loadAddress, goAddress, startBlock));
+
+	fileHeader->setBootable (true);	
 	save ();
 	
 }
@@ -168,6 +192,17 @@ void FAT::unboot (unsigned int index)
 		save ();
 	}
 }
+
+void FAT::index () const
+{
+	for (size_t i = 0; i < m_bootTable.size (); i++)
+	{
+		BootTableEntry::Ptr bte = m_bootTable [i];
+		printf ("%d :\t%s :\t%d :\t%x :\t%d: \t%x :\t%d\n\r", 
+			i, bte->shortName, bte->index, bte->loadAddress, bte->length, bte->goAddress, bte->startBlock);
+	}
+}
+
 
 FileHeader::Ptr FAT::findFile (const string& name)
 {

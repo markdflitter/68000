@@ -35,8 +35,10 @@ public:
 	std::list<std::string> ls () const;
 	FileStat stat (const std::string& name) const;
 
-	void boot (const std::string& name, unsigned int index);
+	void boot (const std::string& name, unsigned int index,
+		unsigned int loadAddress, unsigned int startAddress);
 	void unboot (unsigned int index);
+	void index () const;
 
 	bool extend (FileHeader::Ptr fileHeader, block_address_t numBlocks = 1);	
 	void save () const;

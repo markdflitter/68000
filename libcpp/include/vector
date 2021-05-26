@@ -48,17 +48,27 @@ public:
 
 	const T& operator[] (size_t pos) const
 	{
+		if (pos + 1 >= m_capacity)
+		{
+			reserve (pos + 1);
+			m_size = pos + 1;
+		}
+
 		return m_Ts [pos];
 	}
 
 	T& operator[] (size_t pos)
 	{
+		if (pos + 1 >= m_capacity)
+		{
+			reserve (pos + 1);
+			m_size = pos + 1;
+		}
+
 		return m_Ts [pos];
 	}
 
-
-
-	void reserve (size_t capacity)
+	void reserve (size_t capacity) const
 	{
 		T* new_Ts = new T [capacity];
 		
@@ -79,9 +89,9 @@ public:
 	size_t size () const {return m_size;}
 	size_t capacity () const {return m_capacity;}
 private:
-	size_t m_size;
-	size_t m_capacity;
-	T* m_Ts;
+	mutable size_t m_size;
+	mutable size_t m_capacity;
+	mutable T* m_Ts;
 };
 
 }

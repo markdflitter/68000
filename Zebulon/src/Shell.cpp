@@ -258,7 +258,7 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 	fat.close (f);
 
 	fat.unboot (bootNumber);
-	fat.boot (name, bootNumber);
+	fat.boot (name, bootNumber, (unsigned int) begin, (unsigned int) entry);
 }
 
 void unboot (FAT& fat, unsigned int bootNumber)
@@ -266,6 +266,12 @@ void unboot (FAT& fat, unsigned int bootNumber)
 	printf ("clearing boot file %d", bootNumber);
 	fat.unboot (bootNumber);
 }
+
+void index (FAT& fat)
+{
+	fat.index ();
+}
+
 	
 void format (FAT& fat, block_address_t size)
 {
@@ -455,7 +461,11 @@ void Shell::run () const
 				unsigned long bootNumber = atol (tokens [1].c_str ());
 				unboot (fat, (unsigned int ) bootNumber);
 			}
-				if (tokens [0] == "format" && tokens.size () > 1)
+			if (tokens [0] == "index")
+			{
+				index (fat);
+			}
+			if (tokens [0] == "format" && tokens.size () > 1)
 			{
 				block_address_t size = atol (tokens [1].c_str ());			
 				format (fat, size);
