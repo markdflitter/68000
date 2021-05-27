@@ -350,18 +350,24 @@ void FAT::save () const
 
 	p = Serialise::serialise (m_bootTable, p);
 	
-	printf ("saved BootTable: size %d\n\r", p - block);
-	if ((p - block) > 512)
-		printf (">>> BootTable block is full!!!!\n\r");
+	if (p - block > 400)
+	{
+		printf ("saved BootTable size %d\n\r", p - block);
+		if ((p - block) > 512)
+			printf (">>> BootTable block is full!!!!\n\r");
+	}
 
 	__ide_write (0, block);
 
 	p = block;
 	p = serialise (p);
 	
-	printf ("saved FAT: size %d\n\r", p - block);
-	if ((p - block) > 512)
-		printf (">>> FAT block is full!!!!\n\r");
+	if (p - block > 400)
+	{
+		printf ("saved FAT size %d\n\r", p - block);
+		if ((p - block) > 512)
+			printf (">>> FAT block is full!!!!\n\r");
+	}
 
 	__ide_write (1, block);	
 }

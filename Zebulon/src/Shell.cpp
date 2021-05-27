@@ -246,14 +246,14 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 		if (bytesLeftToWrite >= 512)
 		{
 			memcpy (buffer, p, 512);
-			//fat.write (f, buffer, 512);
+			fat.write (f, buffer, 512);
 			bytesLeftToWrite -= 512;
 			p += 512;
 		}
 		else
 		{
 			memcpy (buffer, p, bytesLeftToWrite);
-			//fat.write (f, buffer, bytesLeftToWrite);
+			fat.write (f, buffer, bytesLeftToWrite);
 			bytesLeftToWrite -= bytesLeftToWrite;
 		}
 
@@ -422,8 +422,8 @@ const char* banner =
 " /     |___ |___/  \\___/  |___ \\___/  |   \\|\n\r"
 "/____| _____________________________________\n\r";
 
-const char* version = "Z-Shell V1.21";
-const char* filename = "Zebulon_V1.21";
+const char* version = "Z-Shell V1.24";
+const char* filename = "Zebulon_V1.24";
 	
 void Shell::run () const
 {

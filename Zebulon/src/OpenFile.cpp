@@ -18,7 +18,11 @@ OpenFile::OpenFile (FileHeader::Ptr fileHeader)
 OpenFile::~OpenFile ()
 {
 	flush ();
-	if (m_fileHeaderModified) m_fileHeader->fat ()->save ();
+	if (m_fileHeaderModified) 
+	{
+		printf ("saving FAT\n\r");
+		m_fileHeader->fat ()->save ();
+	}
 }
 
 void OpenFile::read (unsigned char* data, file_address_t numBytes)	
@@ -55,7 +59,8 @@ void OpenFile::write (unsigned char* data, file_address_t numBytes)
 		p = copyToBuffer (p, bytesToCopy);
 		if (m_filePointer > m_fileHeader->size ())
 		{
-			m_fileHeader->setSize (m_filePointer);
+			//printf ("setting size to %d\n\r", m_filePointer);	
+   			m_fileHeader->setSize (m_filePointer);
 			m_fileHeaderModified = true;
 		}
 		numBytes -= bytesToCopy;
