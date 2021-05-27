@@ -7,7 +7,7 @@ using namespace mdf;
 void SpaceManager::format (block_address_t size)
 {
 	m_free.clear ();
-	m_free.push_back (make_shared (new Chunk (1, size)));
+	m_free.push_back (make_shared (new Chunk (0, size)));
 }
 
 std::list<Chunk::Ptr> SpaceManager::allocate (block_address_t size, bool contiguous)

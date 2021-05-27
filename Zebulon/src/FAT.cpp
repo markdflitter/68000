@@ -25,6 +25,8 @@ void FAT::format (block_address_t size)
 	m_lastIndex = 0;
 	m_fileHeaders.clear ();
 	m_spaceManager.format (size);
+	m_spaceManager.allocate (1);		// boot table
+	m_spaceManager.allocate (1);		// FAT table
 	m_bootTable.clear ();
 	save ();
 }
@@ -144,7 +146,7 @@ FileStat FAT::stat (const string& name) const
 		return FileStat ();
 }
 
-void FAT::boot (const std::string& name, unsigned int index, unsigned int loadAddress, unsigned int goAddress)
+void FAT::boot (const std::string& name, unsigned int index)
 {
 	if (!m_bootTable [index].isNull ())
 	{
@@ -164,13 +166,19 @@ void FAT::boot (const std::string& name, unsigned int index, unsigned int loadAd
 		printf (">> file empty\n\r");
 		return ;
 	}
+	
+	if (fileHeader->bootable ())
+	{
+		printf (">> already bootable, unboot first\n\r");
+		return ;
+	}
 
 	block_address_t startBlock = (*(fileHeader->chunks ().begin ()))->start;
 	
 	printf ("creating boot table entry\n\r");
 	m_bootTable [index] = make_shared (
 		new BootTableEntry (name, fileHeader->index (),
-			fileHeader->size (), loadAddress, goAddress, startBlock));
+			fileHeader->size (), fileHeader->loadAddress (), fileHeader->goAddress (), startBlock));
 
 	fileHeader->setBootable (true);	
 	save ();
@@ -206,6 +214,26 @@ void FAT::index () const
 	}
 }
 
+void FAT::setMetaData (const std::string& name, unsigned int loadAddress, unsigned int goAddress)
+{
+	FileHeader::Ptr file = findFile (name);
+	if (file.isNull ())
+	{
+		printf (">> file not found\n\r");
+		return ;
+	}
+
+	if (file->bootable ())
+	{
+		printf (">> cannot set meta data for bootable file, unboot first\n\r");
+		return ;
+	}
+
+	file->setLoadAddress (loadAddress);
+	file->setGoAddress (goAddress);
+
+	save ();
+}
 
 FileHeader::Ptr FAT::findFile (const string& name)
 {
@@ -249,15 +277,13 @@ OpenFile::Ptr FAT::getOpenFile (FILE file)
 
 
 const char* FatIdent = "__Zebulon_FAT__1__";
-const char* FatVersion = "1.3";
+const char* FatVersion = "1.4";
 
 unsigned char* FAT::serialise (unsigned char* p) const
 {
 	p = Serialise::serialise (FatIdent, p);
 	p = Serialise::serialise (FatVersion, p);
 	p = Serialise::serialise ((unsigned long) m_lastIndex, p);
-
-	p = Serialise::serialise (m_bootTable, p);
 
 	p = m_spaceManager.serialise (p);
 
@@ -266,7 +292,7 @@ unsigned char* FAT::serialise (unsigned char* p) const
 	return p;
 }
 
-unsigned char* FAT::deserialise (unsigned char* p)
+bool FAT::deserialise (unsigned char*& p)
 {
 	m_openFiles.clear ();
 	m_fileHeaders.clear ();
@@ -276,7 +302,7 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	if (string (FatIdent) != readIdent)
 	{
 		printf (">>> FAT - ident mismatch.  Expected %s, got %s\n\r", FatIdent, readIdent.c_str ());
-		return p;
+		return false;
 	}
 
 	string readVersion;
@@ -284,15 +310,13 @@ unsigned char* FAT::deserialise (unsigned char* p)
 	if (string (FatVersion) != readVersion)
 	{
 		printf (">>> FAT - version mismatch.  Expected %s, got %s\n\r", FatVersion, readVersion.c_str());
-		return p;
+		return false;
 	}
 
 	unsigned long lastIndex;
 	p = Serialise::deserialise (lastIndex, p);
 	m_lastIndex = lastIndex;
 	
-	p = Serialise::deserialise (m_bootTable, p);
-
 	p = m_spaceManager.deserialise (p);
 		
 	p = Serialise::deserialise (m_fileHeaders, p);
@@ -301,7 +325,7 @@ unsigned char* FAT::deserialise (unsigned char* p)
 
 	printf ("> found %d files\n\r", m_fileHeaders.size ());
 	
-	return p;
+	return true;
 }
 
 bool FAT::extend (FileHeader::Ptr fileHeader, block_address_t numBlocks)
@@ -323,14 +347,23 @@ void FAT::save () const
 {
 	unsigned char block [1024];
 	unsigned char* p = block;
+
+	p = Serialise::serialise (m_bootTable, p);
 	
+	printf ("saved BootTable: size %d\n\r", p - block);
+	if ((p - block) > 512)
+		printf (">>> BootTable block is full!!!!\n\r");
+
+	__ide_write (0, block);
+
+	p = block;
 	p = serialise (p);
 	
 	printf ("saved FAT: size %d\n\r", p - block);
 	if ((p - block) > 512)
-		printf (">>> FAT Block is full!!!!\n\r");
+		printf (">>> FAT block is full!!!!\n\r");
 
-	__ide_write (0, block);	
+	__ide_write (1, block);	
 }
 
 void FAT::load ()
@@ -338,7 +371,14 @@ void FAT::load ()
 	unsigned char block [512];
 	unsigned char* p = block;
 	
+	__ide_read (1, block);	
+
+	if (!deserialise (p))
+		return ;
+
+	p = block;
+	
 	__ide_read (0, block);	
 
-	p = deserialise (p);
+	p = Serialise::deserialise (m_bootTable, p);
 }

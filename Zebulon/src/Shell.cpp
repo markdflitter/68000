@@ -27,6 +27,7 @@ void printHelp (void)
 	printf ("writeB <block>\t\t - write block to disk\n\r");
 	printf ("save <bootNumber>\t - save code to disk\n\r");
 	printf ("unboot <bootNumber>\t - empty boot slot\n\r");
+	printf ("boot <file> <bootNumber>\t - make a file bootable\n\r");
 	printf ("format <size>\t\t - format the filing system\n\r");
 	printf ("create <name> <size>\t - create a file\n\r");
 	printf ("delete <name>\t\t - delete a file\n\r");
@@ -215,13 +216,13 @@ void stat (const FAT& fat, const string& name)
 
 void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 {
-	static unsigned char* begin = (unsigned char*) &__begin;
+	static unsigned char* loadAddress = (unsigned char*) &__begin;
 	static unsigned char* end = (unsigned char*) &__end;
-	static unsigned char* entry = (unsigned char*) &start;
+	static unsigned char* goAddress = (unsigned char*) &start;
 
-	printf ("saving code: start 0x%x end 0x%x entry 0x%x\n\r", begin, end, entry);
+	printf ("saving code: start 0x%x end 0x%x entry 0x%x\n\r", loadAddress, end, goAddress);
 
-	file_address_t length = end - begin;
+	file_address_t length = end - loadAddress;
 	block_address_t numBlocks = (length / 512) + 1;
 
 	fat.deleteFile (name);
@@ -230,12 +231,14 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 	else
 		return ;
 
+	fat.setMetaData (name, (unsigned int) loadAddress, (unsigned int) goAddress);
+
 	FILE f = fat.open (name);
 	if (f == file_not_found) return ;
 
 	file_address_t bytesLeftToWrite = length;
 
-	unsigned char* p = begin;
+	unsigned char* p = loadAddress;
 
 	while (bytesLeftToWrite > 0)
 	{
@@ -262,7 +265,7 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 	fat.close (f);
 
 	fat.unboot (bootNumber);
-	fat.boot (name, bootNumber, (unsigned int) begin, (unsigned int) entry);
+	fat.boot (name, bootNumber);
 }
 
 void unboot (FAT& fat, unsigned int bootNumber)
@@ -270,6 +273,13 @@ void unboot (FAT& fat, unsigned int bootNumber)
 	printf ("clearing boot file %d\n\r", bootNumber);
 	fat.unboot (bootNumber);
 }
+
+void boot (FAT& fat, const string& filename, unsigned int bootNumber)
+{
+	printf ("making file '%s' bootable from slot %d\n\r", filename.c_str (), bootNumber);
+	fat.boot (filename, bootNumber);
+}
+
 
 void index (FAT& fat)
 {
@@ -461,7 +471,13 @@ void Shell::run () const
 				unsigned long bootNumber = atol (tokens [1].c_str ());
 				save (fat, filename, (unsigned int) bootNumber);
 			}
-			if (tokens [0] == "unboot" && tokens.size () > 1)
+			if (tokens [0] == "boot" && tokens.size () > 2)
+			{
+				string filename (tokens [1].c_str ());
+				unsigned long bootNumber = atol (tokens [2].c_str ());
+				boot (fat, filename, (unsigned int ) bootNumber);
+			}
+				if (tokens [0] == "unboot" && tokens.size () > 1)
 			{
 				unsigned long bootNumber = atol (tokens [1].c_str ());
 				unboot (fat, (unsigned int ) bootNumber);

@@ -3,7 +3,7 @@
 using namespace std;
 
 FileHeader::FileHeader (FAT* fat, const string& name, unsigned int index, const list<Chunk::Ptr> chunks)
-	: m_fat (fat), m_name (name), m_index (index), m_bootable (false), m_chunks (chunks), m_size (0)
+	: m_fat (fat), m_name (name), m_index (index), m_bootable (false), m_chunks (chunks), m_size (0), m_loadAddress (0), m_goAddress (0)
 {
 }
 
@@ -57,6 +57,26 @@ file_address_t FileHeader::size () const
 void FileHeader::setSize (file_address_t size)
 {
 	m_size = size;
+}
+
+unsigned int FileHeader::loadAddress () const
+{
+	return m_loadAddress;
+}
+
+void FileHeader::setLoadAddress (unsigned int loadAddress)
+{
+	m_loadAddress = loadAddress;
+}
+
+unsigned int FileHeader::goAddress () const
+{
+	return m_goAddress;
+}
+
+void FileHeader::setGoAddress (unsigned int goAddress)
+{
+	m_goAddress = goAddress;
 }
 
 const list <Chunk::Ptr>& FileHeader::chunks () const

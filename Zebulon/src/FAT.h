@@ -35,10 +35,11 @@ public:
 	std::list<std::string> ls () const;
 	FileStat stat (const std::string& name) const;
 
-	void boot (const std::string& name, unsigned int index,
-		unsigned int loadAddress, unsigned int startAddress);
+	void boot (const std::string& name, unsigned int index);
 	void unboot (unsigned int index);
 	void index () const;
+	
+	void setMetaData (const std::string& name, unsigned int loadAddress, unsigned int goAddress);
 
 	bool extend (FileHeader::Ptr fileHeader, block_address_t numBlocks = 1);	
 	void save () const;
@@ -50,7 +51,7 @@ private:
 
 
 	unsigned char* serialise (unsigned char* p) const;
-	unsigned char* deserialise (unsigned char* p);
+	bool deserialise (unsigned char*& p);
 
 	void load ();
 

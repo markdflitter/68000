@@ -50,6 +50,8 @@ unsigned char* Serialise::serialise (FileHeader::Ptr file, unsigned char* p)
 	p = serialise ((unsigned long) file->index (), p);
 	p = serialise ((unsigned long) file->bootable (), p);
 	p = serialise (file->size (), p);
+	p = serialise ((unsigned long) file->loadAddress (), p);
+	p = serialise ((unsigned long) file->goAddress (), p);
 	p = serialise (file->chunks (), p);
 
 	return p;
@@ -131,6 +133,14 @@ unsigned char* Serialise::deserialise (FileHeader::Ptr file, unsigned char* p)
 	file_address_t size;	
 	p = deserialise (size, p);
 	file->setSize (size);
+
+	unsigned long loadAddress;
+	p = deserialise (loadAddress, p);
+	file->setLoadAddress (loadAddress);
+
+	unsigned long goAddress;
+	p = deserialise (goAddress, p);
+	file->setGoAddress (goAddress);
 
 	list<Chunk::Ptr> chunks;
 	p = deserialise (chunks, p);
