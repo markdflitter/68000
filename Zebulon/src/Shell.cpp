@@ -110,13 +110,9 @@ void printBuffer (unsigned char* buffer, size_t bufferLen)
 	{
 		size_t rowLen = min (bufferLen, 16);
 		for (int c = 0; c < rowLen; c++) printf ("%x",*p++);
-		
-		size_t pad = 16 -  rowLen;
-		while (pad)
-		{
-			printf ("  ");
-			pad--;
-		}
+	
+		string pad (16 - rowLen, ' ');	
+		printf ("%s", pad.c_str ());
 
 		printf (" ");
 
@@ -422,8 +418,8 @@ const char* banner =
 " /     |___ |___/  \\___/  |___ \\___/  |   \\|\n\r"
 "/____| _____________________________________\n\r";
 
-const char* version = "Z-Shell V1.24";
-const char* filename = "Zebulon_V1.24";
+const char* version = "Z-Shell V1.32";
+const char* filename = "Zebulon_V1.32";
 	
 void Shell::run () const
 {

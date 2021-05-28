@@ -12,21 +12,28 @@ public:
 	string ();
 	string (const char* s);
 	string (const string& other);
+	string (size_t n, char c);
 	~string ();
 
 	string& operator= (const string& other);
 	
+	size_t length () const;
+	
 	bool operator== (const string& other) const;
 	bool operator!= (const string& other) const;
 
-	const char* c_str () const;
+	void resize (size_t n, char c = '\0');
 
-	size_t length () const;
+	friend std::string operator+(const std::string&, const std::string&);
+
+	const char* c_str () const;
 private:
 	void assign (const char* s);
 
 	char * m_s;
 };
+
+string operator+ (const std::string& lhs, const std::string& rhs);
 
 }
 

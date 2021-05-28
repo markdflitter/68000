@@ -277,7 +277,7 @@ OpenFile::Ptr FAT::getOpenFile (FILE file)
 
 
 const char* FatIdent = "__Zebulon_FAT__1__";
-const char* FatVersion = "1.4";
+const char* FatVersion = "1.7";
 
 unsigned char* FAT::serialise (unsigned char* p) const
 {

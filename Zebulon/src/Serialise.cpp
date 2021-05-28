@@ -62,7 +62,7 @@ unsigned char* Serialise::serialise (BootTableEntry::Ptr bte, unsigned char* p)
 	if (bte.isNull ()) bte = mdf::make_shared (new BootTableEntry ());
 
 	p = serialise ((unsigned long) bte->empty, p);
-	p = serialise (string (bte->shortName), p);
+	p = serialise (bte->shortName, p);
 	p = serialise ((unsigned long) bte->index, p);
 	p = serialise ((unsigned long) bte->length, p);
 	p = serialise ((unsigned long) bte->loadAddress, p);
@@ -156,8 +156,8 @@ unsigned char* Serialise::deserialise (BootTableEntry::Ptr bte, unsigned char* p
 	bte->empty = empty;
 
 	string name;
-	p = deserialise (name, p, 21);
-	memcpy (bte->shortName, name.c_str (), name.length () + 1);
+	p = deserialise (name, p, 23);
+	bte->shortName = name;
 	
 	unsigned long index;
 	p = deserialise (index, p);
