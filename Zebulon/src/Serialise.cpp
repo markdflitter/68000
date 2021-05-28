@@ -156,7 +156,7 @@ unsigned char* Serialise::deserialise (BootTableEntry::Ptr bte, unsigned char* p
 	bte->empty = empty;
 
 	string name;
-	p = deserialise (name, p, 23);
+	p = deserialise (name, p, 24);
 	bte->shortName = name;
 	
 	unsigned long index;

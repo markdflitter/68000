@@ -52,7 +52,7 @@ bool FAT::create (const string& name, block_address_t initialSize, bool contiguo
 	return true;
 }
 
-void FAT::deleteFile (const string& name)
+void FAT::rm (const string& name)
 {
 	list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin ();
 
@@ -148,7 +148,7 @@ FileStat FAT::stat (const string& name) const
 
 void FAT::boot (const std::string& name, unsigned int index)
 {
-	if (!m_bootTable [index].isNull ())
+	if (!m_bootTable [index].isNull () && !m_bootTable [index]->empty) 
 	{
 		printf (">> boot slot %d is full, unboot first\n\r", index);
 		return ;
@@ -210,7 +210,7 @@ void FAT::index () const
 		
 		if (!bte.isNull () && !bte->empty)
 			printf ("%d : %s : %d : 0x%x : %d : 0x%x : %d\n\r", 
-				i, bte->shortName, bte->index, bte->loadAddress, bte->length, bte->goAddress, bte->startBlock);
+				i, bte->shortName.c_str (), bte->index, bte->loadAddress, bte->length, bte->goAddress, bte->startBlock);
 	}
 }
 

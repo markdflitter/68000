@@ -6,21 +6,24 @@
 #include <string>
 #include <string.h>
 #include <size_t.h>
+#include <stdio.h>
 
 struct BootTableEntry
 {
 	typedef mdf::shared_ptr <BootTableEntry> Ptr;
 	typedef mdf::shared_ptr <const BootTableEntry> ConstPtr;
 
-	BootTableEntry () : empty (true) {}
+	BootTableEntry () : empty (true)
+	{
+		shortName.resize (24, ' ');
+	}
 	BootTableEntry (const std::string& name, unsigned int _index,
 		unsigned int _length, unsigned int _loadAddress, 
 		unsigned int _goAddress, block_address_t _startBlock)
 		: shortName (name), index (_index), length (_length), loadAddress (_loadAddress),
 		goAddress (_goAddress), startBlock (_startBlock), empty (false)
 	{
-		shortName = name;
-		shortName.resize (23);
+		shortName.resize (24,' ');
 	}
 
 	bool empty;					

@@ -9,6 +9,9 @@
 #include "FAT.h"
 #include "ctype.h"
 
+const char* version = "Z-Shell V1.36.0003";
+const char* filename = "Zebulon_V1.36.0003";
+	
 using namespace std;
 
 extern char* __begin;
@@ -30,7 +33,7 @@ void printHelp (void)
 	printf ("boot <file> <bootNumber>\t - make a file bootable\n\r");
 	printf ("format <size>\t\t - format the filing system\n\r");
 	printf ("create <name> <size>\t - create a file\n\r");
-	printf ("delete <name>\t\t - delete a file\n\r");
+	printf ("rm <name>\t\t - delete a file\n\r");
 	printf ("write <name>\t\t - fill file with stuff\n\r");
 	printf ("read <name>\t\t - read file from disk\n\r");
 	printf ("ls\t\t\t - list files\n\r");
@@ -221,7 +224,7 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 	file_address_t length = end - loadAddress;
 	block_address_t numBlocks = (length / 512) + 1;
 
-	fat.deleteFile (name);
+	fat.rm (name);
 	if (fat.create (name, numBlocks))
 		stat (fat, name);
 	else
@@ -295,10 +298,10 @@ void create (FAT& fat, const string& filename, block_address_t size)
 	if (fat.create (filename, size)) stat (fat, filename);
 }
 
-void deleteFile (FAT& fat, const string& filename)
+void rmFile (FAT& fat, const string& filename)
 {
 	printf ("deleting file '%s'\n\r", filename.c_str ());
-	fat.deleteFile (filename);
+	fat.rm (filename);
 }
 
 void write (FAT& fat, const string& filename, block_address_t size)
@@ -418,9 +421,6 @@ const char* banner =
 " /     |___ |___/  \\___/  |___ \\___/  |   \\|\n\r"
 "/____| _____________________________________\n\r";
 
-const char* version = "Z-Shell V1.32";
-const char* filename = "Zebulon_V1.32";
-	
 void Shell::run () const
 {
 	printf ("%s\n\r", banner);	
@@ -494,10 +494,10 @@ void Shell::run () const
 				if (tokens.size () > 2) size = atol (tokens [2].c_str ());
 				create (fat, filename, size);
 			}
-			if (tokens [0] == "delete" && tokens.size () > 1)
+			if (tokens [0] == "rm" && tokens.size () > 1)
 			{
 				string filename (tokens [1].c_str ());
-				deleteFile (fat, filename);
+				rmFile (fat, filename);
 			}
 			if (tokens [0] == "write" && tokens.size () > 2)
 			{
