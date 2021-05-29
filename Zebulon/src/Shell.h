@@ -1,12 +1,14 @@
 #ifndef SHELL_H
 #define SHELL_H
 
+#include "FAT.h"
+
 class Shell {
 public:
-	Shell (unsigned int& tick);
+	Shell (FAT& fat);
 	void run () const;
 private:
-	unsigned int& m_tick;
+	FAT& m_fat;
 };
 
 #endif

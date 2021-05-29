@@ -14,12 +14,6 @@ FAT::FAT ()
 	load ();
 }
 
-FAT::~FAT()
-{
-	m_openFiles.clear ();
-	m_fileHeaders.clear ();
-}
-
 void FAT::format (block_address_t size)
 {
 	m_lastIndex = 0;
@@ -279,26 +273,24 @@ OpenFile::Ptr FAT::getOpenFile (FILE file)
 const char* FatIdent = "__Zebulon_FAT__1__";
 const char* FatVersion = "1.7";
 
-unsigned char* FAT::serialise (unsigned char* p) const
+void FAT::serialise (unsigned char*& p) const
 {
-	p = Serialise::serialise (FatIdent, p);
-	p = Serialise::serialise (FatVersion, p);
-	p = Serialise::serialise ((unsigned long) m_lastIndex, p);
+	Serialise::serialise (FatIdent, p);
+	Serialise::serialise (FatVersion, p);
+	Serialise::serialise ((unsigned long) m_lastIndex, p);
 
-	p = m_spaceManager.serialise (p);
+	m_spaceManager.serialise (p);
 
-	p = Serialise::serialise (m_fileHeaders, p);	
-
-	return p;
+	Serialise::serialise (m_fileHeaders, p);	
 }
 
-bool FAT::deserialise (unsigned char*& p)
+bool FAT::deserialise (const unsigned char*& p)
 {
 	m_openFiles.clear ();
 	m_fileHeaders.clear ();
 
 	string readIdent;
-	p = Serialise::deserialise (readIdent, p, strlen (FatIdent));
+	Serialise::deserialise (readIdent, p, strlen (FatIdent));
 	if (string (FatIdent) != readIdent)
 	{
 		printf (">>> FAT - ident mismatch.  Expected %s, got %s\n\r", FatIdent, readIdent.c_str ());
@@ -306,7 +298,7 @@ bool FAT::deserialise (unsigned char*& p)
 	}
 
 	string readVersion;
-	p = Serialise::deserialise (readVersion, p, strlen (FatVersion));
+	Serialise::deserialise (readVersion, p, strlen (FatVersion));
 	if (string (FatVersion) != readVersion)
 	{
 		printf (">>> FAT - version mismatch.  Expected %s, got %s\n\r", FatVersion, readVersion.c_str());
@@ -314,12 +306,12 @@ bool FAT::deserialise (unsigned char*& p)
 	}
 
 	unsigned long lastIndex;
-	p = Serialise::deserialise (lastIndex, p);
+	Serialise::deserialise (lastIndex, p);
 	m_lastIndex = lastIndex;
 	
-	p = m_spaceManager.deserialise (p);
+	m_spaceManager.deserialise (p);
 		
-	p = Serialise::deserialise (m_fileHeaders, p);
+	Serialise::deserialise (m_fileHeaders, p);
 	for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin(); i != m_fileHeaders.end (); i++)
 		(*i)->setFat (this);
 
@@ -348,7 +340,7 @@ void FAT::save () const
 	unsigned char block [1024];
 	unsigned char* p = block;
 
-	p = Serialise::serialise (m_bootTable, p);
+	Serialise::serialise (m_bootTable, p);
 	
 	if (p - block > 400)
 	{
@@ -360,7 +352,7 @@ void FAT::save () const
 	__ide_write (0, block);
 
 	p = block;
-	p = serialise (p);
+	serialise (p);
 	
 	if (p - block > 400)
 	{
@@ -375,7 +367,7 @@ void FAT::save () const
 void FAT::load ()
 {
 	unsigned char block [512];
-	unsigned char* p = block;
+	const unsigned char* p = block;
 	
 	__ide_read (1, block);	
 
@@ -386,5 +378,5 @@ void FAT::load ()
 	
 	__ide_read (0, block);	
 
-	p = Serialise::deserialise (m_bootTable, p);
+	Serialise::deserialise (m_bootTable, p);
 }

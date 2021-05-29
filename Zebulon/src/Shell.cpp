@@ -9,8 +9,8 @@
 #include "FAT.h"
 #include "ctype.h"
 
-const char* version = "Z-Shell V1.36.0003";
-const char* filename = "Zebulon_V1.36.0003";
+const char* version = "Z-Shell V1.36.0004";
+const char* filename = "Zebulon_V1.36.0004";
 	
 using namespace std;
 
@@ -151,44 +151,6 @@ void writeB (block_address_t block)
 	unsigned char data [] = "The house stood on a slight rise just on the edge of the village. It stood on its own and looked out over a broad spread of West Country farmland. Not a remarkable house by any means—it was about thirty years old, squattish, squarish, made of brick, and had four windows set in the front of a size and proportion which more or less exactly failed to please the eye.  The only person for whom the house was in any way special was Arthur Dent, and that was only because it happened to be the one he lived in.";
 	
 	__ide_write (block, data);
-}
-
-void oldsave (block_address_t startBlock)
-{
-	block_address_t curBlock = startBlock;
-
-	static char* begin = (char*) &__begin;
-	static char* end = (char*) &__end;
-	static char* entry = (char*) &start;
-
-	printf ("start 0x%x end 0x%x entry 0x%x\n\r", begin, end, entry);
-
-	file_address_t length = end - begin;
-	block_address_t numBlocks = (length / 512) + 1;
-
-	printf ("%d bytes, which is %d blocks\n\r", length, numBlocks);
-
-	for (file_address_t b = 0; b < length;)
-	{
-		unsigned char block [512];
-		if (b == 0)
-		{
-			memcpy (&block, &begin, 4);
-			memcpy (&block [4], &end, 4);
-			memcpy (&block [8], &entry, 4);
-			memcpy (&block [12], begin, 500);
-			b += 500;
-		}
-		else
-		{
-			memcpy (&block, begin + b, 512);
-			b += 512;
-		}
-
-		printf ("writing block %d of %d to %d\n\r", curBlock - startBlock + 1, numBlocks, curBlock);
-		__ide_write (curBlock, block);
-		curBlock++;
-	}
 }
 
 void stat (const FAT& fat, const string& name)
@@ -407,26 +369,12 @@ vector<string> tokenize (const string& command)
 
 }
 
-Shell::Shell (unsigned int& tick) : m_tick (tick)
+Shell::Shell (FAT& fat) : m_fat (fat)
 {
 }
 
-const char* banner = 
-"  ____\n\r"
-" |    / ____________________________________\n\r"
-"     /  ___  ___                ___         \n\r"
-"    /  |    |   \\  |   |  |    /   \\  |\\   |\n\r"
-" __/__ |__  | __/  |   |  |    | | |  | \\  |\n\r"
-"  /    |    |   \\  |   |  |    | | |  |  \\ |\n\r" 
-" /     |___ |___/  \\___/  |___ \\___/  |   \\|\n\r"
-"/____| _____________________________________\n\r";
-
 void Shell::run () const
 {
-	printf ("%s\n\r", banner);	
-
-	FAT fat;
-
 	printf ("\n\r%s\n\r",version);
 	printf ("type help for help\n\r\n\r");
 
@@ -457,62 +405,56 @@ void Shell::run () const
 				block_address_t block = atol (tokens [1].c_str ());
 				writeB (block);
 			}
-			if (tokens [0] == "oldsave" && tokens.size () > 1)
-			{
-				block_address_t block = atol (tokens [1].c_str ());			
-				oldsave (block);
-			}
 			if (tokens [0] == "save" && tokens.size () > 1)
 			{
 				unsigned long bootNumber = atol (tokens [1].c_str ());
-				save (fat, filename, (unsigned int) bootNumber);
+				save (m_fat, filename, (unsigned int) bootNumber);
 			}
 			if (tokens [0] == "boot" && tokens.size () > 2)
 			{
 				string filename (tokens [1].c_str ());
 				unsigned long bootNumber = atol (tokens [2].c_str ());
-				boot (fat, filename, (unsigned int ) bootNumber);
+				boot (m_fat, filename, (unsigned int ) bootNumber);
 			}
 				if (tokens [0] == "unboot" && tokens.size () > 1)
 			{
 				unsigned long bootNumber = atol (tokens [1].c_str ());
-				unboot (fat, (unsigned int ) bootNumber);
+				unboot (m_fat, (unsigned int ) bootNumber);
 			}
 			if (tokens [0] == "index")
 			{
-				index (fat);
+				index (m_fat);
 			}
 			if (tokens [0] == "format" && tokens.size () > 1)
 			{
 				block_address_t size = atol (tokens [1].c_str ());			
-				format (fat, size);
+				format (m_fat, size);
 			}
 			if (tokens [0] == "create" && tokens.size () > 1)
 			{
 				string filename (tokens [1].c_str ());
 				block_address_t size = 0;
 				if (tokens.size () > 2) size = atol (tokens [2].c_str ());
-				create (fat, filename, size);
+				create (m_fat, filename, size);
 			}
 			if (tokens [0] == "rm" && tokens.size () > 1)
 			{
 				string filename (tokens [1].c_str ());
-				rmFile (fat, filename);
+				rmFile (m_fat, filename);
 			}
 			if (tokens [0] == "write" && tokens.size () > 2)
 			{
 				string filename (tokens [1].c_str ());
 				block_address_t size = atol (tokens [2].c_str ());
-				write (fat, filename, size);
+				write (m_fat, filename, size);
 			}
 			if (tokens [0] == "read" && tokens.size () > 1)
 			{
 				string filename (tokens [1].c_str ());
-				read (fat, filename);
+				read (m_fat, filename);
 			}
-			if (tokens [0] == "ls") ls (fat);
-			if (tokens [0] == "uptime") {printf ("%d\n\r",m_tick);}
-			}
+			if (tokens [0] == "ls") ls (m_fat);
+		}
 	}
 
 	return ;

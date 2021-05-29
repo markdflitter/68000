@@ -17,7 +17,6 @@ class FAT
 {
 public:
 	FAT ();
-	~FAT ();
 		
 	void format (block_address_t size);
 	
@@ -50,8 +49,8 @@ private:
 	OpenFile::Ptr getOpenFile (FILE file);
 
 
-	unsigned char* serialise (unsigned char* p) const;
-	bool deserialise (unsigned char*& p);
+	void serialise (unsigned char*& p) const;
+	bool deserialise (const unsigned char*& p);
 
 	void load ();
 

@@ -14,8 +14,8 @@ public:
 	std::list <Chunk::Ptr> allocate (block_address_t size, bool contiguous = false);
 	void deallocate (std::list<Chunk::Ptr>& chunks);
 
-	unsigned char* serialise (unsigned char* p) const;
-	unsigned char* deserialise (unsigned char* p);
+	void serialise (unsigned char*& p) const;
+	void deserialise (const unsigned char*& p);
 private:
 	std::list<Chunk::Ptr> m_free;
 };

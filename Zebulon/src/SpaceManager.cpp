@@ -36,17 +36,15 @@ void SpaceManager::deallocate (std::list<Chunk::Ptr>& chunks)
 	m_free.splice (m_free.end (), chunks);
 }
 
-unsigned char* SpaceManager::serialise (unsigned char* p) const
+void SpaceManager::serialise (unsigned char*& p) const
 {
-	return Serialise::serialise (m_free, p);
+	Serialise::serialise (m_free, p);
 }
 
-unsigned char* SpaceManager::deserialise (unsigned char* p)
+void SpaceManager::deserialise (const unsigned char*& p)
 {
 	m_free.clear ();
-	p = Serialise::deserialise (m_free, p);
+	Serialise::deserialise (m_free, p);
 
  	printf ("> loaded %d free chunks\n\r",m_free.size ());
-
-	return p;
 }
