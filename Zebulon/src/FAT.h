@@ -20,12 +20,17 @@ public:
 
 	size_t blockSize () const;
 
+	bool readBlock (block_address_t block, unsigned char* data);
+
 	void format (block_address_t size);
 
-	bool readBlock (block_address_t block, unsigned char* data);
-	
 	bool create (const std::string& name, block_address_t initialSize = 0, bool contiguous = false);
+	void setMetaData (const std::string& name, unsigned int loadAddress, unsigned int goAddress);
+
 	void rm (const std::string& name);
+
+	std::list<std::string> ls () const;
+	FileStat stat (const std::string& name) const;
 
 	FILE open (const std::string& name);
 	void close (FILE file);
@@ -35,23 +40,17 @@ public:
 
 	bool EOF (FILE file) const;
 
-	std::list<std::string> ls () const;
-	FileStat stat (const std::string& name) const;
-
 	void boot (const std::string& name, unsigned int index);
 	void unboot (unsigned int index);
 	void index () const;
 	
-	void setMetaData (const std::string& name, unsigned int loadAddress, unsigned int goAddress);
-
-	bool extend (FileHeader::Ptr fileHeader, block_address_t numBlocks = 1);	
-	void save () const;
+	bool extend (FileHeader::Ptr fileHeader, block_address_t numBlocks = 1);	void save () const;
 private:
 	FileHeader::ConstPtr findFile (const std::string& name) const;
 	FileHeader::Ptr findFile (const std::string& name);
+
 	OpenFile::ConstPtr getOpenFile (FILE file) const;
 	OpenFile::Ptr getOpenFile (FILE file);
-
 
 	void serialise (unsigned char*& p) const;
 	bool deserialise (const unsigned char*& p);

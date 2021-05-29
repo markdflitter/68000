@@ -42,6 +42,14 @@ size_t FAT::blockSize () const
 	return ide_block_size;
 }
 
+bool FAT::readBlock (block_address_t block, unsigned char* data)
+{
+	ide_result result = __ide_read (block, data);
+	if (result != OK) printIdeError (result);
+
+	return result != OK;
+}
+
 void FAT::format (block_address_t size)
 {
 	m_lastIndex = 0;
@@ -51,14 +59,6 @@ void FAT::format (block_address_t size)
 	m_spaceManager.allocate (1);		// FAT table
 	m_bootTable.clear ();
 	save ();
-}
-
-bool FAT::readBlock (block_address_t block, unsigned char* data)
-{
-	ide_result result = __ide_read (block, data);
-	if (result != OK) printIdeError (result);
-
-	return result != OK;
 }
 
 bool FAT::create (const string& name, block_address_t initialSize, bool contiguous)
@@ -80,6 +80,27 @@ bool FAT::create (const string& name, block_address_t initialSize, bool contiguo
 
 	save ();	
 	return true;
+}
+
+void FAT::setMetaData (const std::string& name, unsigned int loadAddress, unsigned int goAddress)
+{
+	FileHeader::Ptr file = findFile (name);
+	if (file.isNull ())
+	{
+		printf (">> file not found\n\r");
+		return ;
+	}
+
+	if (file->bootable ())
+	{
+		printf (">> cannot set meta data for bootable file, unboot first\n\r");
+		return ;
+	}
+
+	file->setLoadAddress (loadAddress);
+	file->setGoAddress (goAddress);
+
+	save ();
 }
 
 void FAT::rm (const string& name)
@@ -104,6 +125,33 @@ void FAT::rm (const string& name)
 		}
 
 	printf (">> file not found\n\r");
+}
+
+list<string> FAT::ls () const
+{
+	list<string> result;
+
+	for (list<FileHeader::Ptr>::const_iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
+	{
+		result.push_back ((*i)->name ());
+	}
+
+	return result;
+}
+
+FileStat FAT::stat (const string& name) const
+{
+	FileHeader::ConstPtr file = findFile (name);
+	if (!file.isNull ())
+	{
+		FileStat stat (file->name (), file->index (), file->bootable (), file->size (), file->allocSize ());
+
+		for (list<Chunk::Ptr>::const_iterator j = file->chunks ().begin (); j != file->chunks ().end (); j++)
+			stat.chunks.push_back (Chunk ((*j)->start, (*j)->length));
+		return stat;
+	}
+	else
+		return FileStat ();
 }
 
 FILE FAT::open (const string& name)
@@ -147,33 +195,6 @@ bool FAT::EOF (FILE file) const
 		return of->EOF ();
 
 	return true;
-}
-
-list<string> FAT::ls () const
-{
-	list<string> result;
-
-	for (list<FileHeader::Ptr>::const_iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
-	{
-		result.push_back ((*i)->name ());
-	}
-
-	return result;
-}
-
-FileStat FAT::stat (const string& name) const
-{
-	FileHeader::ConstPtr file = findFile (name);
-	if (!file.isNull ())
-	{
-		FileStat stat (file->name (), file->index (), file->bootable (), file->size (), file->allocSize ());
-
-		for (list<Chunk::Ptr>::const_iterator j = file->chunks ().begin (); j != file->chunks ().end (); j++)
-			stat.chunks.push_back (Chunk ((*j)->start, (*j)->length));
-		return stat;
-	}
-	else
-		return FileStat ();
 }
 
 void FAT::boot (const std::string& name, unsigned int index)
@@ -242,27 +263,6 @@ void FAT::index () const
 			printf ("%d : %s : %d : 0x%x : %d : 0x%x : %d\n\r", 
 				i, bte->shortName.c_str (), bte->index, bte->loadAddress, bte->length, bte->goAddress, bte->startBlock);
 	}
-}
-
-void FAT::setMetaData (const std::string& name, unsigned int loadAddress, unsigned int goAddress)
-{
-	FileHeader::Ptr file = findFile (name);
-	if (file.isNull ())
-	{
-		printf (">> file not found\n\r");
-		return ;
-	}
-
-	if (file->bootable ())
-	{
-		printf (">> cannot set meta data for bootable file, unboot first\n\r");
-		return ;
-	}
-
-	file->setLoadAddress (loadAddress);
-	file->setGoAddress (goAddress);
-
-	save ();
 }
 
 FileHeader::Ptr FAT::findFile (const string& name)
