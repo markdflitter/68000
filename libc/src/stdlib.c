@@ -1,5 +1,6 @@
 #include "../include/stdlib.h"
 #include "../include/ctype.h"
+#include "../include/stdio.h"
 
 extern char* __end;
 
@@ -7,11 +8,15 @@ void* malloc (size_t size)
 {
 	if (size & 0x1)	size = size + 1;
 
-		static char* top_of_heap = (char*) &__end;
+	static char* top_of_heap = (char*) &__end;
+	//printf ("top_of_heap 0x%x\n\r", top_of_heap);
 
 	char* alloc = top_of_heap;
 		
 	top_of_heap += size;
+
+	if (top_of_heap - (char*) &__end > 0x40000)
+		printf (">> heapsize 0x%x - time to consider implementing delete\n\r",top_of_heap - (char*) &__end);
 
 	return (void*) alloc;
 }
