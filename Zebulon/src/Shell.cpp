@@ -190,12 +190,16 @@ void stat (const FAT& fat, const string& name)
 	FileStat fileStat = fat.stat (name);
 	printf ("%d: \t ",fileStat.index);
 
-	printf ("%s\t\t : %d bytes\t : ",fileStat.name.c_str (), fileStat.size);
+	printf ("%s : ",pad (fileStat.name, 20, ' ').c_str (), fileStat.size);
 
 	if (fileStat.bootable)
 		printf ("b");
+	else
+		printf (" ");
 	printf (" : ");	
-	
+
+	printf ("%d bytes\t : ", fileStat.size);
+
 	bool first = true;
 	for (auto i = fileStat.chunks.begin (); i != fileStat.chunks.end (); i++)
 	{
