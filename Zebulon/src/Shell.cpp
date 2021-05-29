@@ -64,20 +64,20 @@ namespace {
 
 void printHelp (void)
 {
-	printf ("version\t\t\t - print version\n\r");
-	printf ("help\t\t\t - print this help\n\r");
-	printf ("exit\t\t\t - exit to monitor\n\r");
-	printf ("ident\t\t\t - ident the disk\n\r");
-	printf ("readB <block>\t\t - read block from disk\n\r");
-	printf ("save <bootNumber>\t - save code to disk\n\r");
-	printf ("unboot <bootNumber>\t - empty boot slot\n\r");
+	printf ("version\t\t\t\t - print version\n\r");
+	printf ("help\t\t\t\t - print this help\n\r");
+	printf ("exit\t\t\t\t - exit to monitor\n\r");
+	printf ("ident\t\t\t\t - ident the disk\n\r");
+	printf ("readB <block>\t\t\t - read block from disk\n\r");
+	printf ("format <size>\t\t\t - format the filing system\n\r");
+	printf ("create <name> <size>\t\t - create a file\n\r");
+	printf ("ls\t\t\t\t - list files\n\r");
+	printf ("rm <name>\t\t\t - delete a file\n\r");
+	printf ("write <name>\t\t\t - fill file with stuff\n\r");
+	printf ("read <name>\t\t\t - read file from disk\n\r");
+	printf ("save <bootNumber>\t\t - save code to disk\n\r");
+	printf ("unboot <bootNumber>\t\t - empty boot slot\n\r");
 	printf ("boot <file> <bootNumber>\t - make a file bootable\n\r");
-	printf ("format <size>\t\t - format the filing system\n\r");
-	printf ("create <name> <size>\t - create a file\n\r");
-	printf ("rm <name>\t\t - delete a file\n\r");
-	printf ("write <name>\t\t - fill file with stuff\n\r");
-	printf ("read <name>\t\t - read file from disk\n\r");
-	printf ("ls\t\t\t - list files\n\r");
 }
 
 void ident ()
