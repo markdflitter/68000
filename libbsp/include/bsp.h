@@ -61,9 +61,13 @@ struct DiskInfo {
 	unsigned char multiwordDmaModesSupported;
 	unsigned char multiwordDmaModesActive;
 };
-	
-extern "C" bool __ide_ident (DiskInfo& result);
-extern "C" bool __ide_write (unsigned long LBA, unsigned char data [512]);
-extern "C" bool __ide_read (unsigned long LBA, unsigned char data [512]);
+
+const size_t ide_block_size = 512;
+
+enum ide_result {OK = 0x0, AMNF = 0x1, TK0NF = 0x2, ABRT = 0x4, MCR = 0x8,
+				IDNF = 0x10, MC = 0x20, UNC = 0x40, BBK = 0x80};
+extern "C" ide_result __ide_ident (DiskInfo& result);
+extern "C" ide_result __ide_write (unsigned long LBA, unsigned char data [512]);
+extern "C" ide_result __ide_read (unsigned long LBA, unsigned char data [512]);
 
 #endif

@@ -35,7 +35,7 @@ void OpenFile::read (unsigned char* data, file_address_t numBytes)
 
 		file_address_t bytesToCopy = numBytes;
 	
-		file_address_t bytesLeftInCurrentBuffer = 512 - (m_bufferPointer - m_buffer);
+		file_address_t bytesLeftInCurrentBuffer = ide_block_size - (m_bufferPointer - m_buffer);
 		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
 
 		p = copyFromBuffer (p, bytesToCopy);
@@ -53,7 +53,7 @@ void OpenFile::write (unsigned char* data, file_address_t numBytes)
 
 		file_address_t bytesToCopy = numBytes;
 	
-		file_address_t bytesLeftInCurrentBuffer = 512 - (m_bufferPointer - m_buffer);
+		file_address_t bytesLeftInCurrentBuffer = ide_block_size - (m_bufferPointer - m_buffer);
 		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
 
 		p = copyToBuffer (p, bytesToCopy);
@@ -144,7 +144,7 @@ block_address_t OpenFile::findBlock (file_address_t filePointer) const
 	block_address_t result = 0;
 
 	//printf ("find block for file pointer %d\n\r", filePointer);
-	unsigned long blockIndex = (filePointer / 512) + 1;
+	unsigned long blockIndex = (filePointer / ide_block_size) + 1;
 	//printf ("block Index is %d\n\r", blockIndex);
 
 	list<Chunk::Ptr>::const_iterator i = m_fileHeader->chunks ().begin ();
@@ -202,7 +202,7 @@ void OpenFile::setFilePointer (file_address_t filePointer)
 
 		m_bufferLoaded = false;
 		
-		m_bufferPointer = m_buffer + (filePointer % 512);
+		m_bufferPointer = m_buffer + (filePointer % ide_block_size);
 		//printf ("set buffer pointer to %d\n\r", m_bufferPointer - m_buffer);
 	}
 

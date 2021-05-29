@@ -9,9 +9,37 @@ using namespace std;
 
 unsigned int FAT::m_lastIndex = 0;
 
+namespace
+{
+  	void printIdeError (ide_result error)
+	{
+		if (error == AMNF)
+			printf (">>>  address mark not found\n\r");
+		if (error == TK0NF)
+			printf (">>>  track 0 not found\n\r");
+		if (error == ABRT)
+			printf (">>>  aborted command");
+		if (error == MCR)
+			printf (">>>  media change requested\n\r");
+		if (error == IDNF)
+			printf (">>>  ID not found\n\r");
+		if (error == MC)
+			printf (">>>  media change\n\r");
+		if (error == UNC)
+			printf (">>>  uncorrectable data error\n\r");
+		if (error == BBK)
+			printf (">>>  bad block\n\r");
+	}
+}
+
 FAT::FAT ()
 {
 	load ();
+}
+
+size_t FAT::blockSize () const
+{
+	return ide_block_size;
 }
 
 void FAT::format (block_address_t size)
@@ -23,6 +51,14 @@ void FAT::format (block_address_t size)
 	m_spaceManager.allocate (1);		// FAT table
 	m_bootTable.clear ();
 	save ();
+}
+
+bool FAT::readBlock (block_address_t block, unsigned char* data)
+{
+	ide_result result = __ide_read (block, data);
+	if (result != OK) printIdeError (result);
+
+	return result != OK;
 }
 
 bool FAT::create (const string& name, block_address_t initialSize, bool contiguous)
@@ -344,39 +380,53 @@ void FAT::save () const
 	
 	if (p - block > 400)
 	{
-		printf ("saved BootTable size %d\n\r", p - block);
-		if ((p - block) > 512)
+		printf ("saving BootTable size %d\n\r", p - block);
+		if ((p - block) > ide_block_size)
 			printf (">>> BootTable block is full!!!!\n\r");
 	}
 
-	__ide_write (0, block);
+	ide_result result = __ide_write (0, block);
+	if (result != OK)
+		printIdeError (result);
 
 	p = block;
 	serialise (p);
 	
 	if (p - block > 400)
 	{
-		printf ("saved FAT size %d\n\r", p - block);
-		if ((p - block) > 512)
+		printf ("saving FAT size %d\n\r", p - block);
+		if ((p - block) > ide_block_size)
 			printf (">>> FAT block is full!!!!\n\r");
 	}
 
-	__ide_write (1, block);	
+	result = __ide_write (1, block);	
+	if (result != OK)
+		printIdeError (result);
 }
 
 void FAT::load ()
 {
-	unsigned char block [512];
+	unsigned char block [ide_block_size];
 	const unsigned char* p = block;
 	
-	__ide_read (1, block);	
+	ide_result result = __ide_read (1, block);	
+	if (result != OK) 
+	{
+		printIdeError (result);
+		return ;
+	}
 
 	if (!deserialise (p))
 		return ;
 
 	p = block;
 	
-	__ide_read (0, block);	
+	result = __ide_read (0, block);	
+	if ( result != OK)
+	{
+		printIdeError (result);
+		return ;
+	}
 
 	Serialise::deserialise (m_bootTable, p);
 }

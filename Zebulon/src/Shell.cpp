@@ -18,6 +18,48 @@ extern char* __begin;
 extern char* __end;
 extern char* start;
 
+
+namespace {
+
+string pad (const std::string& str, size_t totalLength, char c)
+{
+	string result = str;
+	result.resize (totalLength, c);
+	return result;
+}
+
+vector<string> tokenize (const string& command)
+{
+	vector<string> result;
+
+	const char* str = command.c_str ();
+	char buf [255];
+	char* cur = buf;
+	while (*str != '\0')
+	{
+		if (*str != ' ')
+			*cur++ = *str;
+		else
+		{
+			*cur = '\0';
+			result.push_back (string (buf));
+			cur = buf;
+		}
+		str++;
+	}
+
+	if (cur != buf)
+	{
+		*cur = '\0';
+		result.push_back (string (buf));
+		cur = buf;
+	}
+
+	return result;
+}
+
+}
+
 namespace {
 
 void printHelp (void)
@@ -27,7 +69,6 @@ void printHelp (void)
 	printf ("exit\t\t\t - exit to monitor\n\r");
 	printf ("ident\t\t\t - ident the disk\n\r");
 	printf ("readB <block>\t\t - read block from disk\n\r");
-	printf ("writeB <block>\t\t - write block to disk\n\r");
 	printf ("save <bootNumber>\t - save code to disk\n\r");
 	printf ("unboot <bootNumber>\t - empty boot slot\n\r");
 	printf ("boot <file> <bootNumber>\t - make a file bootable\n\r");
@@ -134,23 +175,14 @@ void printBuffer (unsigned char* buffer, size_t bufferLen)
 }
 
 
-void readB (block_address_t block)
+void readB (FAT& fat, block_address_t block)
 {
 	printf ("reading from %d\n\r", block);
 
-	unsigned char data [512];
+	unsigned char data [fat.blockSize ()];
 	
-	__ide_read (block, data);
-	printBuffer (data, 512);
-}
-
-void writeB (block_address_t block)
-{
-	printf ("writing to %d\n\r", block);
-
-	unsigned char data [] = "The house stood on a slight rise just on the edge of the village. It stood on its own and looked out over a broad spread of West Country farmland. Not a remarkable house by any means—it was about thirty years old, squattish, squarish, made of brick, and had four windows set in the front of a size and proportion which more or less exactly failed to please the eye.  The only person for whom the house was in any way special was Arthur Dent, and that was only because it happened to be the one he lived in.";
-	
-	__ide_write (block, data);
+	if (fat.readBlock (block, data))
+		printBuffer (data, fat.blockSize ());
 }
 
 void stat (const FAT& fat, const string& name)
@@ -184,7 +216,7 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 	printf ("saving code: start 0x%x end 0x%x entry 0x%x\n\r", loadAddress, end, goAddress);
 
 	file_address_t length = end - loadAddress;
-	block_address_t numBlocks = (length / 512) + 1;
+	block_address_t numBlocks = (length / fat.blockSize ()) + 1;
 
 	fat.rm (name);
 	if (fat.create (name, numBlocks))
@@ -241,12 +273,10 @@ void boot (FAT& fat, const string& filename, unsigned int bootNumber)
 	fat.boot (filename, bootNumber);
 }
 
-
 void index (FAT& fat)
 {
 	fat.index ();
 }
-
 	
 void format (FAT& fat, block_address_t size)
 {
@@ -337,36 +367,6 @@ void ls (FAT& fat)
 		stat (fat, *i);
 }
 
-vector<string> tokenize (const string& command)
-{
-	vector<string> result;
-
-	const char* str = command.c_str ();
-	char buf [255];
-	char* cur = buf;
-	while (*str != '\0')
-	{
-		if (*str != ' ')
-			*cur++ = *str;
-		else
-		{
-			*cur = '\0';
-			result.push_back (string (buf));
-			cur = buf;
-		}
-		str++;
-	}
-
-	if (cur != buf)
-	{
-		*cur = '\0';
-		result.push_back (string (buf));
-		cur = buf;
-	}
-
-	return result;
-}
-
 }
 
 Shell::Shell (FAT& fat) : m_fat (fat)
@@ -398,12 +398,7 @@ void Shell::run () const
 			if (tokens [0] == "readB" && tokens.size () > 1) 
 			{
 				block_address_t block = atol (tokens [1].c_str ());
-				readB (block);
-			}
-			if (tokens [0] == "writeB" && tokens.size () > 1)
-			{
-				block_address_t block = atol (tokens [1].c_str ());
-				writeB (block);
+				readB (m_fat, block);
 			}
 			if (tokens [0] == "save" && tokens.size () > 1)
 			{

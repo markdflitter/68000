@@ -17,8 +17,12 @@ class FAT
 {
 public:
 	FAT ();
-		
+
+	size_t blockSize () const;
+
 	void format (block_address_t size);
+
+	bool readBlock (block_address_t block, unsigned char* data);
 	
 	bool create (const std::string& name, block_address_t initialSize = 0, bool contiguous = false);
 	void rm (const std::string& name);

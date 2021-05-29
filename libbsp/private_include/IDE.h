@@ -10,10 +10,13 @@ class IDE
 public:
 	IDE (unsigned int baseAddress = 0xA00000);
 
-	bool ident (DiskInfo& result);
+	enum Result {OK = 0x0, AMNF = 0x1, TK0NF = 0x2, ABRT = 0x4, MCR = 0x8,
+				IDNF = 0x10, MC = 0x20, UNC = 0x40, BBK = 0x80};
 
-	bool write (unsigned long LBA, unsigned char data [512]);
-	bool read (unsigned long LBA, unsigned char data [512]);
+	Result ident (DiskInfo& result);
+
+	Result write (unsigned long LBA, unsigned char data [512]);
+	Result read (unsigned long LBA, unsigned char data [512]);
 private:
 	MC68230 m_controller;
 
@@ -24,7 +27,7 @@ private:
 	void writeData (unsigned short value);
 		
 	bool hasError ();
-	void printError ();
+	Result error ();
 
 	void wait (unsigned char what);
 	void waitNot (unsigned char what);

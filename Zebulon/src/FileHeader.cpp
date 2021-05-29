@@ -1,4 +1,5 @@
 #include "FileHeader.h"
+#include "bsp.h"
 
 using namespace std;
 
@@ -99,7 +100,7 @@ file_address_t FileHeader::allocSize () const
 	file_address_t result = 0;
 
 	for (list<Chunk::Ptr>::const_iterator i = m_chunks.begin (); i != m_chunks.end (); i++)
-		result = result + (*i)->length * 512;
+		result = result + (*i)->length * ide_block_size;
 	
 	return result;
 }

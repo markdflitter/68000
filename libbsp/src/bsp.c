@@ -50,14 +50,13 @@ void __set_interrupt_vector (unsigned int vector)
 
 void __enable_interrupts ()
 {
-	asm volatile ("and.l #0xF8FF, %sr");
-	
+	//asm volatile ("and.l #0xF8FF, %sr");
 	the_duart ().enableInterrupts ();
 }
 
 void __disable_interrupts ()
 {
-	asm volatile ("or.l #0x0700, %sr");
+	//asm volatile ("or.l #0x0700, %sr");
 	the_duart ().disableInterrupts ();
 }
 
@@ -68,17 +67,17 @@ IDE& the_ide ()
 	return i;
 }
 
-bool __ide_ident (DiskInfo& diskInfo)
+ide_result __ide_ident (DiskInfo& diskInfo)
 {
-	return the_ide ().ident (diskInfo);
+	return (ide_result) the_ide ().ident (diskInfo);
 }
 
-bool __ide_write (unsigned long LBA, unsigned char data [512])
+ide_result __ide_write (unsigned long LBA, unsigned char data [512])
 {
-	return the_ide ().write (LBA, data);
+	return (ide_result) the_ide ().write (LBA, data);
 }
 
-bool __ide_read (unsigned long LBA, unsigned char data [512])
+ide_result __ide_read (unsigned long LBA, unsigned char data [512])
 {
-	return the_ide ().read (LBA, data);
+	return (ide_result) the_ide ().read (LBA, data);
 }

@@ -31,15 +31,6 @@ const unsigned char DWF = 0x20;
 const unsigned char DRDY = 0x40;
 const unsigned char BUSY = 0x80;
 
-const unsigned char AMNF = 0x1;
-const unsigned char TK0NF = 0x2;
-const unsigned char ABRT = 0x4;
-const unsigned char MCR = 0x8;
-const unsigned char IDNF = 0x10;
-const unsigned char MC = 0x20;
-const unsigned char UNC = 0x40;
-const unsigned char BBK = 0x80;
-
 IDE::RegisterAccess::RegisterAccess (MC68230& controller, unsigned char reg)
 	: m_controller (controller), m_register (reg)
 {
@@ -184,29 +175,25 @@ bool IDE::hasError ()
 	return (readStatus () & ERR) != 0;
 }
 
-void IDE::printError ()
+IDE::Result IDE::error ()
 {
 	unsigned char error = readRegister (ERROR_REGISTER);
-
-/*	printf ("IDE ERROR:\n\r");
-		
 	if ((error & AMNF) != 0);
-		printf ("  address mark not found\n\r");
+		 return AMNF;
 	if ((error & TK0NF) != 0);
-		printf ("  track 0 not found\n\r");
+		return TK0NF;
 	if ((error & ABRT) != 0);
-		printf ("  aborted command");
+		return ABRT;
 	if ((error & MCR) != 0);
-		printf ("  media change requested\n\r");
+		return MCR;
 	if ((error & IDNF) != 0);
-		printf ("  ID not found\n\r");
+		return IDNF;
 	if ((error & MC) != 0);
-		printf ("  media change\n\r");
+		return MC;
 	if ((error & UNC) != 0);
-		printf ("  uncorrectable data error\n\r");
+		return UNC;
 	if ((error & BBK) != 0);
-		printf ("  bad block\n\r");
-*/
+		return BBK;
 }
 
 void IDE::wait (unsigned char what)
@@ -237,7 +224,7 @@ IDE::RegisterAccess IDE::accessRegister (unsigned char reg)
 	return RegisterAccess (m_controller, reg);
 }
 
-bool IDE::ident (DiskInfo& result)
+IDE::Result IDE::ident (DiskInfo& result)
 {
 	writeRegister (DRIVE_SELECT_REGISTER, MASTER);
 	wait (DRDY);
@@ -247,8 +234,7 @@ bool IDE::ident (DiskInfo& result)
 
 	if (hasError ())
 	{
-		printError ();
-		return false;
+		return error ();
 	}
 	wait (DRQ);
 
@@ -310,7 +296,7 @@ bool IDE::ident (DiskInfo& result)
 	result.multiwordDmaModesSupported = response [63] & 0xFF;
 	result.multiwordDmaModesActive = response [63] >> 8;
 	
-	return true;	
+	return OK;
 }
 
 void IDE::setLBA (unsigned long LBA)
@@ -323,7 +309,7 @@ void IDE::setLBA (unsigned long LBA)
 }
 
 
-bool IDE::write (unsigned long LBA, unsigned char data [512])
+IDE::Result  IDE::write (unsigned long LBA, unsigned char data [512])
 {
 	writeRegister (DRIVE_SELECT_REGISTER, MASTER);
 	wait (DRDY);
@@ -336,8 +322,7 @@ bool IDE::write (unsigned long LBA, unsigned char data [512])
 
 	if (hasError ())
 	{
-		printError ();
-		return false;
+		return error ();
 	}
 
 	wait (DRQ);
@@ -350,10 +335,10 @@ bool IDE::write (unsigned long LBA, unsigned char data [512])
 		writeData (w);
 	}
 
-	return true;
+	return OK;
 }
 
-bool IDE::read (unsigned long LBA, unsigned char data [512])
+IDE::Result IDE::read (unsigned long LBA, unsigned char data [512])
 {
 	writeRegister (DRIVE_SELECT_REGISTER, MASTER);
 	wait (DRDY);
@@ -366,8 +351,7 @@ bool IDE::read (unsigned long LBA, unsigned char data [512])
 
 	if (hasError ())
 	{
-		printError ();
-		return false;
+		return error ();
 	}
 
 	wait (DRQ);
@@ -378,5 +362,5 @@ bool IDE::read (unsigned long LBA, unsigned char data [512])
 		__memcpy (&(data [i]),&w, 2);
 	}
 
-	return true;
+	return OK;
 }
