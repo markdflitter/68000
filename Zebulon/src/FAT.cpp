@@ -268,7 +268,6 @@ void FAT::unboot (unsigned int index)
 
 void FAT::index () const
 {
-	printf ("%d\n\r", m_bootTable.size ());
 	for (size_t i = 0; i < m_bootTable.size (); i++)
 	{
 		BootTableEntry::Ptr bte = m_bootTable [i];
