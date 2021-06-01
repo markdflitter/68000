@@ -250,7 +250,7 @@ void FAT::unboot (unsigned int index)
 		return ;
 	}
 
-	if ((index < m_bootTable.size ()) && !m_bootTable[index].isNull ())
+	if ((index < m_bootTable.size ()) && !m_bootTable[index].isNull () && !m_bootTable[index]->empty)
 	{
 		BootTableEntry::Ptr p = m_bootTable [index];
 		unsigned int fileIndex = p->index;
