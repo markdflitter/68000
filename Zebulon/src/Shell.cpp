@@ -156,7 +156,7 @@ void printBuffer (unsigned char* buffer, size_t bufferLen)
 		for (int c = 0; c < rowLen; c++) printf ("%x",*p++);
 	
 		string pad (16 - rowLen, ' ');	
-		printf ("%s", pad.c_str ());
+		printf ("%s%s", pad.c_str (), pad.c_str ());
 
 		printf (" ");
 
