@@ -34,6 +34,7 @@ namespace
 
 FAT::FAT ()
 {
+	m_bootTable.reserve (10);
 	load ();
 }
 
@@ -47,7 +48,7 @@ bool FAT::readBlock (block_address_t block, unsigned char* data)
 	ide_result result = __ide_read (block, data);
 	if (result != OK) printIdeError (result);
 
-	return result != OK;
+	return result == OK;
 }
 
 void FAT::format (block_address_t size)
@@ -199,6 +200,12 @@ bool FAT::EOF (FILE file) const
 
 void FAT::boot (const std::string& name, unsigned int index)
 {
+	if (index > 9)
+	{
+		printf (">> max boot slot is %d\n\r", 9);
+		return ;
+	}
+
 	if (!m_bootTable [index].isNull () && !m_bootTable [index]->empty) 
 	{
 		printf (">> boot slot %d is full, unboot first\n\r", index);
@@ -237,6 +244,12 @@ void FAT::boot (const std::string& name, unsigned int index)
 
 void FAT::unboot (unsigned int index)
 {
+	if (index > 9)
+	{
+		printf (">> max boot slot is %d\n\r", 9);
+		return ;
+	}
+
 	if ((index < m_bootTable.size ()) && !m_bootTable[index].isNull ())
 	{
 		BootTableEntry::Ptr p = m_bootTable [index];
@@ -255,6 +268,7 @@ void FAT::unboot (unsigned int index)
 
 void FAT::index () const
 {
+	printf ("%d\n\r", m_bootTable.size ());
 	for (size_t i = 0; i < m_bootTable.size (); i++)
 	{
 		BootTableEntry::Ptr bte = m_bootTable [i];
@@ -307,7 +321,7 @@ OpenFile::Ptr FAT::getOpenFile (FILE file)
 
 
 const char* FatIdent = "__Zebulon_FAT__1__";
-const char* FatVersion = "1.7";
+const char* FatVersion = "1.8";
 
 void FAT::serialise (unsigned char*& p) const
 {
@@ -377,13 +391,6 @@ void FAT::save () const
 	unsigned char* p = block;
 
 	Serialise::serialise (m_bootTable, p);
-	
-	if (p - block > 400)
-	{
-		printf ("saving BootTable size %d\n\r", p - block);
-		if ((p - block) > ide_block_size)
-			printf (">>> BootTable block is full!!!!\n\r");
-	}
 
 	ide_result result = __ide_write (0, block);
 	if (result != OK)
@@ -422,7 +429,7 @@ void FAT::load ()
 	p = block;
 	
 	result = __ide_read (0, block);	
-	if ( result != OK)
+	if (result != OK)
 	{
 		printIdeError (result);
 		return ;

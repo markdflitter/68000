@@ -30,15 +30,28 @@ public:
 
 	template <class T> static void serialise (const std::vector<T>& v, unsigned char*& p)
 	{
-		size_t num = v.size ();
+		size_t num = v.capacity ();
 		serialise (num, p);
 
+		unsigned char* start = p;
 		for (size_t i = 0; i < num; i++)
 		{
 			serialise (v [i], p);
 		}
 	}
 
+	static void serialise (const std::vector<BootTableEntry::Ptr>& v, unsigned char*& p)
+	{
+		size_t num = v.capacity ();
+		for (size_t i = 0; i < 8; i++)
+			serialise (num, p);
+
+		unsigned char* start = p;
+		for (size_t i = 0; i < num; i++)
+		{
+			serialise (v [i], p);
+		}
+	}
 
 	static void deserialise (unsigned long& l, const unsigned char*& p);
 	static void deserialise (std::string& s, const unsigned char*& p, size_t maxLength);
@@ -66,9 +79,10 @@ public:
 		{
 			T t;
 			deserialise (t, p);
-			v.push_back (t);
+			v [i] = t;
 		}
 	}
+
 	template <class T> static void deserialise (std::list <mdf::shared_ptr <T> >& list, const unsigned char*& p)
 	{
 		size_t num = 0;
@@ -81,16 +95,18 @@ public:
 			list.push_back (t);
 		}
 	}
-	template <class T> static void deserialise (std::vector <mdf::shared_ptr <T> >& v, const unsigned char*& p)
+	
+	static void deserialise (std::vector <BootTableEntry::Ptr>& v, const unsigned char*& p)
 	{
 		size_t num = 0;
-		deserialise (num, p);
+		for (size_t i = 0; i < 8; i++)
+			deserialise (num, p);
 
 		for (int i = 0; i < num; i++)
 		{
-			mdf::shared_ptr <T> t = mdf::make_shared (new T);
+			BootTableEntry::Ptr t = mdf::make_shared (new BootTableEntry ());
 			deserialise (t, p);
-			v.push_back (t);
+			v [i] = t;
 		}
 	}
 };	

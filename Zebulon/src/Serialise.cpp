@@ -147,7 +147,7 @@ void Serialise::deserialise (BootTableEntry::Ptr bte, const unsigned char*& p)
 	bte->empty = empty;
 
 	string name;
-	deserialise (name, p, 24);
+	deserialise (name, p, 20);
 	bte->shortName = name;
 	
 	unsigned long index;

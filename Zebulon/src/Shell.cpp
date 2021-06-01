@@ -9,8 +9,8 @@
 #include "FAT.h"
 #include "ctype.h"
 
-const char* version = "Z-Shell V1.36.0004";
-const char* filename = "Zebulon_V1.36.0004";
+const char* version = "Z-Shell V1.36.0009";
+const char* filename = "Zebulon_V1.36.0009";
 	
 using namespace std;
 

@@ -15,7 +15,7 @@ struct BootTableEntry
 
 	BootTableEntry () : empty (true)
 	{
-		shortName.resize (24, ' ');
+		shortName.resize (20, ' ');
 	}
 	BootTableEntry (const std::string& name, unsigned int _index,
 		unsigned int _length, unsigned int _loadAddress, 
@@ -23,7 +23,7 @@ struct BootTableEntry
 		: shortName (name), index (_index), length (_length), loadAddress (_loadAddress),
 		goAddress (_goAddress), startBlock (_startBlock), empty (false)
 	{
-		shortName.resize (24,' ');
+		shortName.resize (20,' ');
 	}
 
 	bool empty;					
