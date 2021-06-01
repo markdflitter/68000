@@ -274,8 +274,8 @@ void FAT::index () const
 		BootTableEntry::Ptr bte = m_bootTable [i];
 		
 		if (!bte.isNull () && !bte->empty)
-			printf ("%d : %s : %d : 0x%x : %d : 0x%x : %d\n\r", 
-				i, bte->shortName.c_str (), bte->index, bte->loadAddress, bte->length, bte->goAddress, bte->startBlock);
+			printf ("%d : %s : %d : 0x%x : 0x%x : 0x%x : %d\n\r", 
+				i, bte->shortName.c_str (), bte->index, bte->length, bte->loadAddress, bte->goAddress, bte->startBlock);
 	}
 }
 

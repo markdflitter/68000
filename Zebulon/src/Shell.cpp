@@ -188,9 +188,7 @@ void readB (FAT& fat, block_address_t block)
 void stat (const FAT& fat, const string& name)
 {
 	FileStat fileStat = fat.stat (name);
-	printf ("%d: \t ",fileStat.index);
-
-	printf ("%s : ",pad (fileStat.name, 20, ' ').c_str (), fileStat.size);
+	printf ("%d : %s : ", fileStat.index, pad (fileStat.name, 20, ' ').c_str (), fileStat.size);
 
 	if (fileStat.bootable)
 		printf ("b");
