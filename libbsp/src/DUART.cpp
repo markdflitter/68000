@@ -64,9 +64,6 @@ const unsigned char TIMER_INTERRUPT = 8;
 
 void DUART::enableInterrupts ()
 {
-	write (&m_registers->ctur, 0);
-	write (&m_registers->ctlr, 23);
-
 	write (&m_registers->imr, TIMER_INTERRUPT);
 }
 
@@ -80,3 +77,8 @@ void DUART::clearInterrupts ()
 	read (&m_registers->stop_counter);
 }
 
+void DUART::setTimerDivisor (unsigned char msb, unsigned char lsb)
+{
+	write (&m_registers->ctur, msb);
+	write (&m_registers->ctlr, lsb);
+}

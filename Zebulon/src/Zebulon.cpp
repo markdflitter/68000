@@ -31,10 +31,10 @@ int main ()
 {
 	printf ("%s\n\r", banner);	
 
-	VectorTable v (__vector_table);
-	
+	VectorTable v (__vector_table);	
 	v.setVector (64, &tick);	
 
+	__set_timer_divisor (0, 23);
 	__set_interrupt_vector (64);
 	__enable_interrupts ();
 

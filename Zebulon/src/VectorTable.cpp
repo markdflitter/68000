@@ -1,13 +1,10 @@
 #include "VectorTable.h"
 #include <stdio.h>
 
-
 void unhandled () __attribute__ ((interrupt));
 void unhandled ()
 {
-	printf ("* unhandled exception\n\r");
 }
-
 
 VectorTable::VectorTable (unsigned char* baseAddress)
 	: m_table ((Table*) baseAddress)
@@ -16,17 +13,15 @@ VectorTable::VectorTable (unsigned char* baseAddress)
 
 	for (int i = 0; i < 255; i++)
 		setVector (i, &unhandled);
-	printf ("set vectors\n\r");
 
-	asm volatile ("move #0x2700, %sr");
- 	asm volatile ("move.l #0x200004, %a0");
-	asm volatile ("movec.l %a0, %vbr");
+ 	asm volatile ("move.l %0, %%a0\n\t" 
+				  "movec.l %%a0, %%vbr\n\t" : : "a" (baseAddress) : "a0");
 }
 
 VectorTable::~VectorTable ()
 {
-	asm volatile ("move.l #0, %d0");
-	asm volatile ("movec %d0, %vbr");
+	asm volatile ("move.l #0, %d0\n\t"
+				  "movec %d0, %vbr\n\t");
 }
 
 void VectorTable::setVector (unsigned int vector, fnPtr fn)

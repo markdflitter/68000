@@ -50,13 +50,13 @@ void __set_interrupt_vector (unsigned int vector)
 
 void __enable_interrupts ()
 {
-	asm volatile ("andi #0xF8FF, %sr");
+	asm volatile ("andi #0xF8FF, %%sr");
 	the_duart ().enableInterrupts ();
 }
 
 void __disable_interrupts ()
 {
-	asm volatile ("ori #0x0700, %sr");
+	asm volatile ("ori #0x0700, %%sr");
 	the_duart ().disableInterrupts ();
 }
 
@@ -65,6 +65,10 @@ void __interrupt_handled ()
 	the_duart ().clearInterrupts ();
 }
 
+void __set_timer_divisor (unsigned char msb, unsigned char lsb)
+{
+	the_duart ().setTimerDivisor (msb, lsb);
+}
 
 IDE& the_ide ()
 {

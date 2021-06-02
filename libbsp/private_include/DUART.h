@@ -10,6 +10,8 @@ public:
 	void enableInterrupts ();
 	void disableInterrupts ();
 	void clearInterrupts ();
+	
+	void setTimerDivisor (unsigned char msb, unsigned char lsb);
 
 	enum eChannel {channelA = 0, channelB	= 1};
 	void writeChar (eChannel channel, char c);
