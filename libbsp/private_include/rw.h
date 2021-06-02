@@ -4,7 +4,7 @@
 //#define LOG_ACCESS
 #undef LOG_ACESS
 
-#if LOG_ACCESS
+#ifdef LOG_ACCESS
 #include <stdio.h>
 #endif
 
