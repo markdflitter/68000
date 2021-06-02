@@ -9,6 +9,7 @@ public:
 	void setInterruptVector (unsigned int vector);
 	void enableInterrupts ();
 	void disableInterrupts ();
+	void clearInterrupts ();
 
 	enum eChannel {channelA = 0, channelB	= 1};
 	void writeChar (eChannel channel, char c);
@@ -70,7 +71,7 @@ private:
 			};
 			char _3;
 			union {
-				volatile unsigned char crur;
+				volatile unsigned char ctur;
 				volatile unsigned char ctu;
 			};
 			char _4;

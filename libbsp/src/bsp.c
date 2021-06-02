@@ -60,6 +60,11 @@ void __disable_interrupts ()
 	the_duart ().disableInterrupts ();
 }
 
+void __interrupt_handled ()
+{
+	the_duart ().clearInterrupts ();
+}
+
 
 IDE& the_ide ()
 {

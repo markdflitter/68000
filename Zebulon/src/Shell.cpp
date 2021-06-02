@@ -77,7 +77,7 @@ void printHelp (void)
 	printf ("read <name>\t\t\t - read file from disk\n\r");
 	printf ("save <bootNumber>\t\t - save code to disk\n\r");
 	printf ("unboot <bootNumber>\t\t - empty boot slot\n\r");
-	printf ("boot <file> <bootNumber>\t - make a file bootable\n\r");
+	printf ("time\t\t\t\t - print ticks since boot\n\r");
 }
 
 void ident ()
@@ -371,7 +371,7 @@ void ls (FAT& fat)
 
 }
 
-Shell::Shell (FAT& fat) : m_fat (fat)
+Shell::Shell (FAT& fat, unsigned int& time) : m_fat (fat), m_time (time)
 {
 }
 
@@ -451,6 +451,13 @@ void Shell::run () const
 				read (m_fat, filename);
 			}
 			if (tokens [0] == "ls") ls (m_fat);
+			if (tokens [0] == "time") 
+			{
+				double f = (double) m_time;
+				f = f * 1.9972e-4;
+				
+				printf ("%ds\n\r", (unsigned int) f);
+			}
 		}
 	}
 

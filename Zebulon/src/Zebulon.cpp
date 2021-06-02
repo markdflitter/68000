@@ -22,8 +22,8 @@ static unsigned int time = 0;
 void tick () __attribute__ ((interrupt));
 void tick ()
 {
-	printf ("tock\n\r");
 	++time;
+	__interrupt_handled ();
 }
 
 
@@ -31,18 +31,17 @@ int main ()
 {
 	printf ("%s\n\r", banner);	
 
-
-//	VectorTable v (__vector_table);
+	VectorTable v (__vector_table);
 	
-//	for (int i = 0; i < 256; i++)
-//		v.setVector (i, &tick);	
+	v.setVector (64, &tick);	
 
-//	__set_interrupt_vector (64);
+	__set_interrupt_vector (64);
 	__enable_interrupts ();
 
-
 	FAT f;
-	Shell (f).run ();
+	Shell (f, time).run ();
+
+	__disable_interrupts ();
 	
 	return 0;
 }
