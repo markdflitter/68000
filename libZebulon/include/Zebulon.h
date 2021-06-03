@@ -1,15 +1,16 @@
 #ifndef ZEBULON_H
 #define ZEBULON_H
 
+#include <stdio.h>
+
 namespace Zebulon
 {
 
-int time ()
+unsigned int time ()
 {
-	unsigned int time = 0;
-	unsigned int* atime = &time;
-	asm ("move.l %0, %%a0\n\t"
-		 "trap #0\n\t" : "=m" (atime));
+	volatile unsigned int time;
+	register volatile unsigned int* a0 asm ("a0") = &time;
+	asm ("trap #0\n\t" : : "r" (a0));
 
 	return time;
 }

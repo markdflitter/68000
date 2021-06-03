@@ -15,8 +15,8 @@ MKDIR := mkdir -p
 CP := cp
 RM := rm -rf
 CC := m68k-elf-g++
-LIBCFLAGS := -c -g -march=68010 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
-CFLAGS := -march=68010 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY)
+LIBCFLAGS := -c -g -march=68010 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY) -O2
+CFLAGS := -march=68010 -nostartfiles -nostdlib -fno-exceptions -fno-rtti -I $(INSTALLED_INCLUDE_DIRECTORY) -L$(INSTALLED_LIB_DIRECTORY) -O2
 
 AS := m68k-elf-as
 ASFLAGS := -m68010
@@ -30,7 +30,7 @@ TTY := /dev/ttyS1
 BAUD := 115200
 CAT := cat
 
-LINK_LINE := -lgcc -lmdf -lcpp -lbsp -lc -lbsp -lgcc -Wl,--whole-archive -litanium -lcrt -lstart -Wl,--no-whole-archive
+LINK_LINE := -lgcc -lc -lmdf -lcpp -lbsp -lc -lbsp -lgcc -Wl,--whole-archive -litanium -lcrt -lstart -Wl,--no-whole-archive
 
 #top level build targets
 TOP_LEVEL_TARGET := Zebulon

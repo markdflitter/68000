@@ -238,10 +238,9 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 
 	unsigned char* p = loadAddress;
 
+	timer t;
 	while (bytesLeftToWrite > 0)
 	{
-		timer t;
-
 		unsigned char buffer [512];
 		if (bytesLeftToWrite >= 512)
 		{
@@ -257,11 +256,10 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 			bytesLeftToWrite -= bytesLeftToWrite;
 		}
 
-		printf ("%dmS\n\r", t.elapsed ());
 		printf (".");
 	}
 
-	printf ("\n\r");
+	printf ("\n\r%dmS\n\r", t.elapsed ());
 
 	fat.close (f);
 

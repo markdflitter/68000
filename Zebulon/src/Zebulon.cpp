@@ -31,7 +31,7 @@ void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
 	unsigned int* result;
-	asm ("move.l %%a0, %0\n\t" : "=m" (result));
+    asm ("move.l %%a0, %0\n\t" : "=m" (result));
 
 	double f = ((double) ticks) * tickIntervalInMs;
 	unsigned int timeInMs (f);
@@ -46,7 +46,7 @@ int main ()
 	v.setVector (32, &trap0);	
 	v.setVector (64, &tick);	
 
-	tickIntervalInMs = __set_timer_divisor (0, 23);
+	tickIntervalInMs = __set_timer_divisor (0, 92);
 	unsigned int d = tickIntervalInMs * 1000;
 	printf ("tick interval %duS\n\r", d);
 

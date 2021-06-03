@@ -46,21 +46,21 @@ private:
 	public:
 		RegisterAccess (MC68230& controller, unsigned char reg);
 		
-		unsigned char read8 ();
-		void write8 (unsigned char value);
+		inline unsigned char read8 ();
+		inline void write8 (unsigned char value);
 	
-		unsigned short read16 ();
-		void write16 (unsigned short value);
+		inline unsigned short read16 ();
+		inline void write16 (unsigned short value);
 	private:
-		void reset ();
-		void setAddress ();
+		inline void reset ();
+		inline void setAddress ();
 	
 		enum eState {assert, negate};	
-		void setStrobe (unsigned char strobe, eState state);
+		inline void setStrobe (unsigned char strobe, eState state);
 		
-		void negateBits (unsigned char bits);
-		void assertBits (unsigned char bits);
-		void writeState ();
+		inline void negateBits (unsigned char bits);
+		inline void assertBits (unsigned char bits);
+		inline void writeState ();
 
 		unsigned char m_register;
 		unsigned char m_state;
