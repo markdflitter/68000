@@ -369,9 +369,19 @@ void ls (FAT& fat)
 		stat (fat, *i);
 }
 
+void time ()
+{
+	unsigned int time = 0;
+	unsigned int* atime = &time;
+	asm ("move.l %0, %%a0\n\t"
+		 "trap #0\n\t" : "=m" (atime));
+
+	printf ("%d mS\n\r", time);
 }
 
-Shell::Shell (FAT& fat, unsigned int& time) : m_fat (fat), m_time (time)
+}
+
+Shell::Shell (FAT& fat) : m_fat (fat)
 {
 }
 
@@ -451,13 +461,7 @@ void Shell::run () const
 				read (m_fat, filename);
 			}
 			if (tokens [0] == "ls") ls (m_fat);
-			if (tokens [0] == "time") 
-			{
-				double f = (double) m_time;
-				f = f * 1.9972e-4;
-				
-				printf ("%ds\n\r", (unsigned int) f);
-			}
+			if (tokens [0] == "time") time ();
 		}
 	}
 

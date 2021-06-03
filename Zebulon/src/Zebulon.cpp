@@ -26,12 +26,24 @@ void tick ()
 	__interrupt_handled ();
 }
 
+void trap0 () __attribute__ ((interrupt));
+void trap0 ()
+{
+	unsigned int* result;
+	asm ("move.l %%a0, %0\n\t" : "=m" (result));
+
+	double f = (double) time;
+	f = f * 0.19972;
+	unsigned int timeInMs = (unsigned int) f;
+	*result = timeInMs;
+}
 
 int main ()
 {
 	printf ("%s\n\r", banner);	
 
 	VectorTable v (__vector_table);	
+	v.setVector (32, &trap0);	
 	v.setVector (64, &tick);	
 
 	__set_timer_divisor (0, 23);
@@ -39,7 +51,7 @@ int main ()
 	__enable_interrupts ();
 
 	FAT f;
-	Shell (f, time).run ();
+	Shell (f).run ();
 
 	__disable_interrupts ();
 	
