@@ -15,8 +15,7 @@ extern "C" void __set_interrupt_vector (unsigned int vector);
 extern "C" void __enable_interrupts ();
 extern "C" void __disable_interrupts ();
 extern "C" void __interrupt_handled ();
-extern "C" void __set_timer_divisor (unsigned char msb, unsigned char lsb);
-extern "C" float __get_clock_interval ();
+extern "C" double __set_timer_divisor (unsigned char msb, unsigned char lsb);
 
 struct DiskInfo {
 	unsigned short general;

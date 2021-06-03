@@ -65,9 +65,16 @@ void __interrupt_handled ()
 	the_duart ().clearInterrupts ();
 }
 
-void __set_timer_divisor (unsigned char msb, unsigned char lsb)
+double __set_timer_divisor (unsigned char msb, unsigned char lsb)
 {
 	the_duart ().setTimerDivisor (msb, lsb);
+	unsigned int divisor = msb;
+	divisor = (divisor << 8) | lsb;
+	double ticksPerSecond = 3685000.0l / 16 / divisor / 2;
+	double tickIntervalInS = 1.0 / ticksPerSecond;
+	double tickIntervalInMs = 1000 * tickIntervalInS;
+			
+	return tickIntervalInMs;
 }
 
 IDE& the_ide ()

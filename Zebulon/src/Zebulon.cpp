@@ -17,12 +17,13 @@ const char* banner =
 
 extern unsigned char* __vector_table;
 
-static unsigned int time = 0;
+static unsigned int ticks = 0;
+static double tickIntervalInMs = 0.0;
 
 void tick () __attribute__ ((interrupt));
 void tick ()
 {
-	++time;
+	++ticks;
 	__interrupt_handled ();
 }
 
@@ -32,9 +33,8 @@ void trap0 ()
 	unsigned int* result;
 	asm ("move.l %%a0, %0\n\t" : "=m" (result));
 
-	double f = (double) time;
-	f = f * 0.19972;
-	unsigned int timeInMs = (unsigned int) f;
+	double f = ((double) ticks) * tickIntervalInMs;
+	unsigned int timeInMs (f);
 	*result = timeInMs;
 }
 
@@ -46,7 +46,10 @@ int main ()
 	v.setVector (32, &trap0);	
 	v.setVector (64, &tick);	
 
-	__set_timer_divisor (0, 23);
+	tickIntervalInMs = __set_timer_divisor (0, 23);
+	unsigned int d = tickIntervalInMs * 1000;
+	printf ("tick interval %duS\n\r", d);
+
 	__set_interrupt_vector (64);
 	__enable_interrupts ();
 
