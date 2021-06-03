@@ -20,7 +20,6 @@ OpenFile::~OpenFile ()
 	flush ();
 	if (m_fileHeaderModified) 
 	{
-		printf ("saving FAT\n\r");
 		m_fileHeader->fat ()->save ();
 	}
 }

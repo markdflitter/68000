@@ -259,7 +259,7 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 		printf (".");
 	}
 
-	printf ("\n\r%dmS\n\r", t.elapsed ());
+	printf (" %dmS\n\r", t.elapsed ());
 
 	fat.close (f);
 

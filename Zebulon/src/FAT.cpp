@@ -400,7 +400,7 @@ void FAT::save () const
 	
 	if (p - block > 400)
 	{
-		printf ("saving FAT size %d\n\r", p - block);
+		printf (">> FAT size is now %d bytes\n\r", p - block);
 		if ((p - block) > ide_block_size)
 			printf (">>> FAT block is full!!!!\n\r");
 	}

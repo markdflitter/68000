@@ -8,9 +8,8 @@ namespace Zebulon
 
 unsigned int time ()
 {
-	volatile unsigned int time;
-	register volatile unsigned int* a0 asm ("a0") = &time;
-	asm ("trap #0\n\t" : : "r" (a0));
+	unsigned int time;
+	asm ("trap #0\n\t" : : "a" (&time));
 
 	return time;
 }
