@@ -6,6 +6,7 @@
 #include <list>
 #include <vector>
 #include <stdlib.h>
+#include <time.h>
 #include "FAT.h"
 #include "ctype.h"
 
@@ -371,12 +372,7 @@ void ls (FAT& fat)
 
 void time ()
 {
-	unsigned int time = 0;
-	unsigned int* atime = &time;
-	asm ("move.l %0, %%a0\n\t"
-		 "trap #0\n\t" : "=m" (atime));
-
-	printf ("%d mS\n\r", time);
+	printf ("%d mS\n\r", clock ());
 }
 
 }
