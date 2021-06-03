@@ -30,7 +30,7 @@ TTY := /dev/ttyS1
 BAUD := 115200
 CAT := cat
 
-LINK_LINE := -lgcc -lcpp -lbsp -lc -lbsp -lgcc -Wl,--whole-archive -litanium -lcrt -lstart -Wl,--no-whole-archive
+LINK_LINE := -lgcc -lmdf -lcpp -lbsp -lc -lbsp -lgcc -Wl,--whole-archive -litanium -lcrt -lstart -Wl,--no-whole-archive
 
 #top level build targets
 TOP_LEVEL_TARGET := Zebulon

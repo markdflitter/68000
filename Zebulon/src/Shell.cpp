@@ -7,13 +7,15 @@
 #include <vector>
 #include <stdlib.h>
 #include <time.h>
+#include <timer>
 #include "FAT.h"
 #include "ctype.h"
 
-const char* version = "Z-Shell V1.36.0012";
-const char* filename = "Zebulon_V1.36.0012";
+const char* version = "Z-Shell V1.36.0013";
+const char* filename = "Zebulon_V1.36.0013";
 	
 using namespace std;
+using namespace mdf;
 
 extern char* __begin;
 extern char* __end;
@@ -238,6 +240,8 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 
 	while (bytesLeftToWrite > 0)
 	{
+		timer t;
+
 		unsigned char buffer [512];
 		if (bytesLeftToWrite >= 512)
 		{
@@ -253,6 +257,7 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 			bytesLeftToWrite -= bytesLeftToWrite;
 		}
 
+		printf ("%dmS\n\r", t.elapsed ());
 		printf (".");
 	}
 
