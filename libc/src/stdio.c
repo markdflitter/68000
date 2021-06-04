@@ -1,11 +1,10 @@
 #include "../include/stdio.h"
 #include "../include/string.h"
-#include <bsp.h>
 #include <Zebulon.h>
 
 int getchar(void)
 {
-	return  __getch ();
+	return  Zebulon::_zebulon_getch ();
 }
 
 char* gets (char* s)
@@ -28,7 +27,6 @@ char* gets (char* s)
  
 	return buf;
 }
-
 
 int putchar (int c)
 {

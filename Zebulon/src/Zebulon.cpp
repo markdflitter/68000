@@ -31,7 +31,9 @@ void tick ()
 void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
-	register unsigned int* pResult asm("a0");
+	register unsigned int* a0 asm("a0");
+	unsigned int* pResult = a0;
+		
 	double f = ((double) ticks) * tickIntervalInMs;
 
 	*pResult = (unsigned int) f;
@@ -45,6 +47,17 @@ void trap1 ()
 	__putch (d0);
 }
 
+// getchar
+void trap2 () __attribute__ ((interrupt));
+void trap2 ()
+{
+	register char* a0 asm("a0");
+	char* pResult = a0;
+	
+	*pResult = __getch ();
+}
+
+
 int main ()
 {
 	__putstr (banner);	
@@ -52,6 +65,7 @@ int main ()
 	VectorTable v (__vector_table);	
 	v.setVector (32, &trap0);	
 	v.setVector (33, &trap1);	
+	v.setVector (34, &trap2);	
 	v.setVector (64, &tick);	
 
 	tickIntervalInMs = __set_timer_divisor (0, 92);

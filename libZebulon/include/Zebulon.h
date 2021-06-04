@@ -6,8 +6,8 @@ namespace Zebulon
 
 inline unsigned int _zebulon_time ()
 {
-	unsigned int result;
-	register unsigned int* pResult asm("a0") = &result;
+	volatile unsigned int result;
+	volatile register unsigned int* pResult asm("a0") = &result;
 
 	asm ("trap #0" : : "a" (pResult));
 
@@ -20,6 +20,16 @@ inline void _zebulon_putch (char c)
 
 	asm ("trap #1" : : "d" (d0));
 }
+
+inline char _zebulon_getch ()
+{
+	volatile char result;
+	volatile register char* pResult asm("a0") = &result;
+
+	asm ("trap #2" : : "a" (pResult));
+
+	return result;
+}	
 
 }
 
