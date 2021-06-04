@@ -43,6 +43,8 @@ void trap0 ()
 void trap1 () __attribute__ ((interrupt));
 void trap1 ()
 {
+	register char d1 asm("d1");
+	char c = d1;
 	register char* a0 asm("a0");
 	char* p = a0;
 	
@@ -51,11 +53,11 @@ void trap1 ()
 
 	if (operation == 0)
 	{
-		__putch (*p);
+		__putch (c);
 	}
 	else if (operation == 1)
 	{
-		*p = __getch ();
+		*a0 = __getch ();
 	}
 }
 
