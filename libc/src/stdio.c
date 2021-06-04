@@ -1,6 +1,7 @@
 #include "../include/stdio.h"
 #include "../include/string.h"
 #include <bsp.h>
+#include <Zebulon.h>
 
 int getchar(void)
 {
@@ -12,8 +13,8 @@ char* gets (char* s)
 	char* buf = s;
 	for (;;)
 	{
- 		char c = __getch ();
-		__putch (c);
+ 		char c = getchar ();
+		putchar (c);
 
 		if (c == '\r')
 			break;		
@@ -31,7 +32,7 @@ char* gets (char* s)
 
 int putchar (int c)
 {
-	__putch ((char) c);
+	Zebulon::_zebulon_putch ((char) c);
 	return 0;
 }
 
@@ -40,7 +41,7 @@ int puts (const char* s)
 {
 	while (*s != 0)
 	{
-		__putch (*s++);
+		putchar (*s++);
 	}
 	return 0;
 }
@@ -133,15 +134,15 @@ int printf (const char* format, ...)
 			else if (*format == 'c')
 			{
 				char c = (char) va_arg (ap, int);
-				__putch (c);
+				putchar (c);
 			}
 			else if (*format == '%')
-				__putch ('%');
+				putchar ('%');
 
 			format++;
 		}
 		else
-		  __putch (ch);
+		  putchar (ch);
 	}
 
 	va_end (ap);

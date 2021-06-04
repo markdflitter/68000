@@ -1,5 +1,6 @@
 #include "VectorTable.h"
-#include <stdio.h>
+#include <bsp.h>
+
 
 void unhandled () __attribute__ ((interrupt));
 void unhandled ()
@@ -9,7 +10,7 @@ void unhandled ()
 VectorTable::VectorTable (unsigned char* baseAddress)
 	: m_table ((Table*) baseAddress)
 {
-	printf ("initialised vector table at 0x%x\n\r", baseAddress);
+	//printf ("initialised vector table at 0x%x\n\r", baseAddress);
 
 	for (int i = 0; i < 255; i++)
 		setVector (i, &unhandled);
@@ -28,5 +29,3 @@ void VectorTable::setVector (unsigned int vector, fnPtr fn)
 {
 	m_table->m_vectors [vector] = fn;
 }
-
-

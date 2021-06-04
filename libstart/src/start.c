@@ -1,6 +1,5 @@
 #include "../include/start.h"
 #include <bsp.h>
-#include <stdio.h>
 
 extern int main (void);
 
@@ -29,7 +28,7 @@ extern "C" int __main (void)
 	asm ("MOVE.B #5,0xE00001");
 	clear_bss();
 	asm ("MOVE.B #6,0xE00001");
-	
+
 	__init ();
 	asm ("MOVE.B #7,0xE00001");
 	__putstr ("bsp initialised\n\r");

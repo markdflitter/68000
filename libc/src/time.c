@@ -3,6 +3,6 @@
 
 clock_t clock()
 {
-	return Zebulon::time ();
+	return Zebulon::_zebulon_time ();
 }
 

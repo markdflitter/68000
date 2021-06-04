@@ -27,6 +27,7 @@ void tick ()
 	__interrupt_handled ();
 }
 
+// time
 void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
@@ -36,12 +37,21 @@ void trap0 ()
 	*pResult = (unsigned int) f;
 }
 
+// putchar
+void trap1 () __attribute__ ((interrupt));
+void trap1 ()
+{
+	register char d0 asm("d0");
+	__putch (d0);
+}
+
 int main ()
 {
 	__putstr (banner);	
 
 	VectorTable v (__vector_table);	
 	v.setVector (32, &trap0);	
+	v.setVector (33, &trap1);	
 	v.setVector (64, &tick);	
 
 	tickIntervalInMs = __set_timer_divisor (0, 92);
