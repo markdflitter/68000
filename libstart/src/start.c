@@ -32,13 +32,13 @@ extern "C" int __main (void)
 	
 	__init ();
 	asm ("MOVE.B #7,0xE00001");
-	printf ("%s", "bsp initialised\n\r");
+	__putstr ("bsp initialised\n\r");
 
-	printf ("%s", "calling static constructors\n\r");
+	__putstr ("calling static constructors\n\r");
   	call_static_constructors ();
 	asm ("MOVE.B #8,0xE00001");
 	
-	printf ("%s", "handing off to main()\n\r");
+	__putstr ("handing off to main()\n\r");
 	return main ();
 }
 

@@ -8,10 +8,12 @@ namespace Zebulon
 
 unsigned int time ()
 {
-	unsigned int time;
-	asm ("trap #0\n\t" : : "a" (&time));
+	unsigned int result;
+	register unsigned int* pResult asm("a0") = &result;
 
-	return time;
+	asm ("trap #0" : : "a" (pResult));
+
+	return result;
 }
 
 }

@@ -12,7 +12,7 @@ const char* banner =
 " __/__ |__  | __/  |   |  |    | | |  | \\  |\n\r"
 "  /    |    |   \\  |   |  |    | | |  |  \\ |\n\r" 
 " /     |___ |___/  \\___/  |___ \\___/  |   \\|\n\r"
-"/____| _____________________________________\n\r";
+"/____| _____________________________________\n\r\n\r";
 
 
 extern unsigned char* __vector_table;
@@ -30,17 +30,15 @@ void tick ()
 void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
-	unsigned int* result;
-    asm ("move.l %%a0, %0\n\t" : "=m" (result));
-
+	register unsigned int* pResult asm("a0");
 	double f = ((double) ticks) * tickIntervalInMs;
-	unsigned int timeInMs (f);
-	*result = timeInMs;
+
+	*pResult = (unsigned int) f;
 }
 
 int main ()
 {
-	printf ("%s\n\r", banner);	
+	__putstr (banner);	
 
 	VectorTable v (__vector_table);	
 	v.setVector (32, &trap0);	

@@ -9,6 +9,7 @@ extern "C" void* __memset (void* ptr, int value, size_t num);
 extern "C" void* __memcpy (void* destination, const void* source, size_t num);
 
 extern "C" void __putch (char c);
+extern "C" void __putstr (const char* s);
 extern "C" char __getch ();
 
 extern "C" void __set_interrupt_vector (unsigned int vector);

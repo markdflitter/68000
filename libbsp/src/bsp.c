@@ -38,6 +38,12 @@ void __putch (char c)
 	the_duart ().writeChar (DUART::channelA, c);
 }
 
+void __putstr (const char* c)
+{
+	while (*c != '\0')
+		__putch (*c++);
+}
+
 char __getch ()
 {
 	return the_duart ().readChar (DUART::channelA);
