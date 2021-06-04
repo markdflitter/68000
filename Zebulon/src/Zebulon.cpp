@@ -43,20 +43,21 @@ void trap0 ()
 void trap1 () __attribute__ ((interrupt));
 void trap1 ()
 {
-	register char d0 asm("d0");
-	__putch (d0);
-}
-
-// getchar
-void trap2 () __attribute__ ((interrupt));
-void trap2 ()
-{
 	register char* a0 asm("a0");
-	char* pResult = a0;
+	char* p = a0;
 	
-	*pResult = __getch ();
-}
+	register char d0 asm("d0");
+	char operation = d0;
 
+	if (operation == 0)
+	{
+		__putch (*p);
+	}
+	else if (operation == 1)
+	{
+		*p = __getch ();
+	}
+}
 
 int main ()
 {
@@ -65,7 +66,6 @@ int main ()
 	VectorTable v (__vector_table);	
 	v.setVector (32, &trap0);	
 	v.setVector (33, &trap1);	
-	v.setVector (34, &trap2);	
 	v.setVector (64, &tick);	
 
 	tickIntervalInMs = __set_timer_divisor (0, 92);
