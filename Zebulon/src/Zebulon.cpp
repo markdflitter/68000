@@ -15,6 +15,12 @@ const char* banner =
 "/____| _____________________________________\n\r\n\r";
 
 
+FAT& theFAT ()
+{
+	static FAT fat;
+	return fat;
+}
+
 extern unsigned char* __vector_table;
 
 static unsigned int ticks = 0;
@@ -94,8 +100,7 @@ int main ()
 	__enable_interrupts ();
 	printf ("enabled interrupts\n\r\n\r");
 
-	FAT f;
-	Shell (f).run ();
+	Shell (theFAT ()).run ();
 
 	__disable_interrupts ();
 	printf ("byebye\n\r");
