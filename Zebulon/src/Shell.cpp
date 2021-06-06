@@ -376,9 +376,9 @@ void time ()
 	printf ("%d mS\n\r", clock ());
 }
 
-void test ()
+void test (const string& name, const string& mode)
 {
-	FILE* fptr = fopen ("mark", "rb");
+	FILE* fptr = fopen (name.c_str (), mode.c_str ());
 	printf ("fptr = 0x%x\n\r", fptr);
 }
 
@@ -466,7 +466,12 @@ void Shell::run () const
 			}
 			if (tokens [0] == "ls") ls (m_fat);
 			if (tokens [0] == "time") time ();
-			if (tokens [0] == "test") test ();
+			if (tokens [0] == "test" && tokens.size () > 2)
+			{
+				string filename (tokens [1].c_str ());
+				string mode (tokens [2].c_str ());
+   			 	test (filename, mode);
+			}
 			}
 	}
 

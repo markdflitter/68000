@@ -60,7 +60,66 @@ void trap1 ()
 		*p = (int) __getch ();
 }
 
+namespace
+{
+
+bool mode_is (const char* mode, char what)
+{
+	char ch;
+	while ((ch = *mode++) != '\0')
+	{
+		if (ch == what) return true;
+	}
+	
+	return false;
+}
+
+
+int openFile (const char* filename, const char* mode)
+{
+	int result = -1;
+
+	printf ("opening file %s in mode %s\n\r", filename, mode);
+	
+	FAT& fat = theFAT ();
+	if (!fat.fileExists (filename))
+	{
+		printf ("file doesn't exist\n\r");
+		if (mode_is (mode, 'w'))
+		{
+			printf ("create file\n\r");
+	    	fat.create (filename);
+		}
+		else
+		{
+			printf ("file not found\n\r");
+			return result;
+		}			
+	}
+	else
+	{
+		printf ("file exists\n\r");
+		if (mode_is (mode, 'w'))
+		{
+			printf ("delete and create file\n\r");
+			fat.rm (filename);
+	    	fat.create (filename);
+		}
+	}
+
+	result = fat.open (filename);
+	
+	if (mode_is (mode, 'r'))
+		result |= 0x8000;
+	
+	return result;
+}
+
+}
+
+
 // fileIO
+
 void trap2 () __attribute__ ((interrupt));
 void trap2 ()
 {
@@ -73,11 +132,10 @@ void trap2 ()
   				  "movel %%a1, %2\n\t"
 				  "movel %%a2, %3\n\t" : "=m" (operation), "=m" (filename), "=m" (mode), "=m" (result));
 
-	if (operation == 1)
+	switch (operation)
 	{
-		printf ("%s\n\r", filename);
-		printf ("%s\n\r", mode);
-		*result = 0;
+		case 1: *result = openFile (filename, mode); break;
+		default: break; 
 	}
 }
 

@@ -63,6 +63,12 @@ void FAT::format (block_address_t size)
 	save ();
 }
 
+bool FAT::fileExists (const std::string& filename)
+{
+	FileHeader::Ptr header = findFile (filename);
+	return !header.isNull ();
+}
+
 bool FAT::create (const string& name, block_address_t initialSize, bool contiguous)
 {
 	if (name [0] == '#')
