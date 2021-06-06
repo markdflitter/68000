@@ -7,9 +7,10 @@ namespace Zebulon
 inline unsigned int _zebulon_time ()
 {
 	volatile unsigned int result;
-	volatile register unsigned int* pResult asm("a0") = &result;
+	volatile unsigned int* p = &result;
 
-	asm ("trap #0" : : "a" (pResult));
+	asm ("movel %0,%%a0\n\t"
+		 "trap #0\n\t" : : "m" (p) : "a0");
 
 	return result;
 }
