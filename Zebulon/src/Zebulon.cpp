@@ -63,7 +63,6 @@ int main ()
 	v.setVector (33, &trap1);	
 	v.setVector (64, &tick);	
 
-
 	tickIntervalInMs = __set_timer_divisor (0, 92);
 	unsigned int d = tickIntervalInMs * 1000;
 	printf ("tick interval %duS\n\r", d);
