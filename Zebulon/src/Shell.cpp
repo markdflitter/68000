@@ -86,7 +86,7 @@ void printHelp (void)
 void ident ()
 {
 	DiskInfo info;
-	if (__ide_ident (info))
+	if (__ide_ident (info) == OK)
 	{
 		printf ("model number\t\t\t\t: %s\n\r",info.modelNumber);
 		printf ("serial number\t\t\t\t: %s\n\r",info.serialNumber);
