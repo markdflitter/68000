@@ -39,7 +39,7 @@ void trap0 ()
 	*p = (unsigned int) f;
 }
 
-// putchar
+// putchar / getchar
 void trap1 () __attribute__ ((interrupt));
 void trap1 ()
 {
@@ -54,6 +54,27 @@ void trap1 ()
 		*p = (int) __getch ();
 }
 
+// fileIO
+void trap2 () __attribute__ ((interrupt));
+void trap2 ()
+{
+	char* filename = 0;
+	char* mode = 0;
+	int* result = 0;
+	char operation = 0;
+	asm volatile ("moveb %%d0, %0\n\t" 
+				  "movel %%a0, %1\n\t"
+  				  "movel %%a1, %2\n\t"
+				  "movel %%a2, %3\n\t" : "=m" (operation), "=m" (filename), "=m" (mode), "=m" (result));
+
+	if (operation == 1)
+	{
+		printf ("%s\n\r", filename);
+		printf ("%s\n\r", mode);
+		*result = 0;
+	}
+}
+
 int main ()
 {
 	__putstr (banner);	
@@ -61,6 +82,7 @@ int main ()
 	VectorTable v (__vector_table);	
 	v.setVector (32, &trap0);	
 	v.setVector (33, &trap1);	
+	v.setVector (34, &trap2);	
 	v.setVector (64, &tick);	
 	printf ("set up vectors\n\r");
 

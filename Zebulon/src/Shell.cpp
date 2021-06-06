@@ -376,6 +376,13 @@ void time ()
 	printf ("%d mS\n\r", clock ());
 }
 
+void test ()
+{
+	FILE* fptr = fopen ("mark", "rb");
+	printf ("fptr = 0x%x\n\r", fptr);
+}
+
+
 }
 
 Shell::Shell (FAT& fat) : m_fat (fat)
@@ -459,6 +466,7 @@ void Shell::run () const
 			}
 			if (tokens [0] == "ls") ls (m_fat);
 			if (tokens [0] == "time") time ();
+			if (tokens [0] == "test") test ();
 			}
 	}
 
