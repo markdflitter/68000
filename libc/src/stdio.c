@@ -100,11 +100,8 @@ void bin2dec (unsigned int num, char* buf)
 	}
 }
 
-int printf (const char* format, ...)
-{	
-	va_list ap;
-	va_start (ap, format);
-
+int vsprintf (char* str, const char* format, va_list ap)
+{
 	char ch;
 	while ((ch = *format++) != '\0')
     {
@@ -115,34 +112,67 @@ int printf (const char* format, ...)
 				int i = va_arg (ap, int);
 				char buf [9];
 				bin2hex (i, buf);
-				puts (buf);
+				memcpy (str, buf, strlen (buf));
+				str += strlen (buf);
 			}
 			else if (*format == 'd')
 			{
 				unsigned int i = va_arg (ap, unsigned int);
 				char buf [11];
 				bin2dec (i, buf);
-				puts (buf);
+				memcpy (str, buf, strlen (buf));
+				str += strlen (buf);
 			}
 			else if (*format == 's')
 			{
 				char* s = va_arg (ap, char*);
-				puts (s);
+				memcpy (str, s, strlen (s));
+				str += strlen (s);
 			}
 			else if (*format == 'c')
 			{
 				char c = (char) va_arg (ap, int);
-				putchar (c);
+				*str++ = c;
 			}
 			else if (*format == '%')
-				putchar ('%');
+				*str++ = '%';
 
 			format++;
 		}
 		else
-		  putchar (ch);
+		  *str++ = ch;
 	}
 
-	va_end (ap);
+	*str++ = '\0';
+
 	return 0;
 }
+
+int sprintf (char* str, const char* format, ...)
+{
+	va_list ap;
+	va_start (ap, format);
+
+	int result = vsprintf (str, format, ap);
+
+	va_end (ap);
+
+	return result;
+}
+
+int printf (const char* format, ...)
+{
+	va_list ap;
+	va_start (ap, format);
+
+	char buf [200];	
+	int result = vsprintf (buf, format, ap);
+	
+	puts (buf);
+
+	va_end (ap);
+
+	return result;
+}
+
+

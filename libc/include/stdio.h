@@ -12,5 +12,6 @@ extern "C" int putchar (int c);
 extern "C" int puts (const char* s);
 
 extern "C" int printf (const char* format, ...);
+extern "C" int sprintf (char* s, const char* format, ...);
 
 #endif
