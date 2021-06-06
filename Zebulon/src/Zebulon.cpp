@@ -53,7 +53,7 @@ void trap1 ()
 
 	if (operation == 0)
 	{
-		__putch (c);
+		__putch (*p);
 	}
 	else if (operation == 1)
 	{
@@ -69,6 +69,7 @@ int main ()
 	v.setVector (32, &trap0);	
 	v.setVector (33, &trap1);	
 	v.setVector (64, &tick);	
+
 
 	tickIntervalInMs = __set_timer_divisor (0, 92);
 	unsigned int d = tickIntervalInMs * 1000;
