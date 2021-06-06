@@ -43,15 +43,15 @@ void trap0 ()
 void trap1 () __attribute__ ((interrupt));
 void trap1 ()
 {
-	char* p = 0;
+	int* p = 0;
 	char operation = 0;
 	asm volatile ("moveb %%d0, %0\n\t" 
 				  "movel %%a0, %1\n\t" : "=m" (operation), "=m" (p));
 
 	if (operation == 1)
-		__putch (*p);
+		__putch ((char) *p);
 	else if (operation == 2)
-		*p = __getch ();
+		*p = (int) __getch ();
 }
 
 int main ()

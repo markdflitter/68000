@@ -4,7 +4,7 @@
 
 int getchar(void)
 {
-	return  Zebulon::_zebulon_getch ();
+	return Zebulon::_zebulon_getch ();
 }
 
 char* gets (char* s)
@@ -30,7 +30,7 @@ char* gets (char* s)
 
 int putchar (int c)
 {
-	Zebulon::_zebulon_putch ((char) c);
+	Zebulon::_zebulon_putch (c);
 	return 0;
 }
 

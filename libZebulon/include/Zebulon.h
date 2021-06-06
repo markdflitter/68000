@@ -15,20 +15,20 @@ inline unsigned int _zebulon_time ()
 	return result;
 }
 
-inline void _zebulon_putch (char c)
+inline void _zebulon_putch (int c)
 {
-	volatile char cc = c;
-	volatile char* p = &cc;
+	volatile int cc = c;
+	volatile int* p = &cc;
 
 	asm ("moveb #1,%%d0\n\t"
 		 "movel %0,%%a0\n\t"
 		 "trap #1\n\t" : : "m" (p) : "a0","d0");
 }
 
-inline char _zebulon_getch ()
+inline int _zebulon_getch ()
 {
-	volatile char result;
-	volatile char* p = &result;
+	volatile int result;
+	volatile int* p = &result;
 
 	asm ("moveb #2,%%d0\n\t"
 		 "movel %0,%%a0\n\t"
