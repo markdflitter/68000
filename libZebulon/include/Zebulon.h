@@ -27,10 +27,11 @@ inline void _zebulon_putch (char c)
 inline char _zebulon_getch ()
 {
 	volatile char result;
-	volatile register char* p asm("a0") = &result;
+	volatile char* p = &result;
 
-	asm ("move.b #1,%%d0\n\t"
-		 "trap #1\n\t" : : "a" (p) : "d0");
+	asm ("moveb #1,%%d0\n\t"
+		 "movel %0,%%a0\n\t"
+		 "trap #1\n\t" : : "m" (p) : "a0","d0");
 
 	return result;
 }	
