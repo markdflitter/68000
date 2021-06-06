@@ -100,8 +100,23 @@ void bin2dec (unsigned int num, char* buf)
 	}
 }
 
-int vsprintf (char* str, const char* format, va_list ap)
+bool copyStr (char*& dst, const char* src, size_t& n)
+{ 
+	size_t count = strlen (src);
+	if (count > n) count = n;
+
+	memcpy (dst, src, count);
+
+	dst += count;
+	n -= count;
+
+	return n ==0;
+}
+
+int vsprintfn (char* str, size_t n, const char* format, va_list ap)
 {
+	n--;			// leave space for '0';
+
 	char ch;
 	while ((ch = *format++) != '\0')
     {
@@ -112,35 +127,38 @@ int vsprintf (char* str, const char* format, va_list ap)
 				int i = va_arg (ap, int);
 				char buf [9];
 				bin2hex (i, buf);
-				memcpy (str, buf, strlen (buf));
-				str += strlen (buf);
+				if (copyStr (str, buf, n)) break;
 			}
 			else if (*format == 'd')
 			{
 				unsigned int i = va_arg (ap, unsigned int);
 				char buf [11];
 				bin2dec (i, buf);
-				memcpy (str, buf, strlen (buf));
-				str += strlen (buf);
+				if (copyStr (str, buf, n)) break;
 			}
 			else if (*format == 's')
 			{
 				char* s = va_arg (ap, char*);
-				memcpy (str, s, strlen (s));
-				str += strlen (s);
+				if (copyStr (str, s, n)) break;
 			}
 			else if (*format == 'c')
 			{
 				char c = (char) va_arg (ap, int);
 				*str++ = c;
+				if (--n == 0) break;
 			}
 			else if (*format == '%')
+			{
 				*str++ = '%';
-
+				if (--n == 0) break;
+			}
 			format++;
 		}
 		else
+		{
 		  *str++ = ch;
+			if (--n == 0) break;
+		}
 	}
 
 	*str++ = '\0';
@@ -153,20 +171,36 @@ int sprintf (char* str, const char* format, ...)
 	va_list ap;
 	va_start (ap, format);
 
-	int result = vsprintf (str, format, ap);
+	int result = vsprintfn (str, -1, format, ap);
 
 	va_end (ap);
 
 	return result;
 }
 
+int sprintfn (char* str, size_t n, const char* format, ...)
+{
+	va_list ap;
+	va_start (ap, format);
+
+	int result = vsprintfn (str, n, format, ap);
+
+	va_end (ap);
+
+	return result;
+}
+
+
 int printf (const char* format, ...)
 {
 	va_list ap;
 	va_start (ap, format);
 
-	char buf [200];	
-	int result = vsprintf (buf, format, ap);
+	size_t bufferSizeGuess = 2 * strlen (format);
+	if (bufferSizeGuess < 1024) bufferSizeGuess = 1024;
+
+	char buf [bufferSizeGuess];	
+	int result = vsprintfn (buf, bufferSizeGuess, format, ap);
 	
 	puts (buf);
 
