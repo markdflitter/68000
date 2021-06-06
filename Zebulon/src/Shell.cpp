@@ -158,10 +158,8 @@ void printBuffer (unsigned char* buffer, size_t bufferLen)
 		size_t rowLen = min (bufferLen, 16);
 		for (int c = 0; c < rowLen; c++) printf ("%x",*p++);
 	
-		string pad (16 - rowLen, ' ');	
-		printf ("%s%s", pad.c_str (), pad.c_str ());
-
-		printf (" ");
+		string pad (2 * (16 - rowLen) + 1, ' ');	
+		printf ("%s", pad.c_str ());
 
 		p -= rowLen;
 		for (int c = 0; c < rowLen; c++)
@@ -378,11 +376,6 @@ void time ()
 	printf ("%d mS\n\r", clock ());
 }
 
-void test ()
-{
-	printf ("{");
-}
-
 }
 
 Shell::Shell (FAT& fat) : m_fat (fat)
@@ -466,7 +459,6 @@ void Shell::run () const
 			}
 			if (tokens [0] == "ls") ls (m_fat);
 			if (tokens [0] == "time") time ();
-			if (tokens [0] == "test") test ();
 			}
 	}
 
