@@ -18,14 +18,14 @@ VectorTable::VectorTable (unsigned char* baseAddress)
 	for (int i = 0; i < 255; i++)
 		setVector (i, &unhandled);
 
- 	asm volatile ("move.l %0, %%a0\n\t" 
-				  "movec.l %%a0, %%vbr\n\t" : : "a" (baseAddress) : "a0");
+ 	asm ("movel %0, %%a0\n\t" 
+		 "movecl %%a0, %%vbr\n\t" : : "a" (baseAddress) : "a0");
 }
 
 VectorTable::~VectorTable ()
 {
-	asm volatile ("move.l #0, %d0\n\t"
-				  "movec %d0, %vbr\n\t");
+	asm ("movel #0, %d0\n\t"
+		 "movecl %d0, %vbr\n\t");
 }
 
 void VectorTable::setVector (unsigned int vector, fnPtr fn)
