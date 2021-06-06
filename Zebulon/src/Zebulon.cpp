@@ -31,12 +31,12 @@ void tick ()
 void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
-	register unsigned int* a0 asm("a0");
-	unsigned int* pResult = a0;
-		
+	unsigned int* p = 0;
+	asm volatile ("movel %%a0, %0\n\t" : "=m" (p));
+
 	double f = ((double) ticks) * tickIntervalInMs;
 
-	*pResult = (unsigned int) f;
+	*p = (unsigned int) f;
 }
 
 // putchar
