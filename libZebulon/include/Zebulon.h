@@ -16,10 +16,12 @@ inline unsigned int _zebulon_time ()
 
 inline void _zebulon_putch (char c)
 {
-	volatile register char p asm("d1") = c;
-	
-	asm ("move.b #0, %%d0\n\t"
-		 "trap #1\n\t" : : "d" (p) : "d0");
+	volatile char cc = c;
+	volatile char* p = &cc;
+
+	asm ("moveb #0,%%d0\n\t"
+		 "movel %0,%%a0\n\t"
+		 "trap #1\n\t" : : "m" (p) : "a0","d0");
 }
 
 inline char _zebulon_getch ()
