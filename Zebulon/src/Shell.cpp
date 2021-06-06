@@ -378,6 +378,11 @@ void time ()
 	printf ("%d mS\n\r", clock ());
 }
 
+void test ()
+{
+	printf ("{");
+}
+
 }
 
 Shell::Shell (FAT& fat) : m_fat (fat)
@@ -461,7 +466,8 @@ void Shell::run () const
 			}
 			if (tokens [0] == "ls") ls (m_fat);
 			if (tokens [0] == "time") time ();
-		}
+			if (tokens [0] == "test") test ();
+			}
 	}
 
 	return ;
