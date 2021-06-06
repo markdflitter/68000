@@ -12,7 +12,7 @@ VectorTable::VectorTable (unsigned char* baseAddress)
 	: m_table ((Table*) baseAddress)
 {
 	char buf [200];
-	sprintf (buf, "initialised vector table at 0x%x\n\r", baseAddress);
+	sprintfn (buf, 200, "initialised vector table at 0x%x\n\r", baseAddress);
 	__putstr (buf);
 
 	for (int i = 0; i < 255; i++)
