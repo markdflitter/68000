@@ -62,6 +62,7 @@ int main ()
 	v.setVector (32, &trap0);	
 	v.setVector (33, &trap1);	
 	v.setVector (64, &tick);	
+	printf ("set up vectors\n\r");
 
 	tickIntervalInMs = __set_timer_divisor (0, 92);
 	unsigned int d = tickIntervalInMs * 1000;
@@ -69,12 +70,14 @@ int main ()
 
 	__set_interrupt_vector (64);
 	__enable_interrupts ();
+	printf ("enabled interrupts\n\r\n\r");
 
 	FAT f;
 	Shell (f).run ();
 
 	__disable_interrupts ();
-	
+	printf ("byebye\n\r");
+
 	return 0;
 }
 
