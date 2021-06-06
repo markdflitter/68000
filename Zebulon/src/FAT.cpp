@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "Serialise.h"
 #include <string.h>
+#include <stdlib.h>
 
 using namespace mdf;
 using namespace std;
@@ -64,6 +65,12 @@ void FAT::format (block_address_t size)
 
 bool FAT::create (const string& name, block_address_t initialSize, bool contiguous)
 {
+	if (name [0] == '#')
+	{
+		printf (">> filename may not start with #\n\r");
+		return false;
+	}
+
 	if (!findFile (name).isNull ())
 	{
 		printf (">> file already exists\n\r");
@@ -106,10 +113,15 @@ void FAT::setMetaData (const std::string& name, unsigned int loadAddress, unsign
 
 void FAT::rm (const string& name)
 {
+	FileHeader::Ptr p = findFile (name);
+	if (p.isNull ()) return ;
+	
+	string realName = p->name ();
+
 	list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin ();
 
 	for ( ; i != m_fileHeaders.end (); i++)
-		if ((*i)->name () == name)
+		if ((*i)->name () == realName)
 		{
 			if (!(*i)->bootable ())
 			{
@@ -140,7 +152,7 @@ list<string> FAT::ls () const
 	return result;
 }
 
-FileStat FAT::stat (const string& name) const
+FileStat FAT::stat (const string& name)
 {
 	FileHeader::ConstPtr file = findFile (name);
 	if (!file.isNull ())
@@ -280,20 +292,35 @@ void FAT::index () const
 
 FileHeader::Ptr FAT::findFile (const string& name)
 {
-	for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
-		if ((*i)->name () == name)
-			return (*i);
+	FileHeader::Ptr result;
 
-	return FileHeader::Ptr ();
-}
+	if (name.length () > 0)
+	{
+		if (name [0] == '#')
+		{
+			if (name.length () > 1)
+			{
+				size_t index = atoi (string (name.c_str () + 1).c_str ());
+				for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
+					if ((*i)->index () == index)
+					{
+						result = (*i);
+						break ;
+					}
+			}
+		}
+		else
+		{
+			for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
+				if ((*i)->name () == name)
+				{
+					result = (*i);
+					break ;
+				}
+		}
+	}
 
-FileHeader::ConstPtr FAT::findFile (const string& name) const
-{
-	for (list<FileHeader::Ptr>::const_iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
-		if ((*i)->name () == name)
-			return (*i);
-
-	return FileHeader::ConstPtr ();
+	return result;
 }
 
 OpenFile::ConstPtr FAT::getOpenFile (FILE file) const

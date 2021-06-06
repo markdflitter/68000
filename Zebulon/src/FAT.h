@@ -30,7 +30,7 @@ public:
 	void rm (const std::string& name);
 
 	std::list<std::string> ls () const;
-	FileStat stat (const std::string& name) const;
+	FileStat stat (const std::string& name);
 
 	FILE open (const std::string& name);
 	void close (FILE file);
@@ -46,7 +46,6 @@ public:
 	
 	bool extend (FileHeader::Ptr fileHeader, block_address_t numBlocks = 1);	void save () const;
 private:
-	FileHeader::ConstPtr findFile (const std::string& name) const;
 	FileHeader::Ptr findFile (const std::string& name);
 
 	OpenFile::ConstPtr getOpenFile (FILE file) const;

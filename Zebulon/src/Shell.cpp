@@ -186,7 +186,7 @@ void readB (FAT& fat, block_address_t block)
 		printBuffer (data, fat.blockSize ());
 }
 
-void stat (const FAT& fat, const string& name)
+void stat (FAT& fat, const string& name)
 {
 	FileStat fileStat = fat.stat (name);
 	printf ("%d : %s : ", fileStat.index, pad (fileStat.name, 20, ' ').c_str (), fileStat.size);

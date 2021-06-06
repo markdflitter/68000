@@ -79,6 +79,16 @@ bool string::operator!= (const string& other) const
 	return !(*this == other);
 }
 
+char& string::operator[] (size_t index)
+{
+	return m_s [index];
+}
+
+char string::operator[] (size_t index) const
+{
+	return m_s [index];
+}
+
 const char* string::c_str () const
 {
 	return m_s;
