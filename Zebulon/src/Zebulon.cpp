@@ -48,9 +48,9 @@ void trap1 ()
 	asm volatile ("moveb %%d0, %0\n\t" 
 				  "movel %%a0, %1\n\t" : "=m" (operation), "=m" (p));
 
-	if (operation == 0)
+	if (operation == 1)
 		__putch (*p);
-	else if (operation == 1)
+	else if (operation == 2)
 		*p = __getch ();
 }
 
