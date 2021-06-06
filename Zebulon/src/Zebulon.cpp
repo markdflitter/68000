@@ -45,8 +45,8 @@ void trap1 ()
 {
 	char* p = 0;
 	char operation = 0;
-	asm volatile ("moveb %%d0, %0\n\t" : "=m" (operation));
-	asm volatile ("movel %%a0, %0\n\t" : "=m" (p));
+	asm volatile ("moveb %%d0, %0\n\t" 
+				  "movel %%a0, %1\n\t" : "=m" (operation), "=m" (p));
 
 	if (operation == 0)
 		__putch (*p);
