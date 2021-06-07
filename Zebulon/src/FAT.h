@@ -37,8 +37,8 @@ public:
 	FILE open (const std::string& name);
 	void close (FILE file);
 
-	void read (FILE file, unsigned char* data, file_address_t numBytes) const;
-	void write (FILE file, unsigned char* data, file_address_t numBytes);
+	file_address_t read (FILE file, unsigned char* data, file_address_t numBytes) const;
+	file_address_t write (FILE file, const unsigned char* data, file_address_t numBytes);
 
 	bool EOF (FILE file) const;
 

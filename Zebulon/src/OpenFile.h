@@ -16,7 +16,7 @@ public:
 	~OpenFile ();
 
 	void read (unsigned char* data, file_address_t numBytes);	
-	void write (unsigned char* data, file_address_t numBytes);	
+	void write (const unsigned char* data, file_address_t numBytes);	
 
 	bool EOF () const;
 
@@ -28,7 +28,7 @@ private:
 		
 	void setFilePointer (file_address_t filePointer);
 	unsigned char* copyFromBuffer (unsigned char* data, file_address_t bytesToCopy);
-	unsigned char* copyToBuffer (unsigned char* data, file_address_t bytesToCopy);
+	const unsigned char* copyToBuffer (const unsigned char* data, file_address_t bytesToCopy);
 	
 	unsigned char m_buffer [512];
 	unsigned char* m_bufferPointer;

@@ -37,27 +37,29 @@ void tick ()
 void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
-	unsigned int* p = 0;
-	asm volatile ("movel %%a0, %0\n\t" : "=m" (p));
+	void* a0 = 0;
+	asm volatile ("movel %%a0, %0\n\t" : "=m" (a0));
 
 	double f = ((double) ticks) * tickIntervalInMs;
 
-	*p = (unsigned int) f;
+	*((unsigned int*) a0) = (unsigned int) f;
 }
 
 // putchar / getchar
 void trap1 () __attribute__ ((interrupt));
 void trap1 ()
 {
-	int* p = 0;
-	char operation = 0;
+	char d0 = 0;
+	void* a0 = 0;
 	asm volatile ("moveb %%d0, %0\n\t" 
-				  "movel %%a0, %1\n\t" : "=m" (operation), "=m" (p));
+				  "movel %%a0, %1\n\t" : "=m" (d0), "=m" (a0));
 
-	if (operation == 1)
-		__putch ((char) *p);
-	else if (operation == 2)
-		*p = (int) __getch ();
+	switch (d0)
+	{
+		case 1:	__putch ((char) *((const int*) a0)); break;
+		case 2: *((int*) a0) = (int) __getch (); break;
+		default: break;
+	}
 }
 
 namespace
@@ -115,6 +117,22 @@ int openFile (const char* filename, const char* mode)
 	return result;
 }
 
+
+unsigned long int readFile (int fptr, unsigned char* data, long unsigned int numBytes)
+{
+	return theFAT ().read (fptr, data, numBytes);
+}
+
+unsigned long int writeFile (int fptr, const unsigned char* data, long unsigned int numBytes)
+{
+	return theFAT ().write (fptr, data, numBytes);
+}
+
+void closeFile (int fptr)
+{
+	theFAT ().close (fptr & ~0x8000);
+}
+
 }
 
 
@@ -123,18 +141,23 @@ int openFile (const char* filename, const char* mode)
 void trap2 () __attribute__ ((interrupt));
 void trap2 ()
 {
-	char* filename = 0;
-	char* mode = 0;
-	int* result = 0;
-	char operation = 0;
+	void* a0 = 0;
+	void* a1 = 0;
+	void* a2 = 0;
+	char d0 = 0;
+	char d1 = 0;
 	asm volatile ("moveb %%d0, %0\n\t" 
 				  "movel %%a0, %1\n\t"
   				  "movel %%a1, %2\n\t"
-				  "movel %%a2, %3\n\t" : "=m" (operation), "=m" (filename), "=m" (mode), "=m" (result));
+  				  "movel %%a2, %2\n\t"
+				  "movel %%d1, %4\n\t" : "=m" (d0), "=m" (a0), "=m" (a1), "=m" (a2), "=m" (d1));
 
-	switch (operation)
+	switch (d0)
 	{
-		case 1: *result = openFile (filename, mode); break;
+		case 1: *((int *) a0) = openFile ((char*) a1, (char*) a2); break;
+		case 2: *((long unsigned int*) a2) = writeFile (*((int*) a0), (const unsigned char*) a1, (long unsigned int) d1); break ;
+		case 3: *((long unsigned int*) a2) = readFile (*((int*) a0), (unsigned char*) a1, (long unsigned int) d1); break ;
+		case 4: closeFile (*((int*) a0));
 		default: break; 
 	}
 }

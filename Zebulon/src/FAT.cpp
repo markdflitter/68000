@@ -193,18 +193,20 @@ void FAT::close (FILE file)
 	m_openFiles [file].reset ();
 }
 
-void FAT::read (FILE file, unsigned char* data, file_address_t numBytes) const
+file_address_t FAT::read (FILE file, unsigned char* data, file_address_t numBytes) const
 {
 	OpenFile::Ptr of = getOpenFile (file);
 	if (!of.isNull ())
 		of->read (data, numBytes);
+	return 0;
 }
 
-void FAT::write (FILE file, unsigned char* data, file_address_t numBytes)
+file_address_t FAT::write (FILE file, const unsigned char* data, file_address_t numBytes)
 {
 	OpenFile::Ptr of = getOpenFile (file);
 	if (!of.isNull ())
 		of->write (data, numBytes);
+	return 0;
 }
 
 bool FAT::EOF (FILE file) const

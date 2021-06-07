@@ -73,7 +73,7 @@ void printHelp (void)
 	printf ("ident\t\t\t\t - ident the disk\n\r");
 	printf ("readB <block>\t\t\t - read block from disk\n\r");
 	printf ("format <size>\t\t\t - format the filing system\n\r");
-	printf ("create <name> <size>\t\t - create a file\n\r");
+	printf ("create <name>\t\t\t - create a file\n\r");
 	printf ("ls\t\t\t\t - list files\n\r");
 	printf ("rm <name>\t\t\t - delete a file\n\r");
 	printf ("write <name>\t\t\t - fill file with stuff\n\r");
@@ -288,10 +288,11 @@ void format (FAT& fat, block_address_t size)
 	fat.format (size);
 }
 
-void create (FAT& fat, const string& filename, block_address_t size)
+void create (FAT& fat, const string& filename)
 {
-	printf ("creating file '%s' of size %d\n\r", filename.c_str (), size);
-	if (fat.create (filename, size)) stat (fat, filename);
+	printf ("creating file '%s'\n\r", filename.c_str ());
+	FILE* f = fopen (filename.c_str (), "wb");
+	if (f != (FILE*) -1) stat (fat, filename);
 }
 
 void rmFile (FAT& fat, const string& filename)
@@ -300,12 +301,12 @@ void rmFile (FAT& fat, const string& filename)
 	fat.rm (filename);
 }
 
-void write (FAT& fat, const string& filename, block_address_t size)
+void write (const string& filename, block_address_t size)
 {
 	printf ("writing %d bytes to file '%s'\n\r", size, filename.c_str ());
-
-	FILE f = fat.open (filename);
-	if (f == file_not_found) return ;
+	
+	FILE* f = fopen (filename.c_str (), "wb");
+	if (f == (FILE*) -1) return ;
 
 	file_address_t bytesLeftToWrite = size;
 
@@ -319,7 +320,7 @@ void write (FAT& fat, const string& filename, block_address_t size)
 		if (bytesLeftToWrite >= 100)
 		{
 			memcpy (buffer, p, 100);
-			fat.write (f, buffer, 100);
+			fwrite (buffer, 1, 100, f);
 			bytesLeftToWrite -= 100;
 			p += 100;
 			if (p - data >= 600) p = data;
@@ -327,41 +328,41 @@ void write (FAT& fat, const string& filename, block_address_t size)
 		else
 		{
 			memcpy (buffer, p, bytesLeftToWrite);
-			fat.write (f, buffer, bytesLeftToWrite);
+			fwrite (buffer, 1, bytesLeftToWrite, f);
 			bytesLeftToWrite -= bytesLeftToWrite;
 		}
 	}
 
-	fat.close (f);
+	fclose (f);
 }
 
 void read (FAT& fat, const string& filename)
 {
 	printf ("reading file '%s'\n\r", filename.c_str ());
 
-	FILE f = fat.open (filename);
-	if (f == file_not_found) return ;
+	FILE* f = fopen (filename.c_str (), "rb");
+	if (f == (FILE*) -1) return ;
 
 	file_address_t bytesLeftToRead = fat.stat (filename).size;
 			
-	while (!fat.EOF (f))
+	while (!fat.EOF ((int) f))
 	{
 		unsigned char buffer [480];
 		if (bytesLeftToRead >= 480)
 		{
-			fat.read (f, buffer, 480);
+			fread (buffer, 1, 480, f);
 			printBuffer (buffer, 480);
 			bytesLeftToRead -= 480;
 		}
 		else
 		{
-			fat.read (f, buffer, bytesLeftToRead);
+			fread (buffer, 1, bytesLeftToRead, f);
 			printBuffer (buffer, bytesLeftToRead);
 			bytesLeftToRead -= bytesLeftToRead;
 		}	
 	}
 
-	fat.close (f);
+	fclose (f);
 }
 
 void ls (FAT& fat)
@@ -375,13 +376,6 @@ void time ()
 {
 	printf ("%d mS\n\r", clock ());
 }
-
-void test (const string& name, const string& mode)
-{
-	FILE* fptr = fopen (name.c_str (), mode.c_str ());
-	printf ("fptr = 0x%x\n\r", fptr);
-}
-
 
 }
 
@@ -444,9 +438,7 @@ void Shell::run () const
 			if (tokens [0] == "create" && tokens.size () > 1)
 			{
 				string filename (tokens [1].c_str ());
-				block_address_t size = 0;
-				if (tokens.size () > 2) size = atol (tokens [2].c_str ());
-				create (m_fat, filename, size);
+				create (m_fat, filename);
 			}
 			if (tokens [0] == "rm" && tokens.size () > 1)
 			{
@@ -457,7 +449,7 @@ void Shell::run () const
 			{
 				string filename (tokens [1].c_str ());
 				block_address_t size = atol (tokens [2].c_str ());
-				write (m_fat, filename, size);
+				write (filename, size);
 			}
 			if (tokens [0] == "read" && tokens.size () > 1)
 			{
@@ -466,12 +458,6 @@ void Shell::run () const
 			}
 			if (tokens [0] == "ls") ls (m_fat);
 			if (tokens [0] == "time") time ();
-			if (tokens [0] == "test" && tokens.size () > 2)
-			{
-				string filename (tokens [1].c_str ());
-				string mode (tokens [2].c_str ());
-   			 	test (filename, mode);
-			}
 			}
 	}
 

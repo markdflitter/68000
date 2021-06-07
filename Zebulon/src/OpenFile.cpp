@@ -42,10 +42,10 @@ void OpenFile::read (unsigned char* data, file_address_t numBytes)
 	}
 }
 	
-void OpenFile::write (unsigned char* data, file_address_t numBytes)	
+void OpenFile::write (const unsigned char* data, file_address_t numBytes)	
 {
 	//printf ("writing %d bytes to %d\n\r", numBytes, m_filePointer);
-	unsigned char* p = data;
+	const unsigned char* p = data;
 	while (numBytes > 0)
 	{
 		if (!readCurBlock ()) return ;
@@ -83,7 +83,7 @@ unsigned char* OpenFile::copyFromBuffer (unsigned char* data, file_address_t byt
 	return data;
 }
 
-unsigned char* OpenFile::copyToBuffer (unsigned char* data, file_address_t bytesToCopy)
+const unsigned char* OpenFile::copyToBuffer (const unsigned char* data, file_address_t bytesToCopy)
 {
 	//printf ("copying %d bytes to buffer\n\r", bytesToCopy);
 
