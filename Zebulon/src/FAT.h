@@ -34,13 +34,13 @@ public:
 	std::list<std::string> ls () const;
 	FileStat stat (const std::string& name);
 
-	FILE open (const std::string& name);
-	void close (FILE file);
+	file_handle open (const std::string& name);
+	void close (file_handle file);
 
-	file_address_t read (FILE file, unsigned char* data, file_address_t numBytes) const;
-	file_address_t write (FILE file, const unsigned char* data, file_address_t numBytes);
+	file_address_t read (file_handle file, unsigned char* data, file_address_t numBytes) const;
+	file_address_t write (file_handle file, const unsigned char* data, file_address_t numBytes);
 
-	bool EOF (FILE file) const;
+	bool EOF (file_handle file) const;
 
 	void boot (const std::string& name, unsigned int index);
 	void unboot (unsigned int index);
@@ -50,8 +50,8 @@ public:
 private:
 	FileHeader::Ptr findFile (const std::string& name);
 
-	OpenFile::ConstPtr getOpenFile (FILE file) const;
-	OpenFile::Ptr getOpenFile (FILE file);
+	OpenFile::ConstPtr getOpenFile (file_handle file) const;
+	OpenFile::Ptr getOpenFile (file_handle file);
 
 	void serialise (unsigned char*& p) const;
 	bool deserialise (const unsigned char*& p);

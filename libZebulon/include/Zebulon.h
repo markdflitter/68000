@@ -3,7 +3,8 @@
 
 namespace Zebulon
 {
-
+// a lot of stuff in this file is technically not volatile, but marking it sit so forces the compiler to make a local copy of the parameter which defeats a compiler bug where it refences the wrong stack location
+	
 inline unsigned int _zebulon_time ()
 {
 	volatile unsigned int result;
@@ -17,8 +18,8 @@ inline unsigned int _zebulon_time ()
 
 inline void _zebulon_putch (int c)
 {
-	int cc = c;
-	void* a0 = &cc;
+	volatile int cc = c;	// although this is technically not volatile, it forces the compiler to make a local copy of the parameter which defeats a compiler bug where it refences the wrong stack location
+	volatile void* a0 = &cc;
 
 	asm ("moveb #1, %%d0\n\t"
 		 "movel %0, %%a0\n\t"
@@ -42,8 +43,8 @@ inline int _zebulon_fopen (const char* filename, const char* mode)
 	volatile int fptr;
 	volatile void* a0 = &fptr;
 
-	const void* a1 = filename;
-	const void* a2 = mode;
+	const volatile void* a1 = filename;
+	const volatile void* a2 = mode;
 	
 	asm ("moveb #1, %%d0\n\t"
 		 "movel %0, %%a0\n\t"
@@ -51,21 +52,21 @@ inline int _zebulon_fopen (const char* filename, const char* mode)
 		 "movel %2, %%a2\n\t"
 		 "trap #2\n\t" : : "m" (a0), "m" (a1), "m" (a2) : "d0", "a0", "a1", "a2");
 
-	return fptr;
+	return fptr == -1 ? 0 : fptr + 1;
 }
 
 inline long unsigned int _zebulon_fwrite (const void* data, long unsigned int data_size, long unsigned int number_data, int fptr)
 {
-	int f = fptr;
-	const void* a0 = &f;
-	const void* a1 = data;
+	volatile int f = fptr - 1;
+	const volatile void* a0 = &f;
+	const volatile void* a1 = data;
 
 	volatile long unsigned int result;
 	volatile void* a2 = &result;
 
-	long unsigned int d1 = data_size * number_data;
+	volatile long unsigned int d1 = data_size * number_data;
 
-	asm ("moveb #4, %%d0\n\t"
+	asm ("moveb #2, %%d0\n\t"
 		 "movel %0, %%a0\n\t"
 		 "movel %1, %%a1\n\t"
 		 "movel %2, %%a2\n\t"
@@ -77,14 +78,14 @@ inline long unsigned int _zebulon_fwrite (const void* data, long unsigned int da
 
 inline long unsigned int _zebulon_fread (const void* data, long unsigned int data_size, long unsigned int number_data, int fptr)
 {
-	int f = fptr;
-	const void* a0 = &f;
-	const void* a1 = data;
+	volatile int f = fptr - 1;
+	const volatile void* a0 = &f;
+	const volatile void* a1 = data;
 
 	volatile long unsigned int result;
 	volatile void* a2 = &result;
 
-	long unsigned int d1 = data_size * number_data;
+	volatile long unsigned int d1 = data_size * number_data;
 
 	asm ("moveb #3, %%d0\n\t"
 		 "movel %0, %%a0\n\t"
@@ -98,7 +99,7 @@ inline long unsigned int _zebulon_fread (const void* data, long unsigned int dat
 
 inline void _zebulon_fclose (int fptr)
 {
-	int f = fptr;
+	volatile int f = fptr - 1;
 	volatile void* a0 = &f;
 
 	asm ("moveb #4,%%d0\n\t"

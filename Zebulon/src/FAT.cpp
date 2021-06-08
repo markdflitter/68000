@@ -173,8 +173,9 @@ FileStat FAT::stat (const string& name)
 		return FileStat ();
 }
 
-FILE FAT::open (const string& name)
+file_handle FAT::open (const string& name)
 {
+	printf ("opening file '%s'\n\r", name.c_str ());
 	FileHeader::Ptr f = findFile (name);
 	if (f.isNull ())
 	{
@@ -183,17 +184,17 @@ FILE FAT::open (const string& name)
 	}
 	
 	m_openFiles.push_back (make_shared(new OpenFile(f)));
-	
+
 	return m_openFiles.size () - 1;
 }
 
-void FAT::close (FILE file)
+void FAT::close (file_handle file)
 {
 	getOpenFile (file);
 	m_openFiles [file].reset ();
 }
 
-file_address_t FAT::read (FILE file, unsigned char* data, file_address_t numBytes) const
+file_address_t FAT::read (file_handle file, unsigned char* data, file_address_t numBytes) const
 {
 	OpenFile::Ptr of = getOpenFile (file);
 	if (!of.isNull ())
@@ -201,7 +202,7 @@ file_address_t FAT::read (FILE file, unsigned char* data, file_address_t numByte
 	return 0;
 }
 
-file_address_t FAT::write (FILE file, const unsigned char* data, file_address_t numBytes)
+file_address_t FAT::write (file_handle file, const unsigned char* data, file_address_t numBytes)
 {
 	OpenFile::Ptr of = getOpenFile (file);
 	if (!of.isNull ())
@@ -209,7 +210,7 @@ file_address_t FAT::write (FILE file, const unsigned char* data, file_address_t 
 	return 0;
 }
 
-bool FAT::EOF (FILE file) const
+bool FAT::EOF (file_handle file) const
 {
 	OpenFile::Ptr of = getOpenFile (file);
 	if (!of.isNull ())
@@ -331,22 +332,22 @@ FileHeader::Ptr FAT::findFile (const string& name)
 	return result;
 }
 
-OpenFile::ConstPtr FAT::getOpenFile (FILE file) const
+OpenFile::ConstPtr FAT::getOpenFile (file_handle file) const
 {
 	if ((file >= m_openFiles.size ()) || (m_openFiles [file].isNull ()))
 	{
-		printf (">> file not open\n\r");
+		printf (">> file %d not open\n\r", file);
 		return OpenFile::ConstPtr ();
 	}
 
 	return m_openFiles [file];
 }
 
-OpenFile::Ptr FAT::getOpenFile (FILE file)
+OpenFile::Ptr FAT::getOpenFile (file_handle file)
 {
 	if ((file >= m_openFiles.size ()) || (m_openFiles [file].isNull ()))
 	{
-		printf (">> file not open\n\r");
+		printf (">> file %d not open\n\r", file);
 		return OpenFile::Ptr ();
 	}
 

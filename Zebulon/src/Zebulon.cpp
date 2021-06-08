@@ -37,7 +37,7 @@ void tick ()
 void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
-	void* a0 = 0;
+	volatile void* a0 = 0;
 	asm volatile ("movel %%a0, %0\n\t" : "=m" (a0));
 
 	double f = ((double) ticks) * tickIntervalInMs;
@@ -49,8 +49,8 @@ void trap0 ()
 void trap1 () __attribute__ ((interrupt));
 void trap1 ()
 {
-	char d0 = 0;
-	void* a0 = 0;
+	volatile char d0 = 0;
+	volatile void* a0 = 0;
 	asm volatile ("moveb %%d0, %0\n\t" 
 				  "movel %%a0, %1\n\t" : "=m" (d0), "=m" (a0));
 
@@ -77,40 +77,38 @@ bool mode_is (const char* mode, char what)
 }
 
 
-int openFile (const char* filename, const char* mode)
+file_handle openFile (const char* filename, const char* mode)
 {
-	int result = -1;
+	file_handle result = file_not_found;
 
-	printf ("opening file %s in mode %s\n\r", filename, mode);
-	
 	FAT& fat = theFAT ();
 	if (!fat.fileExists (filename))
 	{
-		printf ("file doesn't exist\n\r");
+		//printf ("file doesn't exist\n\r");
 		if (mode_is (mode, 'w'))
 		{
-			printf ("create file\n\r");
+			//printf ("create file\n\r");
 	    	fat.create (filename);
 		}
 		else
 		{
-			printf ("file not found\n\r");
+			//printf ("file not found\n\r");
 			return result;
 		}			
 	}
 	else
 	{
-		printf ("file exists\n\r");
+		//printf ("file exists\n\r");
 		if (mode_is (mode, 'w'))
 		{
-			printf ("delete and create file\n\r");
+			//printf ("delete and create file\n\r");
 			fat.rm (filename);
 	    	fat.create (filename);
 		}
 	}
 
 	result = fat.open (filename);
-	
+
 	if (mode_is (mode, 'r'))
 		result |= 0x8000;
 	
@@ -118,46 +116,44 @@ int openFile (const char* filename, const char* mode)
 }
 
 
-unsigned long int readFile (int fptr, unsigned char* data, long unsigned int numBytes)
+unsigned long int readFile (file_handle fptr, unsigned char* data, long unsigned int numBytes)
 {
-	return theFAT ().read (fptr, data, numBytes);
+	return theFAT ().read (fptr & ~0x8000, data, numBytes);
 }
 
-unsigned long int writeFile (int fptr, const unsigned char* data, long unsigned int numBytes)
+unsigned long int writeFile (file_handle fptr, const unsigned char* data, long unsigned int numBytes)
 {
-	return theFAT ().write (fptr, data, numBytes);
+	return theFAT ().write (fptr & ~0x8000, data, numBytes);
 }
 
-void closeFile (int fptr)
+void closeFile (file_handle fptr)
 {
 	theFAT ().close (fptr & ~0x8000);
 }
 
 }
 
-
 // fileIO
-
 void trap2 () __attribute__ ((interrupt));
 void trap2 ()
 {
-	void* a0 = 0;
-	void* a1 = 0;
-	void* a2 = 0;
-	char d0 = 0;
-	char d1 = 0;
+	volatile void* a0 = 0;
+	volatile void* a1 = 0;
+	volatile void* a2 = 0;
+	volatile char d0 = 99;
+	volatile char d1 = 0;
 	asm volatile ("moveb %%d0, %0\n\t" 
 				  "movel %%a0, %1\n\t"
   				  "movel %%a1, %2\n\t"
-  				  "movel %%a2, %2\n\t"
-				  "movel %%d1, %4\n\t" : "=m" (d0), "=m" (a0), "=m" (a1), "=m" (a2), "=m" (d1));
+  				  "movel %%a2, %3\n\t"
+				  "moveb %%d1, %4\n\t" : "=m" (d0), "=m" (a0), "=m" (a1), "=m" (a2), "=m" (d1));
 
 	switch (d0)
 	{
-		case 1: *((int *) a0) = openFile ((char*) a1, (char*) a2); break;
-		case 2: *((long unsigned int*) a2) = writeFile (*((int*) a0), (const unsigned char*) a1, (long unsigned int) d1); break ;
-		case 3: *((long unsigned int*) a2) = readFile (*((int*) a0), (unsigned char*) a1, (long unsigned int) d1); break ;
-		case 4: closeFile (*((int*) a0));
+		case 1: *((file_handle *) a0) = openFile ((char*) a1, (char*) a2); break;
+		case 2: *((long unsigned int*) a2) = writeFile (*((file_handle*) a0), (const unsigned char*) a1, (long unsigned int) d1); break ;
+		case 3: *((long unsigned int*) a2) = readFile (*((file_handle*) a0), (unsigned char*) a1, (long unsigned int) d1); break ;
+		case 4: closeFile (*((file_handle*) a0));
 		default: break; 
 	}
 }

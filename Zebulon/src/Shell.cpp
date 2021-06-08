@@ -73,13 +73,13 @@ void printHelp (void)
 	printf ("ident\t\t\t\t - ident the disk\n\r");
 	printf ("readB <block>\t\t\t - read block from disk\n\r");
 	printf ("format <size>\t\t\t - format the filing system\n\r");
-	printf ("create <name>\t\t\t - create a file\n\r");
 	printf ("ls\t\t\t\t - list files\n\r");
 	printf ("rm <name>\t\t\t - delete a file\n\r");
-	printf ("write <name>\t\t\t - fill file with stuff\n\r");
+	printf ("write <name> <bytes>\t\t - fill file with stuff\n\r");
 	printf ("read <name>\t\t\t - read file from disk\n\r");
 	printf ("save <bootNumber>\t\t - save code to disk\n\r");
 	printf ("unboot <bootNumber>\t\t - empty boot slot\n\r");
+	printf ("boot <file> <bootNumber>\t - make file bootable\n\r");
 	printf ("time\t\t\t\t - print ticks since boot\n\r");
 }
 
@@ -229,7 +229,7 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 
 	fat.setMetaData (name, (unsigned int) loadAddress, (unsigned int) goAddress);
 
-	FILE f = fat.open (name);
+	file_handle f = fat.open (name);
 	if (f == file_not_found) return ;
 
 	file_address_t bytesLeftToWrite = length;
@@ -288,13 +288,6 @@ void format (FAT& fat, block_address_t size)
 	fat.format (size);
 }
 
-void create (FAT& fat, const string& filename)
-{
-	printf ("creating file '%s'\n\r", filename.c_str ());
-	FILE* f = fopen (filename.c_str (), "wb");
-	if (f != (FILE*) -1) stat (fat, filename);
-}
-
 void rmFile (FAT& fat, const string& filename)
 {
 	printf ("deleting file '%s'\n\r", filename.c_str ());
@@ -306,7 +299,7 @@ void write (const string& filename, block_address_t size)
 	printf ("writing %d bytes to file '%s'\n\r", size, filename.c_str ());
 	
 	FILE* f = fopen (filename.c_str (), "wb");
-	if (f == (FILE*) -1) return ;
+	if (f == 0) return ;
 
 	file_address_t bytesLeftToWrite = size;
 
@@ -341,11 +334,11 @@ void read (FAT& fat, const string& filename)
 	printf ("reading file '%s'\n\r", filename.c_str ());
 
 	FILE* f = fopen (filename.c_str (), "rb");
-	if (f == (FILE*) -1) return ;
+	if (f == 0) return ;
 
 	file_address_t bytesLeftToRead = fat.stat (filename).size;
 			
-	while (!fat.EOF ((int) f))
+	while (!fat.EOF ((int) (f) - 1 & ~0x8000))
 	{
 		unsigned char buffer [480];
 		if (bytesLeftToRead >= 480)
@@ -434,11 +427,6 @@ void Shell::run () const
 			{
 				block_address_t size = atol (tokens [1].c_str ());			
 				format (m_fat, size);
-			}
-			if (tokens [0] == "create" && tokens.size () > 1)
-			{
-				string filename (tokens [1].c_str ());
-				create (m_fat, filename);
 			}
 			if (tokens [0] == "rm" && tokens.size () > 1)
 			{
