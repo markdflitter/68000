@@ -55,6 +55,23 @@ inline int _zebulon_fopen (const char* filename, const char* mode)
 	return fptr == -1 ? 0 : fptr + 1;
 }
 
+inline int _zebulon_feof (int fptr)
+{
+	volatile int f = fptr - 1;
+	const volatile void* a0 = &f;
+
+	volatile long unsigned int result;
+	volatile void* a2 = &result;
+
+	asm ("moveb #5, %%d0\n\t"
+		 "movel %0, %%a0\n\t"
+		 "movel %1, %%a2\n\t"
+		 "trap #2\n\t" : : "m" (a0), "m" (a2) : "d0", "a0", "a2");
+
+	return result;
+}
+
+
 inline long unsigned int _zebulon_fwrite (const void* data, long unsigned int data_size, long unsigned int number_data, int fptr)
 {
 	volatile int f = fptr - 1;

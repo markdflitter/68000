@@ -19,8 +19,8 @@ extern "C" int sprintfn (char* s, size_t n, const char* format, ...);
 typedef int FILE;
 
 extern "C" FILE* fopen (const char* filename, const char* mode);
+extern "C" int feof (FILE* fptr);
 extern "C" long unsigned int fwrite (const void* data, long unsigned int data_size, long unsigned int number_data, void* fptr);
 extern "C" long unsigned int fread (const void* data, long unsigned int data_size, long unsigned int number_data, void* fptr);
 extern "C" void fclose (FILE* fptr);
-
 #endif

@@ -175,7 +175,7 @@ FileStat FAT::stat (const string& name)
 
 file_handle FAT::open (const string& name)
 {
-	printf ("opening file '%s'\n\r", name.c_str ());
+	//printf ("opening file '%s'\n\r", name.c_str ());
 	FileHeader::Ptr f = findFile (name);
 	if (f.isNull ())
 	{

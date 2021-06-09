@@ -131,6 +131,11 @@ void closeFile (file_handle fptr)
 	theFAT ().close (fptr & ~0x8000);
 }
 
+int eof (file_handle fptr)
+{
+	return theFAT ().EOF (fptr & ~0x8000);
+}
+
 }
 
 // fileIO
@@ -153,7 +158,8 @@ void trap2 ()
 		case 1: *((file_handle *) a0) = openFile ((char*) a1, (char*) a2); break;
 		case 2: *((long unsigned int*) a2) = writeFile (*((file_handle*) a0), (const unsigned char*) a1, (long unsigned int) d1); break ;
 		case 3: *((long unsigned int*) a2) = readFile (*((file_handle*) a0), (unsigned char*) a1, (long unsigned int) d1); break ;
-		case 4: closeFile (*((file_handle*) a0));
+		case 4: closeFile (*((file_handle*) a0)); break;
+		case 5: *((long unsigned int*) a2) = eof (*((file_handle*) a0)); break;
 		default: break; 
 	}
 }

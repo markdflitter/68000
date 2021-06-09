@@ -338,7 +338,7 @@ void read (FAT& fat, const string& filename)
 
 	file_address_t bytesLeftToRead = fat.stat (filename).size;
 			
-	while (!fat.EOF ((int) (f) - 1 & ~0x8000))
+	while (!feof (f))
 	{
 		unsigned char buffer [480];
 		if (bytesLeftToRead >= 480)
