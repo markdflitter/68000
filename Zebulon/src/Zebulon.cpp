@@ -3,6 +3,7 @@
 #include "VectorTable.h"
 #include "FAT.h"
 #include "Shell.h"
+#include <Zebulon.h>
 
 const char* banner = 
 "  ____\n\r"
@@ -164,6 +165,21 @@ void trap2 ()
 	}
 }
 
+// stat
+void trap3 () __attribute__ ((interrupt));
+void trap3 ()
+{
+	volatile void* a0 = 0;
+	volatile void* a1 = 0;
+	volatile void* a2 = 0;
+	asm volatile ("movel %%a0, %0\n\t"
+  				  "movel %%a1, %1\n\t"
+  				  "movel %%a2, %2\n\t" : "=m" (a0), "=m" (a1), "=m" (a2));
+
+	*((bool*) a2) = theFAT ().stat ((const char*) a0, ((struct Zebulon::_zebulon_stat*) a1));
+}
+
+
 int main ()
 {
 	__putstr (banner);	
@@ -172,6 +188,7 @@ int main ()
 	v.setVector (32, &trap0);	
 	v.setVector (33, &trap1);	
 	v.setVector (34, &trap2);	
+	v.setVector (35, &trap3);	
 	v.setVector (64, &tick);	
 	printf ("set up vectors 0x%x\n\r", __vector_table);
 

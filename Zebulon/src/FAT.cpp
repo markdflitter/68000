@@ -117,6 +117,20 @@ void FAT::setMetaData (const std::string& name, unsigned int loadAddress, unsign
 	save ();
 }
 
+bool FAT::stat (const std::string& name, struct Zebulon::_zebulon_stat* zs)
+{
+	FileHeader::Ptr p = findFile (name);
+	bool result = p.isNull ();
+	if (result)
+	{
+		memcpy (zs->name, p->name ().c_str (), p->name ().length ());
+		zs->size = p->size ();
+	}
+
+	return result;
+}
+
+
 void FAT::rm (const string& name)
 {
 	FileHeader::Ptr p = findFile (name);
@@ -144,33 +158,6 @@ void FAT::rm (const string& name)
 		}
 
 	printf (">> file not found\n\r");
-}
-
-list<string> FAT::ls () const
-{
-	list<string> result;
-
-	for (list<FileHeader::Ptr>::const_iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
-	{
-		result.push_back ((*i)->name ());
-	}
-
-	return result;
-}
-
-FileStat FAT::stat (const string& name)
-{
-	FileHeader::ConstPtr file = findFile (name);
-	if (!file.isNull ())
-	{
-		FileStat stat (file->name (), file->index (), file->bootable (), file->size (), file->allocSize ());
-
-		for (list<Chunk::Ptr>::const_iterator j = file->chunks ().begin (); j != file->chunks ().end (); j++)
-			stat.chunks.push_back (Chunk ((*j)->start, (*j)->length));
-		return stat;
-	}
-	else
-		return FileStat ();
 }
 
 file_handle FAT::open (const string& name)

@@ -124,6 +124,32 @@ inline void _zebulon_fclose (int fptr)
 		 "trap #2\n\t" : : "m" (a0) : "d0", "a0");
 }
 
+#define MAX_FILENAME_LENGTH 255
+
+struct _zebulon_stat
+{
+	char name [MAX_FILENAME_LENGTH + 1];
+	long unsigned int size;	
+};
+
+inline bool _zebulon_stat (const char* filename, struct _zebulon_stat* zs)
+{
+	const volatile void* a0 = filename;
+	volatile void* a1 = zs;
+	bool result;
+	volatile void* a2 = &result;
+
+	asm ("movel %0, %%a0\n\t"
+		 "movel %1, %%a1\n\t"
+		 "movel %2, %%a2\n\t"
+		 "trap #3\n\t" : : "m" (a0), "m" (a1), "m" (a2) : "a0", "a1");
+
+	return result;
+}
+
+
+
+
 }
 
 #endif

@@ -5,13 +5,14 @@
 #include <string>
 #include "file_handle.h"
 #include <list>
-#include "FileStat.h"
 
 #include "FileHeader.h"
 #include "SpaceManager.h"
 #include <vector>
 #include "OpenFile.h"
 #include "BootTableEntry.h"
+#include "FileSearch.h"
+#include <Zebulon.h>
 
 class FAT
 {
@@ -29,10 +30,9 @@ public:
 	bool create (const std::string& name, block_address_t initialSize = 0, bool contiguous = false);
 	void setMetaData (const std::string& name, unsigned int loadAddress, unsigned int goAddress);
 
-	void rm (const std::string& name);
+	bool stat (const std::string& name, struct Zebulon::_zebulon_stat* s);
 
-	std::list<std::string> ls () const;
-	FileStat stat (const std::string& name);
+	void rm (const std::string& name);
 
 	file_handle open (const std::string& name);
 	void close (file_handle file);
@@ -61,6 +61,7 @@ private:
 	SpaceManager m_spaceManager;	
 	std::list<FileHeader::Ptr> m_fileHeaders;
 	std::vector<OpenFile::Ptr> m_openFiles;
+	std::vector<FileSearch::Ptr> m_fileSearches;
 	std::vector<BootTableEntry::Ptr> m_bootTable;
 	
 	static unsigned int m_lastIndex;

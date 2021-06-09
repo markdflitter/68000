@@ -10,6 +10,7 @@
 #include <timer>
 #include "FAT.h"
 #include "ctype.h"
+#include <filer.h>
 
 const char* version = "Z-Shell V1.36.0014";
 const char* filename = "Zebulon_V1.36.0014";
@@ -186,8 +187,9 @@ void readB (FAT& fat, block_address_t block)
 		printBuffer (data, fat.blockSize ());
 }
 
-void stat (FAT& fat, const string& name)
+void stat (const string& name)
 {
+/*
 	FileStat fileStat = fat.stat (name);
 	printf ("%d : %s : ", fileStat.index, pad (fileStat.name, 20, ' ').c_str (), fileStat.size);
 
@@ -208,6 +210,7 @@ void stat (FAT& fat, const string& name)
 	}
 	
 	printf ("\n\r");
+*/
 }
 
 void save (FAT& fat, const std::string& name, unsigned int bootNumber)
@@ -223,7 +226,7 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 
 	fat.rm (name);
 	if (fat.create (name, numBlocks))
-		stat (fat, name);
+		stat (name);
 	else
 		return ;
 
@@ -336,8 +339,12 @@ void read (FAT& fat, const string& filename)
 	FILE* f = fopen (filename.c_str (), "rb");
 	if (f == 0) return ;
 
-	file_address_t bytesLeftToRead = fat.stat (filename).size;
-			
+	struct mdf::stat s;
+	
+	if (!mdf::stat (filename, &s))
+		return ;
+	file_address_t bytesLeftToRead = s.size;
+
 	while (!feof (f))
 	{
 		unsigned char buffer [480];
@@ -358,11 +365,8 @@ void read (FAT& fat, const string& filename)
 	fclose (f);
 }
 
-void ls (FAT& fat)
+void ls ()
 {
-	list<string> files = fat.ls ();
-	for (auto i = files.begin (); i != files.end (); i++)
-		stat (fat, *i);
 }
 
 void time ()
@@ -444,7 +448,7 @@ void Shell::run () const
 				string filename (tokens [1].c_str ());
 				read (m_fat, filename);
 			}
-			if (tokens [0] == "ls") ls (m_fat);
+			if (tokens [0] == "ls") ls ();
 			if (tokens [0] == "time") time ();
 			}
 	}
