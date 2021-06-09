@@ -141,12 +141,12 @@ void trap2 ()
 	volatile void* a1 = 0;
 	volatile void* a2 = 0;
 	volatile char d0 = 99;
-	volatile char d1 = 0;
+	volatile unsigned long int d1 = 0;
 	asm volatile ("moveb %%d0, %0\n\t" 
 				  "movel %%a0, %1\n\t"
   				  "movel %%a1, %2\n\t"
   				  "movel %%a2, %3\n\t"
-				  "moveb %%d1, %4\n\t" : "=m" (d0), "=m" (a0), "=m" (a1), "=m" (a2), "=m" (d1));
+				  "movel %%d1, %4\n\t" : "=m" (d0), "=m" (a0), "=m" (a1), "=m" (a2), "=m" (d1));
 
 	switch (d0)
 	{
@@ -162,12 +162,12 @@ int main ()
 {
 	__putstr (banner);	
 
-	VectorTable v (__vector_table);	
+	VectorTable v ((unsigned char*) 0x200000);	
 	v.setVector (32, &trap0);	
 	v.setVector (33, &trap1);	
 	v.setVector (34, &trap2);	
 	v.setVector (64, &tick);	
-	printf ("set up vectors\n\r");
+	printf ("set up vectors 0x%x\n\r", __vector_table);
 
 	tickIntervalInMs = __set_timer_divisor (0, 92);
 	unsigned int d = tickIntervalInMs * 1000;
