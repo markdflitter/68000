@@ -198,6 +198,14 @@ inline void _zebulon_close_find (int find_handle)
 		 "trap #4\n\t" : : "m" (a1) : "d0", "a1");
 }
 
+inline void _zebulon_delete_file (const char* filename)
+{
+	const volatile void* a0 = filename;
+
+	asm ("movel %0, %%a0\n\t"
+		 "trap #5\n\t" : : "m" (a0) : "a0");
+}
+
 }
 
 #endif

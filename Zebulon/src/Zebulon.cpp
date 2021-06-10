@@ -201,6 +201,16 @@ void trap4 ()
 	}
 }
 
+//file operations: delete, copy etc
+void trap5 () __attribute__ ((interrupt));
+void trap5 ()
+{
+	volatile void* a0 = 0;
+
+	asm volatile ("movel %%a0, %0\n\t" : "=m" (a0));
+
+	theFAT ().rm (((char*) a0));
+}
 
 int main ()
 {
@@ -212,6 +222,7 @@ int main ()
 	v.setVector (34, &trap2);	
 	v.setVector (35, &trap3);	
 	v.setVector (36, &trap4);	
+	v.setVector (37, &trap5);	
 	v.setVector (64, &tick);	
 	printf ("set up vectors 0x%x\n\r", __vector_table);
 

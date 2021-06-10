@@ -26,6 +26,8 @@ int findFirstFile (struct stat* s);
 bool findNextFile (int handle, struct stat* s);
 void closeFind (int handle);
 
+void deleteFile (const std::string& filename);
+
 }
 
 #endif

@@ -287,7 +287,7 @@ void format (FAT& fat, block_address_t size)
 void rmFile (FAT& fat, const string& filename)
 {
 	printf ("deleting file '%s'\n\r", filename.c_str ());
-	fat.rm (filename);
+	deleteFile (filename);
 }
 
 void write (const string& filename, block_address_t size)

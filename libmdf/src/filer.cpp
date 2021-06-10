@@ -61,4 +61,9 @@ void closeFind (int handle)
 	_zebulon_close_find (handle);
 }
 
+void deleteFile (const std::string& filename)
+{
+	_zebulon_delete_file (filename.c_str ());
+}
+
 }
