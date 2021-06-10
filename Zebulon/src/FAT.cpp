@@ -141,6 +141,8 @@ file_search_handle FAT::findFirstFile (struct Zebulon::_zebulon_stat* s)
 		s->index = fileHeader->index ();
 
 		memcpy (s->name, fileHeader->name ().c_str (), fileHeader->name ().length ());
+		s->name [fileHeader->name ().length ()] = '\0';
+
 		s->size = fileHeader->size ();
 		s->sizeOnDisk = fileHeader->allocSize ();
 
@@ -171,6 +173,8 @@ bool FAT::findNextFile (file_search_handle handle, struct Zebulon::_zebulon_stat
 		s->index = fileHeader->index ();
 
 		memcpy (s->name, fileHeader->name ().c_str (), fileHeader->name ().length ());
+		s->name [fileHeader->name ().length ()] = '\0';
+
 		s->size = fileHeader->size ();
 		s->sizeOnDisk = fileHeader->allocSize ();
 
