@@ -8,8 +8,16 @@ namespace mdf
 
 struct stat
 {
-	unsigned long int size;
+	unsigned int index;
+
 	std::string name;
+
+	long unsigned int size;	
+	long unsigned int sizeOnDisk;	
+
+	bool bootable;
+	unsigned int loadAddress;
+	unsigned int goAddress;
 };
 
 bool stat (const std::string& name, struct stat* s);

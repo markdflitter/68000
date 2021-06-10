@@ -128,8 +128,16 @@ inline void _zebulon_fclose (int fptr)
 
 struct _zebulon_stat
 {
+	unsigned int index;
+
 	char name [MAX_FILENAME_LENGTH + 1];
+
 	long unsigned int size;	
+	long unsigned int sizeOnDisk;	
+
+	bool bootable;
+	unsigned int loadAddress;
+	unsigned int goAddress;
 };
 
 inline bool _zebulon_stat (const char* filename, struct _zebulon_stat* zs)
@@ -142,7 +150,7 @@ inline bool _zebulon_stat (const char* filename, struct _zebulon_stat* zs)
 	asm ("movel %0, %%a0\n\t"
 		 "movel %1, %%a1\n\t"
 		 "movel %2, %%a2\n\t"
-		 "trap #3\n\t" : : "m" (a0), "m" (a1), "m" (a2) : "a0", "a1");
+		 "trap #3\n\t" : : "m" (a0), "m" (a1), "m" (a2) : "a0", "a1", "a2");
 
 	return result;
 }

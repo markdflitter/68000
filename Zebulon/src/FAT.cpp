@@ -120,7 +120,7 @@ void FAT::setMetaData (const std::string& name, unsigned int loadAddress, unsign
 bool FAT::stat (const std::string& name, struct Zebulon::_zebulon_stat* zs)
 {
 	FileHeader::Ptr p = findFile (name);
-	bool result = p.isNull ();
+	bool result = !p.isNull ();
 	if (result)
 	{
 		memcpy (zs->name, p->name ().c_str (), p->name ().length ());
@@ -138,8 +138,15 @@ file_search_handle FAT::findFirstFile (struct Zebulon::_zebulon_stat* s)
 
 	if (!fileHeader.isNull ())
 	{
+		s->index = fileHeader->index ();
+
 		memcpy (s->name, fileHeader->name ().c_str (), fileHeader->name ().length ());
 		s->size = fileHeader->size ();
+		s->sizeOnDisk = fileHeader->allocSize ();
+
+		s->bootable = fileHeader->bootable ();
+		s->loadAddress = fileHeader->loadAddress ();
+		s->goAddress = fileHeader->goAddress ();
 
 		m_fileSearches.push_back (fileSearch);
 
@@ -161,8 +168,15 @@ bool FAT::findNextFile (file_search_handle handle, struct Zebulon::_zebulon_stat
 	FileHeader::Ptr fileHeader = fs->next ();
 	if (!fileHeader.isNull ())
 	{
+		s->index = fileHeader->index ();
+
 		memcpy (s->name, fileHeader->name ().c_str (), fileHeader->name ().length ());
 		s->size = fileHeader->size ();
+		s->sizeOnDisk = fileHeader->allocSize ();
+
+		s->bootable = fileHeader->bootable ();
+		s->loadAddress = fileHeader->loadAddress ();
+		s->goAddress = fileHeader->goAddress ();
 
 		return true;
 	}

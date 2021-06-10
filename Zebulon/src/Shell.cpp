@@ -189,29 +189,17 @@ void readB (FAT& fat, block_address_t block)
 
 void printStat (struct stat s)
 {
-	printf ("%s : %d\n\r", pad (s.name, 20, ' ').c_str (), s.size);
-/*
-	FileStat fileStat = fat.stat (name);
-	printf ("%d : %s : ", fileStat.index, pad (fileStat.name, 20, ' ').c_str (), fileStat.size);
+	printf ("%d : %s : ", s.index, pad (s.name, 20, ' ').c_str ());
 
-	if (fileStat.bootable)
+	if (s.bootable)
 		printf ("b");
 	else
 		printf (" ");
 	printf (" : ");	
 
-	printf ("%d bytes\t : ", fileStat.size);
+	printf ("%d bytes\t : %d allocated : 0x%x : 0x%x", s.size, s.sizeOnDisk, s.loadAddress, s.goAddress);
 
-	bool first = true;
-	for (auto i = fileStat.chunks.begin (); i != fileStat.chunks.end (); i++)
-	{
-		if (!first) printf (", ");
-		printf ("%d->%d=%d", (*i).start, (*i).start + (*i).length - 1, (*i).length);
-		first = false;
-	}
-	
 	printf ("\n\r");
-*/
 }
 
 void save (FAT& fat, const std::string& name, unsigned int bootNumber)
@@ -343,12 +331,20 @@ void read (FAT& fat, const string& filename)
 
 	FILE* f = fopen (filename.c_str (), "rb");
 	if (f == 0) return ;
+	
+	printf ("hello\n\r");
 
 	struct mdf::stat s;
 	
 	if (!mdf::stat (filename, &s))
+	{
+		fclose (f);
 		return ;
+	}	
+
+	printf ("byebye\n\r");
 	file_address_t bytesLeftToRead = s.size;
+	printf ("bytesLeftToRead %d\n\r", bytesLeftToRead);
 
 	while (!feof (f))
 	{

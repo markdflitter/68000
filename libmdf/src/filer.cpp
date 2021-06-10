@@ -8,8 +8,16 @@ namespace
 
 void convertStat (struct Zebulon::_zebulon_stat zs, struct mdf::stat* result)
 {
+	result->index = zs.index;
+
 	result->name = std::string (zs.name);
 	result->size = zs.size;
+
+	result->sizeOnDisk = zs.sizeOnDisk;
+	
+	result->bootable = zs.bootable;
+	result->loadAddress = zs.loadAddress;
+	result->goAddress = zs.goAddress;
 }
 
 }
