@@ -168,21 +168,21 @@ inline bool _zebulon_find_next_file (int find_handle, struct _zebulon_stat* s)
 	int fh = find_handle;
 	volatile void* a1 = &fh;
 
-	int result;
+	bool result;
 	volatile void* a2 = &result;
 
 	asm ("moveb #2, %%d0\n\t"
 		 "movel %0, %%a0\n\t"
 		 "movel %1, %%a1\n\t"
 		 "movel %2, %%a2\n\t"
-		 "trap #4\n\t" : : "m" (a0), "m" (a1), "m" (a2) : "d0", "a0", "a1");
+		 "trap #4\n\t" : : "m" (a0), "m" (a1), "m" (a2) : "d0", "a0", "a1", "a2");
 
 	return result;
 }
 
 inline void _zebulon_close_find (int find_handle)
 {
-	int fh = find_handle;
+	volatile int fh = find_handle;
 	volatile void* a1 = &fh;
 
 	asm ("moveb #3, %%d0\n\t"

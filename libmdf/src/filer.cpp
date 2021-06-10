@@ -3,6 +3,18 @@
 
 using namespace Zebulon;
 
+namespace
+{
+
+void convertStat (struct Zebulon::_zebulon_stat zs, struct mdf::stat* result)
+{
+	result->name = std::string (zs.name);
+	result->size = zs.size;
+}
+
+}
+
+
 namespace mdf
 {
 
@@ -11,11 +23,7 @@ bool stat (const std::string& name, struct stat* s)
 	struct _zebulon_stat zs;
 	bool result = _zebulon_stat (name.c_str (), &zs);
 
-	if (result)
-	{
-		s->name = std::string (zs.name);
-		s->size = zs.size;
-	}
+	if (result) convertStat (zs, s);
 
 	return result;
 }
@@ -25,11 +33,7 @@ int findFirstFile (struct stat* s)
 	struct _zebulon_stat zs;
 	int result = _zebulon_find_first_file (&zs);
 
-	if (result > -1)
-	{
-		s->name = std::string (zs.name);
-		s->size = zs.size;
-	}
+	if (result > -1) convertStat (zs, s);
 
 	return result;
 }
@@ -37,13 +41,9 @@ int findFirstFile (struct stat* s)
 bool findNextFile (int handle, struct stat* s)
 {
 	struct _zebulon_stat zs;
-	bool result = _zebulon_find_next_file (handle, &zs)
+	bool result = _zebulon_find_next_file (handle, &zs);
 
-	if (result)
-	{
-		s->name = std::string (zs.name);
-		s->size = zs.size;
-	}
+	if (result) convertStat (zs, s);
 
 	return result;
 }

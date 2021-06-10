@@ -34,8 +34,8 @@ public:
 	bool stat (const std::string& name, struct Zebulon::_zebulon_stat* s);
 
 	file_search_handle findFirstFile (struct Zebulon::_zebulon_stat* s);
-	bool findNextFile (file_search_handle& handle, struct Zebulon::_zebulon_stat* s);
-	void closeFind (file_search_handle& handle);
+	bool findNextFile (file_search_handle handle, struct Zebulon::_zebulon_stat* s);
+	void closeFind (file_search_handle handle);
 
 	void rm (const std::string& name);
 

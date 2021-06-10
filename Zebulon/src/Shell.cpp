@@ -189,7 +189,7 @@ void readB (FAT& fat, block_address_t block)
 
 void printStat (struct stat s)
 {
-	printf ("%s : %d", pad (s.name, 20, ' ').c_str (), s.size);
+	printf ("%s : %d\n\r", pad (s.name, 20, ' ').c_str (), s.size);
 /*
 	FileStat fileStat = fat.stat (name);
 	printf ("%d : %s : ", fileStat.index, pad (fileStat.name, 20, ' ').c_str (), fileStat.size);
@@ -378,7 +378,8 @@ void ls ()
 	while (sh > -1)
 	{
 		printStat (s);
-		if (!findNextFile (sh, &s)) break;
+		bool result = findNextFile (sh, &s);
+		if (!result) break;
 	}
 
 	closeFind (sh);

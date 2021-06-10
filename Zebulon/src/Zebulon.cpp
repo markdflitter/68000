@@ -211,7 +211,7 @@ int main ()
 	v.setVector (33, &trap1);	
 	v.setVector (34, &trap2);	
 	v.setVector (35, &trap3);	
-	v.setVector (35, &trap4);	
+	v.setVector (36, &trap4);	
 	v.setVector (64, &tick);	
 	printf ("set up vectors 0x%x\n\r", __vector_table);
 
