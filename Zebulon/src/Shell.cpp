@@ -187,8 +187,9 @@ void readB (FAT& fat, block_address_t block)
 		printBuffer (data, fat.blockSize ());
 }
 
-void stat (const string& name)
+void printStat (struct stat s)
 {
+	printf ("%s : %d", pad (s.name, 20, ' ').c_str (), s.size);
 /*
 	FileStat fileStat = fat.stat (name);
 	printf ("%d : %s : ", fileStat.index, pad (fileStat.name, 20, ' ').c_str (), fileStat.size);
@@ -226,7 +227,11 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 
 	fat.rm (name);
 	if (fat.create (name, numBlocks))
-		stat (name);
+	{
+		struct stat s;
+		stat (name, &s);
+		printStat (s);
+	}
 	else
 		return ;
 
@@ -367,6 +372,16 @@ void read (FAT& fat, const string& filename)
 
 void ls ()
 {
+	struct stat s;
+	int sh = findFirstFile (&s);
+
+	while (sh > -1)
+	{
+		printStat (s);
+		if (!findNextFile (sh, &s)) break;
+	}
+
+	closeFind (sh);
 }
 
 void time ()

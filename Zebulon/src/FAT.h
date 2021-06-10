@@ -11,6 +11,7 @@
 #include <vector>
 #include "OpenFile.h"
 #include "BootTableEntry.h"
+#include "file_search_handle.h"
 #include "FileSearch.h"
 #include <Zebulon.h>
 
@@ -32,6 +33,10 @@ public:
 
 	bool stat (const std::string& name, struct Zebulon::_zebulon_stat* s);
 
+	file_search_handle findFirstFile (struct Zebulon::_zebulon_stat* s);
+	bool findNextFile (file_search_handle& handle, struct Zebulon::_zebulon_stat* s);
+	void closeFind (file_search_handle& handle);
+
 	void rm (const std::string& name);
 
 	file_handle open (const std::string& name);
@@ -52,6 +57,8 @@ private:
 
 	OpenFile::ConstPtr getOpenFile (file_handle file) const;
 	OpenFile::Ptr getOpenFile (file_handle file);
+
+	FileSearch::Ptr getFileSearch (file_search_handle handle);
 
 	void serialise (unsigned char*& p) const;
 	bool deserialise (const unsigned char*& p);

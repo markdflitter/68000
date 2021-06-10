@@ -130,6 +130,50 @@ bool FAT::stat (const std::string& name, struct Zebulon::_zebulon_stat* zs)
 	return result;
 }
 
+file_search_handle FAT::findFirstFile (struct Zebulon::_zebulon_stat* s)
+{
+	FileSearch::Ptr fileSearch = make_shared(new FileSearch (m_fileHeaders));
+
+	FileHeader::Ptr fileHeader = fileSearch->next ();
+	if (!fileHeader.isNull ())
+	{
+		memcpy (s->name, fileHeader->name ().c_str (), fileHeader->name ().length ());
+		s->size = fileHeader->size ();
+
+		m_fileSearches.push_back (make_shared(new FileSearch (m_fileHeaders)));
+
+		return m_fileSearches.size () - 1;
+	}
+	else
+		return -1;
+}
+
+bool FAT::findNextFile (file_search_handle& handle, struct Zebulon::_zebulon_stat* s)
+{
+	FileSearch::Ptr fs = getFileSearch (handle);
+	if (fs.isNull ())
+	{
+		printf (">> search %d not found\n\r", handle);
+		return false;
+	}
+
+	FileHeader::Ptr fileHeader = fs->next ();
+	if (!fileHeader.isNull ())
+	{
+		memcpy (s->name, fileHeader->name ().c_str (), fileHeader->name ().length ());
+		s->size = fileHeader->size ();
+
+		return true;
+	}
+	else
+		return false;
+}
+
+void FAT::closeFind (file_search_handle& handle)
+{
+	getFileSearch (handle);
+	m_openFiles [handle].reset ();
+}
 
 void FAT::rm (const string& name)
 {
@@ -318,6 +362,18 @@ FileHeader::Ptr FAT::findFile (const string& name)
 
 	return result;
 }
+
+FileSearch::Ptr FAT::getFileSearch (file_search_handle handle)
+{
+	if ((handle >= m_fileSearches.size ()) || (m_fileSearches [handle].isNull ()))
+	{
+		printf (">> search %d not found\n\r", handle);
+		return FileSearch::Ptr ();
+	}
+
+	return m_fileSearches [handle];
+}
+
 
 OpenFile::ConstPtr FAT::getOpenFile (file_handle file) const
 {
