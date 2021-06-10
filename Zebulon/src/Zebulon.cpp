@@ -146,7 +146,7 @@ void trap2 ()
 	volatile void* a0 = 0;
 	volatile void* a1 = 0;
 	volatile void* a2 = 0;
-	volatile char d0 = 99;
+	volatile char d0 = 0;
 	volatile unsigned long int d1 = 0;
 	asm volatile ("moveb %%d0, %0\n\t" 
 				  "movel %%a0, %1\n\t"
@@ -179,6 +179,28 @@ void trap3 ()
 	*((bool*) a2) = theFAT ().stat ((const char*) a0, ((struct Zebulon::_zebulon_stat*) a1));
 }
 
+void trap4 () __attribute__ ((interrupt));
+void trap4 ()
+{
+	volatile char d0 = 0;
+	volatile void* a0 = 0;
+	volatile void* a1 = 0;
+	volatile void* a2 = 0;
+
+	asm volatile ("moveb %%d0, %0\n\t" 
+				  "movel %%a0, %1\n\t"
+  				  "movel %%a1, %2\n\t"
+  				  "movel %%a2, %3\n\t" : "=m" (d0), "=m" (a0), "=m" (a1), "=m" (a2));
+
+	switch (d0)
+	{
+		case 1: *((int*) a2) = theFAT ().findFirstFile (((struct Zebulon::_zebulon_stat*) a0)); break;
+		case 2: *((bool*) a2) = theFAT ().findNextFile (*((int*) a1), ((struct Zebulon::_zebulon_stat*) a0)); break;
+		case 3: theFAT ().closeFind (*((int*) a1)); break;
+		default: break;
+	}
+}
+
 
 int main ()
 {
@@ -189,6 +211,7 @@ int main ()
 	v.setVector (33, &trap1);	
 	v.setVector (34, &trap2);	
 	v.setVector (35, &trap3);	
+	v.setVector (35, &trap4);	
 	v.setVector (64, &tick);	
 	printf ("set up vectors 0x%x\n\r", __vector_table);
 

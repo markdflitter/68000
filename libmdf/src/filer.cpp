@@ -23,7 +23,7 @@ bool stat (const std::string& name, struct stat* s)
 int findFirstFile (struct stat* s)
 {
 	struct _zebulon_stat zs;
-	int result = _zebulon_find_first (&zs)
+	int result = _zebulon_find_first_file (&zs);
 
 	if (result > -1)
 	{
@@ -37,7 +37,7 @@ int findFirstFile (struct stat* s)
 bool findNextFile (int handle, struct stat* s)
 {
 	struct _zebulon_stat zs;
-	bool result = _zebulon_find_next (handle, &zs)
+	bool result = _zebulon_find_next_file (handle, &zs)
 
 	if (result)
 	{
