@@ -71,7 +71,6 @@ void printHelp (void)
 	printf ("version\t\t\t\t - print version\n\r");
 	printf ("help\t\t\t\t - print this help\n\r");
 	printf ("exit\t\t\t\t - exit to monitor\n\r");
-	printf ("ident\t\t\t\t - ident the disk\n\r");
 	printf ("readB <block>\t\t\t - read block from disk\n\r");
 	printf ("format <size>\t\t\t - format the filing system\n\r");
 	printf ("ls\t\t\t\t - list files\n\r");
@@ -82,67 +81,6 @@ void printHelp (void)
 	printf ("unboot <bootNumber>\t\t - empty boot slot\n\r");
 	printf ("boot <file> <bootNumber>\t - make file bootable\n\r");
 	printf ("time\t\t\t\t - print ticks since boot\n\r");
-}
-
-void ident ()
-{
-	DiskInfo info;
-	if (__ide_ident (info) == OK)
-	{
-		printf ("model number\t\t\t\t: %s\n\r",info.modelNumber);
-		printf ("serial number\t\t\t\t: %s\n\r",info.serialNumber);
-		printf ("firmware revision\t\t\t: %s\n\r",info.firmwareRevision);
-		printf ("\n\r");
-
-		if (info.fixedDrive) printf ("fixed drive\n\r");
-		if (info.removeableCartridgeDrive) printf ("removeable cartridge drive\n\r");
-		if (info.hardSectored) printf ("hard sectored\n\r");
-		if (info.softSectored) printf ("soft sectored\n\r");
-		if (info.LbaSupported) printf ("LBA supported\n\r");
-		if (info.DmaSupported) printf ("DMA supported\n\r");
-		if (info.notMfmEncoded) printf ("not MFM encoded\n\r");
-		if (info.headSwitchTime15uS) printf ("head switch time > 15uS\n\r");
-		if (info.transferRateLt5Mbs) printf ("disk transfer rate < 5Mbs\n\r");
-		if (info.transferRateLt10Mbs) printf ("disk transfer rate > 5Mbs buyt <- 10Mbs\n\r");
-		if (info.transferRateGt10Mbs) printf ("disk transfer rate > 10Mbs\n\r");
-		if (info.doubleWordIO) printf ("can perform double word io\n\r");
-		if (info.spindleMotorControlOptionImplemented) printf ("spindle motor control option implemented\n\r");
-		if (info.dataStrobeOffsetOptionAvailable) printf ("data strobe offset option availabe\n\r");
-		if (info.trackOffsetOptionAvailable) printf ("track offset option available\n\r");
-		if (info.formatSpeedToleranceGapRequired) printf ("format speed tolerance gap required\n\r");
-		printf ("\n\r");
-
-		printf ("number of cylinders\t\t\t: %d\n\r",info.numCylinders);
-		printf ("number of heads\t\t\t\t: %d\n\r",info.numHeads);
-		printf ("bytes per track\t\t\t\t: %d\n\r",info.numBytesPerTrack);
-		printf ("bytes per sector\t\t\t: %d\n\r",info.numBytesPerSector);
-		printf ("sectors per track\t\t\t: %d\n\r",info.numSectorsPerTrack);
-		printf ("\n\r");
-
-		printf ("buffer type\t\t\t\t: %x\n\r",info.bufferType);
-		printf ("buffer size\t\t\t\t: %d\n\r",info.bufferSize);
-		printf ("number of ECC bytes\t\t\t: %d\n\r",info.numEccBytes);
-		printf ("max rw sectors per interrupt\t\t: %x\n\r",info.maxRwSectorsPerInterrupt);
-		printf ("\n\r");
-
-		printf ("PIO mode\t\t\t\t: %d\n\r",info.PioMode);
-		printf ("DMA mode\t\t\t\t: %d\n\r",info.DmaMode);	
-		printf ("\n\r");
-
-		printf ("number of current cylinders\t\t: %d\n\r",info.numCurrentCylinders);
-		printf ("number of current heads\t\t\t: %d\n\r",info.numCurrentHeads);
-		printf ("number of current sectors per track\t: %d\n\r",info.numCurrentSectorsPerTrack);
-		printf ("current capacity in sectors\t\t: %d\n\r",info.currentCapacityInSectors);
-		printf ("total number of user sectors\t\t: %d\n\r",info.totalNumOfUserSectors);
-		printf ("\n\r");
-		
-		printf ("single word DMA modes supported\t\t: %d\n\r",info.singlewordDmaModesSupported);
-		printf ("single word DMA modes active\t\t: %d\n\r",info.singlewordDmaModesActive);
-		printf ("multi word DMA modes supported\t\t: %d\n\r",info.multiwordDmaModesSupported);
-		printf ("multi word DMA modes active\t\t: %d\n\r",info.multiwordDmaModesActive);
-	}
-	else
-		printf ("ERROR: ident failed\n\r");
 }
 
 size_t min (size_t l, size_t r)
@@ -413,7 +351,6 @@ void Shell::run () const
 			if (tokens [0] == "version") printf ("%s\n\r",version);
 			if (tokens [0] == "help") printHelp ();
 			if (tokens [0] == "exit") exit = 1;
-			if (tokens [0] == "ident") ident ();
 			if (tokens [0] == "readB" && tokens.size () > 1) 
 			{
 				block_address_t block = atol (tokens [1].c_str ());
