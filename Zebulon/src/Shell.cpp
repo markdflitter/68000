@@ -1,7 +1,6 @@
 #include "Shell.h"
 #include <stdio.h>
 #include <string.h>
-#include <bsp.h>
 #include <string>
 #include <list>
 #include <vector>
@@ -9,7 +8,7 @@
 #include <time.h>
 #include <timer>
 #include "FAT.h"
-#include "ctype.h"
+#include <ctype.h>
 #include <filer.h>
 
 const char* version = "Z-Shell V1.36.0014";
@@ -222,7 +221,7 @@ void format (FAT& fat, block_address_t size)
 	fat.format (size);
 }
 
-void rmFile (FAT& fat, const string& filename)
+void rmFile (const string& filename)
 {
 	printf ("deleting file '%s'\n\r", filename.c_str ());
 	deleteFile (filename);
@@ -263,7 +262,7 @@ void write (const string& filename, block_address_t size)
 	fclose (f);
 }
 
-void read (FAT& fat, const string& filename)
+void read (const string& filename)
 {
 	printf ("reading file '%s'\n\r", filename.c_str ());
 
@@ -384,7 +383,7 @@ void Shell::run () const
 			if (tokens [0] == "rm" && tokens.size () > 1)
 			{
 				string filename (tokens [1].c_str ());
-				rmFile (m_fat, filename);
+				rmFile (filename);
 			}
 			if (tokens [0] == "write" && tokens.size () > 2)
 			{
@@ -395,7 +394,7 @@ void Shell::run () const
 			if (tokens [0] == "read" && tokens.size () > 1)
 			{
 				string filename (tokens [1].c_str ());
-				read (m_fat, filename);
+				read (filename);
 			}
 			if (tokens [0] == "ls") ls ();
 			if (tokens [0] == "time") time ();
