@@ -77,6 +77,12 @@ bool FAT::create (const string& name, block_address_t initialSize, bool contiguo
 		return false;
 	}
 
+	if (name.length () > 255)
+	{
+		printf (">> filename may not be > 255 characters\n\r");
+		return false;
+	}
+
 	if (!findFile (name).isNull ())
 	{
 		printf (">> file already exists\n\r");
