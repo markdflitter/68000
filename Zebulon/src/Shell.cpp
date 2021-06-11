@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include "FAT.h"
-#include <ctype.h>
 #include <filer.h>
+#include <print.h>
 
 const char* version = "Z-Shell V1.36.0016";
 const char* filename = "Zebulon_V1.36.0016";
@@ -63,7 +63,7 @@ void printHelp (void)
 	printf ("version\t\t\t\t - print version\n\r");
 	printf ("help\t\t\t\t - print this help\n\r");
 	printf ("exit\t\t\t\t - exit to monitor\n\r");
-	printf ("readB <block>\t\t\t - read block from disk\n\r");
+	printf ("dump <block>\t\t\t - read block from disk\n\r");
 	printf ("format <size>\t\t\t - format the filing system\n\r");
 	printf ("ls\t\t\t\t - list files\n\r");
 	printf ("rm <name>\t\t\t - delete a file\n\r");
@@ -75,46 +75,11 @@ void printHelp (void)
 	printf ("time\t\t\t\t - print ticks since boot\n\r");
 }
 
-size_t min (size_t l, size_t r)
+void dump (block_address_t block)
 {
-	return l < r ? l : r;
-}
+	printf ("dumping block %d\n\r", block);
 
-void printBuffer (unsigned char* buffer, size_t bufferLen)
-{
-	unsigned char* p = buffer;
-
-	while (bufferLen > 0)
-	{
-		size_t rowLen = min (bufferLen, 16);
-		for (int c = 0; c < rowLen; c++) printf ("%x",*p++);
-	
-		string pad (2 * (16 - rowLen) + 1, ' ');	
-		printf ("%s", pad.c_str ());
-
-		p -= rowLen;
-		for (int c = 0; c < rowLen; c++)
-		{
-			if (isprint (*p))
-				printf ("%c",*p);
-			else
-				printf (".");
-			p++;
-		}
-		bufferLen -= rowLen;
-		printf ("\n\r");
-	}
-}
-
-
-void readB (FAT& fat, block_address_t block)
-{
-	printf ("reading from %d\n\r", block);
-
-	unsigned char data [fat.blockSize ()];
-	
-	if (fat.readBlock (block, data))
-		printBuffer (data, fat.blockSize ());
+	mdf::dumpBlock (block);
 }
 
 void printStat (struct mdf::stat s)
@@ -238,13 +203,13 @@ void read (const string& filename)
 		if (bytesLeftToRead >= 480)
 		{
 			fread (buffer, 1, 480, f);
-			printBuffer (buffer, 480);
+			mdf::printBuffer (buffer, 480);
 			bytesLeftToRead -= 480;
 		}
 		else
 		{
 			fread (buffer, 1, bytesLeftToRead, f);
-			printBuffer (buffer, bytesLeftToRead);
+			mdf::printBuffer (buffer, bytesLeftToRead);
 			bytesLeftToRead -= bytesLeftToRead;
 		}	
 	}
@@ -301,10 +266,10 @@ void Shell::run () const
 			if (tokens [0] == "version") printf ("%s\n\r",version);
 			if (tokens [0] == "help") printHelp ();
 			if (tokens [0] == "exit") exit = 1;
-			if (tokens [0] == "readB" && tokens.size () > 1) 
+			if (tokens [0] == "dump" && tokens.size () > 1) 
 			{
 				block_address_t block = atol (tokens [1].c_str ());
-				readB (m_fat, block);
+				dump (block);
 			}
 			if (tokens [0] == "save" && tokens.size () > 1)
 			{

@@ -111,4 +111,10 @@ void format (long unsigned int blocks)
 	_zebulon_format (blocks);
 }
 
+void dumpBlock (long unsigned int block)
+{
+	_zebulon_dump_block (block);
+}
+
+
 }

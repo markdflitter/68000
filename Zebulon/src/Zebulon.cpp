@@ -246,6 +246,18 @@ void trap7 ()
 	theFAT ().format (*((unsigned int*) a0));
 }
 
+//dumpBlock
+void trap8 () __attribute__ ((interrupt));
+void trap8 ()
+{
+	volatile void* a0 = 0;
+
+	asm volatile ("movel %%a0, %0\n\t" : "=m" (a0));
+
+	theFAT ().dumpBlock (*((unsigned int*) a0));
+}
+
+
 int main ()
 {
 	__putstr (banner);	
@@ -259,6 +271,7 @@ int main ()
 	v.setVector (37, &trap5);	
 	v.setVector (38, &trap6);	
 	v.setVector (39, &trap7);	
+	v.setVector (40, &trap8);	
 	v.setVector (64, &tick);	
 	printf ("set up vectors 0x%x\n\r", __vector_table);
 

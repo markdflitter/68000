@@ -25,7 +25,8 @@ public:
 	bool readBlock (block_address_t block, unsigned char* data);
 
 	void format (block_address_t size);
-	
+	void dumpBlock (block_address_t block);
+		
 	bool fileExists (const std::string& name);
 
 	bool create (const std::string& name, block_address_t initialSize = 0, bool contiguous = false);

@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <timer>
+#include <print.h>
 
 using namespace mdf;
 using namespace std;
@@ -68,6 +69,14 @@ void FAT::format (block_address_t size)
 	m_spaceManager.allocate (1);		// FAT table
 	m_bootTable.clear ();
 	save ();
+}
+
+void FAT::dumpBlock (block_address_t block)
+{
+	unsigned char data [blockSize ()];
+	
+	if (readBlock (block, data))
+		mdf::printBuffer (data, blockSize ());
 }
 
 bool FAT::fileExists (const std::string& filename)

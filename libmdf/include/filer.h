@@ -50,6 +50,7 @@ struct bootTableEntry
 void index (bootTableEntry entries [10]);
 
 void format (long unsigned int blocks);
+void dumpBlock (long unsigned int block);
 
 }
 

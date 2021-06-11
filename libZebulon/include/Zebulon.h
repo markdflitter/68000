@@ -275,6 +275,16 @@ inline void _zebulon_format (unsigned int blocks)
 		 "trap #7\n\t" : : "m" (a0) : "a0");
 }
 
+inline void _zebulon_dump_block (unsigned int block)
+{
+	volatile unsigned int b = block;
+	volatile void* a0 = &b;
+
+	asm ("movel %0, %%a0\n\t"
+		 "trap #8\n\t" : : "m" (a0) : "a0");
+}
+
+
 }
 #endif
 
