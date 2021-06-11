@@ -6,7 +6,6 @@
 #include <vector>
 #include <stdlib.h>
 #include <time.h>
-#include "FAT.h"
 #include <filer.h>
 #include <print.h>
 
@@ -75,7 +74,7 @@ void printHelp (void)
 	printf ("time\t\t\t\t - print ticks since boot\n\r");
 }
 
-void dump (block_address_t block)
+void dump (long unsigned int block)
 {
 	printf ("dumping block %d\n\r", block);
 
@@ -129,7 +128,7 @@ void index ()
 	}
 }
 	
-void format (block_address_t size)
+void format (long unsigned int size)
 {
 	printf ("formatting: size %d blocks\n\r", size);	
 	mdf::format (size);
@@ -141,14 +140,14 @@ void rmFile (const string& filename)
 	mdf::deleteFile (filename);
 }
 
-void write (const string& filename, block_address_t size)
+void write (const string& filename, long unsigned int size)
 {
 	printf ("writing %d bytes to file '%s'\n\r", size, filename.c_str ());
 	
 	FILE* f = fopen (filename.c_str (), "wb");
 	if (f == 0) return ;
 
-	file_address_t bytesLeftToWrite = size;
+	long unsigned int bytesLeftToWrite = size;
 
 	unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
 
@@ -194,7 +193,7 @@ void read (const string& filename)
 	}	
 
 	printf ("byebye\n\r");
-	file_address_t bytesLeftToRead = s.size;
+	long unsigned int bytesLeftToRead = s.size;
 	printf ("bytesLeftToRead %d\n\r", bytesLeftToRead);
 
 	while (!feof (f))
@@ -241,11 +240,7 @@ void time ()
 
 }
 
-Shell::Shell (FAT& fat) : m_fat (fat)
-{
-}
-
-void Shell::run () const
+void Shell::run ()
 {
 	printf ("\n\r%s\n\r",version);
 	printf ("type help for help\n\r\n\r");
@@ -268,7 +263,7 @@ void Shell::run () const
 			if (tokens [0] == "exit") exit = 1;
 			if (tokens [0] == "dump" && tokens.size () > 1) 
 			{
-				block_address_t block = atol (tokens [1].c_str ());
+				long unsigned int block = atol (tokens [1].c_str ());
 				dump (block);
 			}
 			if (tokens [0] == "save" && tokens.size () > 1)
@@ -293,7 +288,7 @@ void Shell::run () const
 			}
 			if (tokens [0] == "format" && tokens.size () > 1)
 			{
-				block_address_t size = atol (tokens [1].c_str ());			
+				long unsigned int size = atol (tokens [1].c_str ());			
 				::format (size);
 			}
 			if (tokens [0] == "rm" && tokens.size () > 1)
@@ -304,7 +299,7 @@ void Shell::run () const
 			if (tokens [0] == "write" && tokens.size () > 2)
 			{
 				string filename (tokens [1].c_str ());
-				block_address_t size = atol (tokens [2].c_str ());
+				long unsigned int size = atol (tokens [2].c_str ());
 				write (filename, size);
 			}
 			if (tokens [0] == "read" && tokens.size () > 1)

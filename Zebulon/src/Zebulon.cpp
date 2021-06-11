@@ -283,7 +283,7 @@ int main ()
 	__enable_interrupts ();
 	printf ("enabled interrupts\n\r\n\r");
 
-	Shell (theFAT ()).run ();
+	Shell::run ();
 
 	__disable_interrupts ();
 	printf ("byebye\n\r");
