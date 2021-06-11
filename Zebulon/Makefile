@@ -74,9 +74,9 @@ copy:
 	make -C $(TOP_LEVEL_TARGET) _copy
 
 all: $(TOP_LEVEL_TARGET)
-	make -C $(TOP_LEVEL_TARGET) _all
 
 $(TOP_LEVEL_TARGET): build_dependencies
+	make -C $(TOP_LEVEL_TARGET) _all
 
 build_dependencies:
 	$(foreach file, $(DEPENDENCIES), make -C $(file) _all && make -C $(file) _install;)
