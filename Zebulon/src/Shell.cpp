@@ -15,7 +15,6 @@ const char* version = "Z-Shell V1.36.0015";
 const char* filename = "Zebulon_V1.36.0015";
 	
 using namespace std;
-using namespace mdf;
 
 extern char* __begin;
 extern char* __end;
@@ -124,7 +123,7 @@ void readB (FAT& fat, block_address_t block)
 		printBuffer (data, fat.blockSize ());
 }
 
-void printStat (struct stat s)
+void printStat (struct mdf::stat s)
 {
 	printf ("%d : %s : ", s.index, pad (s.name, 20, ' ').c_str ());
 
@@ -139,8 +138,11 @@ void printStat (struct stat s)
 	printf ("\n\r");
 }
 
-void save (FAT& fat, const std::string& name, unsigned int bootNumber)
+void save (const std::string& name, unsigned int bootNumber)
 {
+	mdf::save (name, bootNumber);
+
+/*
 	static unsigned char* loadAddress = (unsigned char*) &__begin;
 	static unsigned char* end = (unsigned char*) &__end;
 	static unsigned char* goAddress = (unsigned char*) &start;
@@ -196,35 +198,44 @@ void save (FAT& fat, const std::string& name, unsigned int bootNumber)
 
 	fat.unboot (bootNumber);
 	fat.boot (name, bootNumber);
+*/
 }
 
-void unboot (FAT& fat, unsigned int bootNumber)
+void unboot (unsigned int bootNumber)
 {
 	printf ("clearing boot file %d\n\r", bootNumber);
-	fat.unboot (bootNumber);
+	mdf::unboot (bootNumber);
 }
 
-void boot (FAT& fat, const string& filename, unsigned int bootNumber)
+void boot (const string& filename, unsigned int bootNumber)
 {
 	printf ("making file '%s' bootable from slot %d\n\r", filename.c_str (), bootNumber);
-	fat.boot (filename, bootNumber);
+	mdf::boot (filename, bootNumber);
 }
 
-void index (FAT& fat)
+void index ()
 {
-	fat.index ();
+	mdf::bootTableEntry btes [10];
+	mdf::index (btes);
+
+	for (int i = 0; i < 10; i++)
+	{
+		if (!btes [i].empty)
+			printf ("%d : %s : %d : 0x%x : 0x%x : 0x%x : %d\n\r", 
+				btes[i].index, btes[i].name, btes[i].file_index, btes[i].size, btes[i].loadAddress, btes[i].goAddress, btes[i].startBlock);
+	}
 }
 	
-void format (FAT& fat, block_address_t size)
+void format (block_address_t size)
 {
 	printf ("formatting: size %d blocks\n\r", size);	
-	fat.format (size);
+	mdf::format (size);
 }
 
 void rmFile (const string& filename)
 {
 	printf ("deleting file '%s'\n\r", filename.c_str ());
-	deleteFile (filename);
+	mdf::deleteFile (filename);
 }
 
 void write (const string& filename, block_address_t size)
@@ -305,17 +316,17 @@ void read (const string& filename)
 
 void ls ()
 {
-	struct stat s;
-	int sh = findFirstFile (&s);
+	struct mdf::stat s;
+	int sh = mdf::findFirstFile (&s);
 
 	while (sh > -1)
 	{
 		printStat (s);
-		bool result = findNextFile (sh, &s);
+		bool result = mdf::findNextFile (sh, &s);
 		if (!result) break;
 	}
 
-	closeFind (sh);
+	mdf::closeFind (sh);
 }
 
 void time ()
@@ -358,27 +369,27 @@ void Shell::run () const
 			if (tokens [0] == "save" && tokens.size () > 1)
 			{
 				unsigned long bootNumber = atol (tokens [1].c_str ());
-				save (m_fat, filename, (unsigned int) bootNumber);
+				::save (filename, (unsigned int) bootNumber);
 			}
 			if (tokens [0] == "boot" && tokens.size () > 2)
 			{
 				string filename (tokens [1].c_str ());
 				unsigned long bootNumber = atol (tokens [2].c_str ());
-				boot (m_fat, filename, (unsigned int ) bootNumber);
+				::boot (filename, (unsigned int ) bootNumber);
 			}
 				if (tokens [0] == "unboot" && tokens.size () > 1)
 			{
 				unsigned long bootNumber = atol (tokens [1].c_str ());
-				unboot (m_fat, (unsigned int ) bootNumber);
+				::unboot ((unsigned int) bootNumber);
 			}
 			if (tokens [0] == "index")
 			{
-				index (m_fat);
+				::index ();
 			}
 			if (tokens [0] == "format" && tokens.size () > 1)
 			{
 				block_address_t size = atol (tokens [1].c_str ());			
-				format (m_fat, size);
+				::format (size);
 			}
 			if (tokens [0] == "rm" && tokens.size () > 1)
 			{
