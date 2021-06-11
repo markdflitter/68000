@@ -7,6 +7,7 @@
 
 using namespace mdf;
 using namespace std;
+using namespace Zebulon;
 
 unsigned int FAT::m_lastIndex = 0;
 
@@ -275,6 +276,10 @@ bool FAT::EOF (file_handle file) const
 	return true;
 }
 
+void FAT::save (const std::string& name, unsigned int index)
+{
+}
+
 void FAT::boot (const std::string& name, unsigned int index)
 {
 	if (index > 9)
@@ -343,15 +348,19 @@ void FAT::unboot (unsigned int index)
 	}
 }
 
-void FAT::index () const
+void FAT::index (_zebulon_boot_table_entry* zbte) const
 {
 	for (size_t i = 0; i < m_bootTable.size (); i++)
 	{
 		BootTableEntry::Ptr bte = m_bootTable [i];
-		
-		if (!bte.isNull () && !bte->empty)
-			printf ("%d : %s : %d : 0x%x : 0x%x : 0x%x : %d\n\r", 
-				i, bte->shortName.c_str (), bte->index, bte->length, bte->loadAddress, bte->goAddress, bte->startBlock);
+		zbte [i].empty = bte->empty;
+		zbte [i].index = i;
+		memcpy (zbte [i].name, bte->shortName.c_str (), 20);
+		zbte [i].file_index = bte->index;
+		zbte [i].size = bte->length;
+		zbte [i].loadAddress = bte->loadAddress;
+		zbte [i].goAddress = bte->goAddress;
+		zbte [i].startBlock = bte->startBlock;
 	}
 }
 

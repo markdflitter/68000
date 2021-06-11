@@ -47,9 +47,10 @@ public:
 
 	bool EOF (file_handle file) const;
 
+	void save (const std::string& name, unsigned int index);
 	void boot (const std::string& name, unsigned int index);
 	void unboot (unsigned int index);
-	void index () const;
+	void index (Zebulon::_zebulon_boot_table_entry* zbte) const;
 	
 	bool extend (FileHeader::Ptr fileHeader, block_address_t numBlocks = 1);	void save () const;
 private:

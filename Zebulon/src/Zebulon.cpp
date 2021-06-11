@@ -5,6 +5,8 @@
 #include "Shell.h"
 #include <Zebulon.h>
 
+using namespace Zebulon;
+
 const char* banner = 
 "  ____\n\r"
 " |    / ____________________________________\n\r"
@@ -212,6 +214,39 @@ void trap5 ()
 	theFAT ().rm (((char*) a0));
 }
 
+//boot operations
+void trap6 () __attribute__ ((interrupt));
+void trap6 ()
+{
+	volatile char d0 = 0;
+	volatile void* a0 = 0;
+	volatile void* a1 = 0;
+
+	asm volatile ("moveb %%d0, %0\n\t" 
+				  "movel %%a0, %1\n\t"
+  				  "movel %%a1, %2\n\t" : "=m" (d0), "=m" (a0), "=m" (a1));
+
+	switch (d0)
+	{
+		case 1: theFAT().save (((const char*) a1), *((unsigned int*) a0)); break;
+		case 2: theFAT().boot (((const char*) a1), *((unsigned int*) a0)); break;
+		case 3: theFAT().unboot (*((unsigned int*) a0)); break;
+		case 4: theFAT().index (((_zebulon_boot_table_entry*) a0)); break;
+		default: break;
+	}
+}
+
+//format
+void trap7 () __attribute__ ((interrupt));
+void trap7 ()
+{
+	volatile void* a0 = 0;
+
+	asm volatile ("movel %%a0, %0\n\t" : "=m" (a0));
+
+	theFAT ().format (*((unsigned int*) a0));
+}
+
 int main ()
 {
 	__putstr (banner);	
@@ -223,6 +258,8 @@ int main ()
 	v.setVector (35, &trap3);	
 	v.setVector (36, &trap4);	
 	v.setVector (37, &trap5);	
+	v.setVector (38, &trap6);	
+	v.setVector (39, &trap7);	
 	v.setVector (64, &tick);	
 	printf ("set up vectors 0x%x\n\r", __vector_table);
 
