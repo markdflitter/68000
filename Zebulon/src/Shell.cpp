@@ -261,10 +261,12 @@ void ls ()
 	{
 		printStat (s);
 		bool result = mdf::findNextFile (sh, &s);
-		if (!result) break;
+		if (!result) 
+		{
+			mdf::closeFind (sh);
+			break;
+		}
 	}
-
-	mdf::closeFind (sh);
 }
 
 void time ()
