@@ -28,6 +28,25 @@ void closeFind (int handle);
 
 void deleteFile (const std::string& filename);
 
+void save (unsigned int bootSlot);
+void boot (const std::string& filename, unsigned int bootSlot);
+void unboot (unsigned int bootSlot);
+
+struct bootTableEntry
+{
+	unsigned int index;
+ 	const char name [20];
+	unsigned int file_index;
+
+	long unsigned int size;	
+	unsigned int loadAddress;
+	unsigned int goAddress;
+};
+
+void index (bootTableEntry entries [10]);
+
+void format (long unsigned int blocks);
+
 }
 
 #endif

@@ -20,6 +20,19 @@ void convertStat (struct Zebulon::_zebulon_stat zs, struct mdf::stat* result)
 	result->goAddress = zs.goAddress;
 }
 
+void convert_btes (_zebulon_bte zbte [10], mdf::bootTableEntry bte [10])
+{
+	for (int i = 0; i < 10; i++)
+	{
+		bte [i].index = zbte [i].index
+		memcpy (bte [i].name, zbte [i].name, 20);
+		bte [i].file_index = zbte [i].file_index
+		bte [i].index = zbte [i].size;
+		bte [i].loadAddress = zbte [i].loadAddress;
+		bte [i].goAddress = zbte [i].goAddress;
+	}
+}
+
 }
 
 
@@ -64,6 +77,33 @@ void closeFind (int handle)
 void deleteFile (const std::string& filename)
 {
 	_zebulon_delete_file (filename.c_str ());
+}
+
+void save (unsigned int bootSlot)
+{
+	_zebulon_save (bootSlot);
+}
+
+void boot (const std::string& filename, unsigned int bootSlot)
+{
+	_zebulon_boot (filename.c_str (), bootSlot);
+}
+
+void unboot (unsigned int bootSlot)
+{
+	_zebulon_unboot (bootSlot);
+}
+
+void index (bootTableEntry entries [10])
+{
+	_zebulon_boot_table_entry bte [10];
+	_zebulon_index (bte);
+	convert_btes (bte,  entries, 10);
+}
+
+void format (long unsigned int blocks)
+{
+	_zebulon_format (blocks);
 }
 
 }

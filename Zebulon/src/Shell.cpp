@@ -11,8 +11,8 @@
 #include <ctype.h>
 #include <filer.h>
 
-const char* version = "Z-Shell V1.36.0014";
-const char* filename = "Zebulon_V1.36.0014";
+const char* version = "Z-Shell V1.36.0015";
+const char* filename = "Zebulon_V1.36.0015";
 	
 using namespace std;
 using namespace mdf;
