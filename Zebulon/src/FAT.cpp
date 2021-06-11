@@ -4,12 +4,17 @@
 #include "Serialise.h"
 #include <string.h>
 #include <stdlib.h>
+#include <timer>
 
 using namespace mdf;
 using namespace std;
 using namespace Zebulon;
 
 unsigned int FAT::m_lastIndex = 0;
+
+extern char* __begin;
+extern char* __end;
+extern char* start;
 
 namespace
 {
@@ -55,6 +60,7 @@ bool FAT::readBlock (block_address_t block, unsigned char* data)
 
 void FAT::format (block_address_t size)
 {
+	printf ("formatting %d\n\r", size);
 	m_lastIndex = 0;
 	m_fileHeaders.clear ();
 	m_spaceManager.format (size);
@@ -90,6 +96,7 @@ bool FAT::create (const string& name, block_address_t initialSize, bool contiguo
 		return false;
 	}
 
+	printf ("create %d\n\r", initialSize);
 	list<Chunk::Ptr> allocation = m_spaceManager.allocate (initialSize, contiguous);
 	if ((initialSize > 0) && (allocation.size () == 0))
 	{
@@ -276,15 +283,64 @@ bool FAT::EOF (file_handle file) const
 	return true;
 }
 
-void FAT::save (const std::string& name, unsigned int index)
+void FAT::save (const std::string& name, unsigned int bootNumber)
 {
+	static unsigned char* loadAddress = (unsigned char*) &__begin;
+	static unsigned char* end = (unsigned char*) &__end;
+	static unsigned char* goAddress = (unsigned char*) &start;
+
+	printf ("saving code: start 0x%x end 0x%x entry 0x%x\n\r", loadAddress, end, goAddress);
+
+	file_address_t length = end - loadAddress;
+	block_address_t numBlocks = (length / blockSize ()) + 1;
+
+	rm (name);
+	if (!create (name, numBlocks))
+		return ;
+
+	file_handle f = open (name);
+	if (f == file_not_found) return ;
+
+	setMetaData (name, (unsigned int) loadAddress, (unsigned int) goAddress);
+
+	file_address_t bytesLeftToWrite = length;
+
+	unsigned char* p = loadAddress;
+
+	timer t;
+	while (bytesLeftToWrite > 0)
+	{
+		unsigned char buffer [512];
+		if (bytesLeftToWrite >= 512)
+		{
+			memcpy (buffer, p, 512);
+			write (f, buffer, 512);
+			bytesLeftToWrite -= 512;
+			p += 512;
+		}
+		else
+		{
+			memcpy (buffer, p, bytesLeftToWrite);
+			write (f, buffer, bytesLeftToWrite);
+			bytesLeftToWrite -= bytesLeftToWrite;
+		}
+
+		printf (".");
+	}
+
+	printf (" %dmS\n\r", t.elapsed ());
+
+	close (f);
+
+	unboot (bootNumber);
+	boot (name, bootNumber);
 }
 
 void FAT::boot (const std::string& name, unsigned int index)
 {
 	if (index > 9)
 	{
-		printf (">> max boot slot is %d\n\r", 9);
+		printf (">> max boot slot is %d, got %d\n\r", 9, index);
 		return ;
 	}
 
@@ -353,14 +409,21 @@ void FAT::index (_zebulon_boot_table_entry* zbte) const
 	for (size_t i = 0; i < m_bootTable.size (); i++)
 	{
 		BootTableEntry::Ptr bte = m_bootTable [i];
-		zbte [i].empty = bte->empty;
-		zbte [i].index = i;
-		memcpy (zbte [i].name, bte->shortName.c_str (), 20);
-		zbte [i].file_index = bte->index;
-		zbte [i].size = bte->length;
-		zbte [i].loadAddress = bte->loadAddress;
-		zbte [i].goAddress = bte->goAddress;
-		zbte [i].startBlock = bte->startBlock;
+		if (bte.isNull ())
+		{
+			zbte [i].empty = true;
+		}
+		else
+		{
+			zbte [i].empty = bte->empty;
+			zbte [i].index = i;
+			memcpy (zbte [i].name, bte->shortName.c_str (), 20);
+			zbte [i].file_index = bte->index;
+			zbte [i].size = bte->length;
+			zbte [i].loadAddress = bte->loadAddress;
+			zbte [i].goAddress = bte->goAddress;
+			zbte [i].startBlock = bte->startBlock;
+		}
 	}
 }
 

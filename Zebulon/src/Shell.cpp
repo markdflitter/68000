@@ -6,20 +6,14 @@
 #include <vector>
 #include <stdlib.h>
 #include <time.h>
-#include <timer>
 #include "FAT.h"
 #include <ctype.h>
 #include <filer.h>
 
-const char* version = "Z-Shell V1.36.0015";
-const char* filename = "Zebulon_V1.36.0015";
+const char* version = "Z-Shell V1.36.0016";
+const char* filename = "Zebulon_V1.36.0016";
 	
 using namespace std;
-
-extern char* __begin;
-extern char* __end;
-extern char* start;
-
 
 namespace {
 
@@ -140,65 +134,9 @@ void printStat (struct mdf::stat s)
 
 void save (const std::string& name, unsigned int bootNumber)
 {
+	printf ("saving '%s' to %d\n\r", name.c_str (), bootNumber);
+
 	mdf::save (name, bootNumber);
-
-/*
-	static unsigned char* loadAddress = (unsigned char*) &__begin;
-	static unsigned char* end = (unsigned char*) &__end;
-	static unsigned char* goAddress = (unsigned char*) &start;
-
-	printf ("saving code: start 0x%x end 0x%x entry 0x%x\n\r", loadAddress, end, goAddress);
-
-	file_address_t length = end - loadAddress;
-	block_address_t numBlocks = (length / fat.blockSize ()) + 1;
-
-	fat.rm (name);
-	if (fat.create (name, numBlocks))
-	{
-		struct stat s;
-		stat (name, &s);
-		printStat (s);
-	}
-	else
-		return ;
-
-	fat.setMetaData (name, (unsigned int) loadAddress, (unsigned int) goAddress);
-
-	file_handle f = fat.open (name);
-	if (f == file_not_found) return ;
-
-	file_address_t bytesLeftToWrite = length;
-
-	unsigned char* p = loadAddress;
-
-	timer t;
-	while (bytesLeftToWrite > 0)
-	{
-		unsigned char buffer [512];
-		if (bytesLeftToWrite >= 512)
-		{
-			memcpy (buffer, p, 512);
-			fat.write (f, buffer, 512);
-			bytesLeftToWrite -= 512;
-			p += 512;
-		}
-		else
-		{
-			memcpy (buffer, p, bytesLeftToWrite);
-			fat.write (f, buffer, bytesLeftToWrite);
-			bytesLeftToWrite -= bytesLeftToWrite;
-		}
-
-		printf (".");
-	}
-
-	printf (" %dmS\n\r", t.elapsed ());
-
-	fat.close (f);
-
-	fat.unboot (bootNumber);
-	fat.boot (name, bootNumber);
-*/
 }
 
 void unboot (unsigned int bootNumber)

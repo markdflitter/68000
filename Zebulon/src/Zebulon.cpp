@@ -225,13 +225,12 @@ void trap6 ()
 	asm volatile ("moveb %%d0, %0\n\t" 
 				  "movel %%a0, %1\n\t"
   				  "movel %%a1, %2\n\t" : "=m" (d0), "=m" (a0), "=m" (a1));
-
 	switch (d0)
 	{
-		case 1: theFAT().save (((const char*) a1), *((unsigned int*) a0)); break;
-		case 2: theFAT().boot (((const char*) a1), *((unsigned int*) a0)); break;
-		case 3: theFAT().unboot (*((unsigned int*) a0)); break;
-		case 4: theFAT().index (((_zebulon_boot_table_entry*) a0)); break;
+		case 1: theFAT ().save (((const char*) a1), *((unsigned int*) a0)); break;
+		case 2: theFAT ().boot (((const char*) a1), *((unsigned int*) a0)); break;
+		case 3: theFAT ().unboot (*((unsigned int*) a0)); break;
+		case 4: theFAT ().index (((_zebulon_boot_table_entry*) a0)); break;
 		default: break;
 	}
 }

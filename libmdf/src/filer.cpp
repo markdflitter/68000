@@ -31,7 +31,7 @@ void convert_btes (const _zebulon_boot_table_entry zbte [10], mdf::bootTableEntr
 		bte [i].index = zbte [i].index;
 		memcpy (bte [i].name, zbte [i].name, 20);
 		bte [i].file_index = zbte [i].file_index;
-		bte [i].index = zbte [i].size;
+		bte [i].size = zbte [i].size;
 		bte [i].loadAddress = zbte [i].loadAddress;
 		bte [i].goAddress = zbte [i].goAddress;
 		bte [i].startBlock = zbte [i].startBlock;
