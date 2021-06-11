@@ -17,27 +17,44 @@ extern char* __begin;
 extern char* __end;
 extern char* start;
 
+const unsigned long int read_only = 0x80000000;
+
 namespace
 {
-  	void printIdeError (ide_result error)
+
+bool mode_is (const std::string& mode, char what)
+{
+	const char* p = mode.c_str ();
+
+	char ch;
+	while ((ch = *p++) != '\0')
 	{
-		if (error == AMNF)
-			printf (">>>  address mark not found\n\r");
-		if (error == TK0NF)
-			printf (">>>  track 0 not found\n\r");
-		if (error == ABRT)
-			printf (">>>  aborted command");
-		if (error == MCR)
-			printf (">>>  media change requested\n\r");
-		if (error == IDNF)
-			printf (">>>  ID not found\n\r");
-		if (error == MC)
-			printf (">>>  media change\n\r");
-		if (error == UNC)
-			printf (">>>  uncorrectable data error\n\r");
-		if (error == BBK)
-			printf (">>>  bad block\n\r");
+		if (ch == what) return true;
 	}
+	
+	return false;
+}
+
+void printIdeError (ide_result error)
+{
+	if (error == AMNF)
+		printf (">>>  address mark not found\n\r");
+	if (error == TK0NF)
+		printf (">>>  track 0 not found\n\r");
+	if (error == ABRT)
+		printf (">>>  aborted command");
+	if (error == MCR)
+		printf (">>>  media change requested\n\r");
+	if (error == IDNF)
+		printf (">>>  ID not found\n\r");
+	if (error == MC)
+		printf (">>>  media change\n\r");
+	if (error == UNC)
+		printf (">>>  uncorrectable data error\n\r");
+	if (error == BBK)
+		printf (">>>  bad block\n\r");
+}
+
 }
 
 FAT::FAT ()
@@ -246,9 +263,35 @@ void FAT::rm (const string& name)
 	printf (">> file not found\n\r");
 }
 
-file_handle FAT::open (const string& name)
+file_handle FAT::open (const string& name, const string& mode)
 {
-	//printf ("opening file '%s'\n\r", name.c_str ());
+	file_handle result = file_not_found;
+
+	if (!fileExists (name))
+	{
+		//printf ("file doesn't exist\n\r");
+		if (mode_is (mode, 'w'))
+		{
+			//printf ("create file\n\r");
+	    	create (name);
+		}
+		else
+		{
+			printf (">> file not found\n\r");
+			return result;
+		}			
+	}
+	else
+	{
+		//printf ("file exists\n\r");
+		if (mode_is (mode, 'w'))
+		{
+			//printf ("delete and create file\n\r");
+			rm (name);
+	    	create (name);
+		}
+	}
+
 	FileHeader::Ptr f = findFile (name);
 	if (f.isNull ())
 	{
@@ -258,18 +301,23 @@ file_handle FAT::open (const string& name)
 	
 	m_openFiles.push_back (make_shared(new OpenFile(f)));
 
-	return m_openFiles.size () - 1;
+	result = m_openFiles.size () - 1;
+
+	if (mode_is (mode, 'r'))
+		result |= read_only;
+	
+	return result;
 }
 
 void FAT::close (file_handle file)
 {
-	getOpenFile (file);
-	m_openFiles [file].reset ();
+	getOpenFile (file & ~read_only);
+	m_openFiles [file & ~read_only].reset ();
 }
 
 file_address_t FAT::read (file_handle file, unsigned char* data, file_address_t numBytes) const
 {
-	OpenFile::Ptr of = getOpenFile (file);
+	OpenFile::Ptr of = getOpenFile (file & ~read_only);
 	if (!of.isNull ())
 		of->read (data, numBytes);
 	return 0;
@@ -277,7 +325,13 @@ file_address_t FAT::read (file_handle file, unsigned char* data, file_address_t 
 
 file_address_t FAT::write (file_handle file, const unsigned char* data, file_address_t numBytes)
 {
-	OpenFile::Ptr of = getOpenFile (file);
+	if (file & read_only)
+	{
+		printf (">> file %d opened as read only\n\r", file);
+		return 0;
+	}
+
+	OpenFile::Ptr of = getOpenFile (file & ~read_only);
 	if (!of.isNull ())
 		of->write (data, numBytes);
 	return 0;
@@ -285,7 +339,7 @@ file_address_t FAT::write (file_handle file, const unsigned char* data, file_add
 
 bool FAT::EOF (file_handle file) const
 {
-	OpenFile::Ptr of = getOpenFile (file);
+	OpenFile::Ptr of = getOpenFile (file & ~read_only);
 	if (!of.isNull ())
 		return of->EOF ();
 
@@ -303,11 +357,7 @@ void FAT::save (const std::string& name, unsigned int bootNumber)
 	file_address_t length = end - loadAddress;
 	block_address_t numBlocks = (length / blockSize ()) + 1;
 
-	rm (name);
-	if (!create (name, numBlocks))
-		return ;
-
-	file_handle f = open (name);
+	file_handle f = open (name, "wb");
 	if (f == file_not_found) return ;
 
 	setMetaData (name, (unsigned int) loadAddress, (unsigned int) goAddress);
@@ -479,7 +529,6 @@ FileSearch::Ptr FAT::getFileSearch (file_search_handle handle)
 
 	return m_fileSearches [handle];
 }
-
 
 OpenFile::ConstPtr FAT::getOpenFile (file_handle file) const
 {

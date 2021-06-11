@@ -68,75 +68,30 @@ void trap1 ()
 namespace
 {
 
-bool mode_is (const char* mode, char what)
-{
-	char ch;
-	while ((ch = *mode++) != '\0')
-	{
-		if (ch == what) return true;
-	}
-	
-	return false;
-}
-
-
 file_handle openFile (const char* filename, const char* mode)
 {
-	file_handle result = file_not_found;
-
-	FAT& fat = theFAT ();
-	if (!fat.fileExists (filename))
-	{
-		//printf ("file doesn't exist\n\r");
-		if (mode_is (mode, 'w'))
-		{
-			//printf ("create file\n\r");
-	    	fat.create (filename);
-		}
-		else
-		{
-			//printf ("file not found\n\r");
-			return result;
-		}			
-	}
-	else
-	{
-		//printf ("file exists\n\r");
-		if (mode_is (mode, 'w'))
-		{
-			//printf ("delete and create file\n\r");
-			fat.rm (filename);
-	    	fat.create (filename);
-		}
-	}
-
-	result = fat.open (filename);
-
-	if (mode_is (mode, 'r'))
-		result |= 0x8000;
-	
-	return result;
+	return theFAT ().open (filename, mode);
 }
 
 
 unsigned long int readFile (file_handle fptr, unsigned char* data, long unsigned int numBytes)
 {
-	return theFAT ().read (fptr & ~0x8000, data, numBytes);
+	return theFAT ().read (fptr, data, numBytes);
 }
 
 unsigned long int writeFile (file_handle fptr, const unsigned char* data, long unsigned int numBytes)
 {
-	return theFAT ().write (fptr & ~0x8000, data, numBytes);
+	return theFAT ().write (fptr, data, numBytes);
 }
 
 void closeFile (file_handle fptr)
 {
-	theFAT ().close (fptr & ~0x8000);
+	theFAT ().close (fptr);
 }
 
 int eof (file_handle fptr)
 {
-	return theFAT ().EOF (fptr & ~0x8000);
+	return theFAT ().EOF (fptr);
 }
 
 }

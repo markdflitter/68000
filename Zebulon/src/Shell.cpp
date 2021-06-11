@@ -182,8 +182,6 @@ void read (const string& filename)
 	FILE* f = fopen (filename.c_str (), "rb");
 	if (f == 0) return ;
 	
-	printf ("hello\n\r");
-
 	struct mdf::stat s;
 	
 	if (!mdf::stat (filename, &s))
@@ -192,9 +190,7 @@ void read (const string& filename)
 		return ;
 	}	
 
-	printf ("byebye\n\r");
 	long unsigned int bytesLeftToRead = s.size;
-	printf ("bytesLeftToRead %d\n\r", bytesLeftToRead);
 
 	while (!feof (f))
 	{

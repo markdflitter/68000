@@ -40,7 +40,7 @@ public:
 
 	void rm (const std::string& name);
 
-	file_handle open (const std::string& name);
+	file_handle open (const std::string& name, const std::string& mode);
 	void close (file_handle file);
 
 	file_address_t read (file_handle file, unsigned char* data, file_address_t numBytes) const;
