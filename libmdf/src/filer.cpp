@@ -84,11 +84,6 @@ void deleteFile (const std::string& filename)
 	_zebulon_delete_file (filename.c_str ());
 }
 
-void save (const string& filename, unsigned int bootSlot)
-{
-	_zebulon_save (filename.c_str (), bootSlot);
-}
-
 void boot (const std::string& filename, unsigned int bootSlot)
 {
 	_zebulon_boot (filename.c_str (), bootSlot);

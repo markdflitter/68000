@@ -13,10 +13,6 @@ using namespace Zebulon;
 
 unsigned int FAT::m_lastIndex = 0;
 
-extern char* __begin;
-extern char* __end;
-extern char* start;
-
 const unsigned long int read_only = 0x80000000;
 
 namespace
@@ -344,55 +340,6 @@ bool FAT::EOF (file_handle file) const
 		return of->EOF ();
 
 	return true;
-}
-
-void FAT::save (const std::string& name, unsigned int bootNumber)
-{
-	static unsigned char* loadAddress = (unsigned char*) &__begin;
-	static unsigned char* end = (unsigned char*) &__end;
-	static unsigned char* goAddress = (unsigned char*) &start;
-
-	printf ("saving code: start 0x%x end 0x%x entry 0x%x\n\r", loadAddress, end, goAddress);
-
-	file_address_t length = end - loadAddress;
-	block_address_t numBlocks = (length / blockSize ()) + 1;
-
-	file_handle f = open (name, "wb");
-	if (f == file_not_found) return ;
-
-	setMetaData (name, (unsigned int) loadAddress, (unsigned int) goAddress);
-
-	file_address_t bytesLeftToWrite = length;
-
-	unsigned char* p = loadAddress;
-
-	timer t;
-	while (bytesLeftToWrite > 0)
-	{
-		unsigned char buffer [512];
-		if (bytesLeftToWrite >= 512)
-		{
-			memcpy (buffer, p, 512);
-			write (f, buffer, 512);
-			bytesLeftToWrite -= 512;
-			p += 512;
-		}
-		else
-		{
-			memcpy (buffer, p, bytesLeftToWrite);
-			write (f, buffer, bytesLeftToWrite);
-			bytesLeftToWrite -= bytesLeftToWrite;
-		}
-
-		printf (".");
-	}
-
-	printf (" %dmS\n\r", t.elapsed ());
-
-	close (f);
-
-	unboot (bootNumber);
-	boot (name, bootNumber);
 }
 
 void FAT::boot (const std::string& name, unsigned int index)

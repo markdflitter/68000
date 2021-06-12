@@ -28,7 +28,6 @@ void closeFind (int handle);
 
 void deleteFile (const std::string& filename);
 
-void save (const std::string& filename, unsigned int bootSlot);
 void boot (const std::string& filename, unsigned int bootSlot);
 void unboot (unsigned int bootSlot);
 
