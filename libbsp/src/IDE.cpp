@@ -266,13 +266,13 @@ IDE::Result IDE::ident (DiskInfo& result)
 	result.numBytesPerTrack = response [4];
 	result.numBytesPerSector = response [5];
 	result.numSectorsPerTrack = response [6];
-	__memcpy (&(result.serialNumber), &(response [10]), 2 * 10);
+	memcpy (&(result.serialNumber), &(response [10]), 2 * 10);
 
 	result.bufferType = response [20];
 	result.bufferSize = response [21];
 	result.numEccBytes = response [22];
-	__memcpy (&(result.firmwareRevision), &(response [23]), 2 * 4);
-	__memcpy (&(result.modelNumber), &(response [27]), 2 * 20);
+	memcpy (&(result.firmwareRevision), &(response [23]), 2 * 4);
+	memcpy (&(result.modelNumber), &(response [27]), 2 * 20);
 
 	result.maxRwSectorsPerInterrupt = response [47] & 0xFF;
 	
@@ -287,9 +287,9 @@ IDE::Result IDE::ident (DiskInfo& result)
 	result.numCurrentCylinders = response [54];
 	result.numCurrentHeads = response [55];
 	result.numCurrentSectorsPerTrack = response [56];
-	__memcpy (&(result.currentCapacityInSectors), &(response [57]), 2 * 2);
+	memcpy (&(result.currentCapacityInSectors), &(response [57]), 2 * 2);
 	result.currentRwSectorsPerInterrupt = response [59] & 0xFF;
-	__memcpy (&(result.totalNumOfUserSectors), &(response [60]), 2 * 2);
+	memcpy (&(result.totalNumOfUserSectors), &(response [60]), 2 * 2);
 			
 	result.singlewordDmaModesSupported = response [62] & 0xFF;
 	result.singlewordDmaModesActive = response [62] >> 8;
@@ -330,7 +330,7 @@ IDE::Result  IDE::write (unsigned long LBA, unsigned char data [512])
 	for (int i = 0; i < 512; i = i + 2)
 	{
 		unsigned short w;
-		__memcpy (&w, &(data [i]), 2);
+		memcpy (&w, &(data [i]), 2);
 
 		writeData (w);
 	}
@@ -359,7 +359,7 @@ IDE::Result IDE::read (unsigned long LBA, unsigned char data [512])
 	for (int i = 0; i < 512; i = i + 2)
 	{
 		unsigned short w = readData ();
-		__memcpy (&(data [i]),&w, 2);
+		memcpy (&(data [i]),&w, 2);
 	}
 
 	return OK;
