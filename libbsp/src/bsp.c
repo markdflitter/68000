@@ -23,10 +23,6 @@ void* __memcpy (void* destination, const void* source, size_t num)
 	return destination;
 }
 
-void __init ()
-{
-}
-
 DUART& the_duart ()
 {
  	static DUART d;
