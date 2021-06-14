@@ -117,7 +117,7 @@ void save (const std::string& name, unsigned int bootNumber)
 	FILE* f = fopen (name.c_str (), "wb");
 	if (f == 0) return ;
 
-	//setMetaData (name, (unsigned int) loadAddress, (unsigned int) goAddress);
+	setMetaData (name, (unsigned int) loadAddress, (unsigned int) goAddress);
 
 	unsigned long int bytesLeftToWrite = length;
 
