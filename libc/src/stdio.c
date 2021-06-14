@@ -224,7 +224,7 @@ long unsigned int fwrite (const void* data, long unsigned int data_size, long un
 	return Zebulon::_zebulon_fwrite (data, data_size, number_data, (int) fptr);
 }
 
-long unsigned int fread (const void* data, long unsigned int data_size, long unsigned int number_data, void* fptr)
+long unsigned int fread (void* data, long unsigned int data_size, long unsigned int number_data, void* fptr)
 {
 	return Zebulon::_zebulon_fread (data, data_size, number_data, (int) fptr);
 }
