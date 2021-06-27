@@ -3,11 +3,20 @@
 
 namespace Zebulon
 {
-enum eTrap {get_time = 0x0, char_io = 0x1, file_io};
+enum eTrap {get_time = 0x0, char_io = 0x1};
 const unsigned char putch = 0x1;
 const unsigned char getch = 0x2;
 
-const unsigned char open = 0x1;
+inline void trap (eTrap trap)
+{
+	asm ("trap %0" : : "m" (trap));
+}
+
+inline void trap (eTrap trap, unsigned char opcode)
+{
+	asm ("moveb %1, %%d1"
+		 "trap %0" : : "m" (trap), "m" (opcode) : "d1");
+}
 
 inline void trap (eTrap trap, volatile void* p0)
 {
@@ -20,15 +29,6 @@ inline void trap (eTrap trap, unsigned char opcode, volatile void* p0)
 	asm ("moveb %1, %%d1"
  		 "movel %2, %%a0"
 		 "trap %0" : : "m" (trap), "m" (opcode), "m" (p0): "d1", "a0");
-}
-
-inline void trap (eTrap trap, unsigned char opcode, volatile void* p0, const volatile void* p1, const volatile void* p2)
-{
-	asm ("moveb %1, %%d1"
- 		 "movel %2, %%a0"
- 		 "movel %3, %%a1"
- 		 "movel %4, %%a1"
-		 "trap %0" : : "m" (trap), "m" (opcode), "m" (p0), "m" (p1), "m" (p2) : "d1", "a0", "a1", "a2");
 }
 
 inline unsigned int _zebulon_time ()
@@ -54,7 +54,17 @@ inline int _zebulon_getch ()
 inline int _zebulon_fopen (const char* filename, const char* mode)
 {
 	volatile int fptr;
-	trap (file_io, open, &fptr, filename, mode);
+	volatile void* a0 = &fptr;
+
+	const volatile void* a1 = filename;
+	const volatile void* a2 = mode;
+	
+	asm ("moveb #1, %%d0\n\t"
+		 "movel %0, %%a0\n\t"
+		 "movel %1, %%a1\n\t"
+		 "movel %2, %%a2\n\t"
+		 "trap #2\n\t" : : "m" (a0), "m" (a1), "m" (a2) : "d0", "a0", "a1", "a2");
+
 	return fptr == -1 ? 0 : fptr + 1;
 }
 
