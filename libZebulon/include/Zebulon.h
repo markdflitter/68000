@@ -3,38 +3,51 @@
 
 namespace Zebulon
 {
-// a lot of stuff in this file is technically not volatile, but marking it sit so forces the compiler to make a local copy of the parameter which defeats a compiler bug where it refences the wrong stack location
-	
+enum eTrap {get_time = 0x0, char_io = 0x1};
+const unsigned char putch = 0x1;
+const unsigned char getch = 0x2;
+
+inline void trap (eTrap trap)
+{
+	asm ("trap %0" : : "m" (trap));
+}
+
+inline void trap (eTrap trap, unsigned char opcode)
+{
+	asm ("moveb %1, %%d1"
+		 "trap %0" : : "m" (trap), "m" (opcode) : "d1");
+}
+
+inline void trap (eTrap trap, volatile void* p0)
+{
+	asm ("movel %1, %%a0"
+		 "trap %0" : : "m" (trap), "m" (p0): "a0");
+}
+
+inline void trap (eTrap trap, unsigned char opcode, volatile void* p0)
+{
+	asm ("moveb %1, %%d1"
+ 		 "movel %2, %%a0"
+		 "trap %0" : : "m" (trap), "m" (opcode), "m" (p0): "d1", "a0");
+}
+
 inline unsigned int _zebulon_time ()
 {
 	volatile unsigned int result;
-	volatile void* a0 = &result;
-
-	asm ("movel %0, %%a0\n\t"
-		 "trap #0\n\t" : : "m" (a0) : "a0");
-
+	trap (get_time, &result);
 	return result;
 }
 
 inline void _zebulon_putch (int c)
 {
-	volatile int cc = c;	// although this is technically not volatile, it forces the compiler to make a local copy of the parameter which defeats a compiler bug where it refences the wrong stack location
-	volatile void* a0 = &cc;
-
-	asm ("moveb #1, %%d0\n\t"
-		 "movel %0, %%a0\n\t"
-		 "trap #1\n\t" : : "m" (a0) : "d0", "a0");
+	volatile int cc = c;
+	trap (char_io, putch, &cc);
 }
 
 inline int _zebulon_getch ()
 {
 	volatile int result;
-	volatile void* a0 = &result;
-
-	asm ("moveb #2, %%d0\n\t"
-		 "movel %0, %%a0\n\t"
-		 "trap #1\n\t" : : "m" (a0) : "d0", "a0");
-
+	trap (char_io, getch, &result);
 	return result;
 }	
 
