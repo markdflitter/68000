@@ -206,7 +206,7 @@ inline void _zebulon_delete_file (const char* filename)
 		 "trap #5\n\t" : : "m" (a0) : "a0");
 }
 
-inline void _zebulon_boot (const char* filename, unsigned int bootSlot)
+inline void _zebulon_save (const char* filename, unsigned int bootSlot)
 {
 	volatile unsigned int b = bootSlot;
 	volatile void* a0 = &b;
@@ -219,12 +219,25 @@ inline void _zebulon_boot (const char* filename, unsigned int bootSlot)
 		 "trap #6\n\t" : : "m" (a0), "m" (a1) : "d0", "a0", "a1");
 }
 
+inline void _zebulon_boot (const char* filename, unsigned int bootSlot)
+{
+	volatile unsigned int b = bootSlot;
+	volatile void* a0 = &b;
+
+	const volatile void* a1 = filename;
+
+	asm ("moveb #2, %%d0\n\t"
+		 "movel %0, %%a0\n\t"
+		 "movel %1, %%a1\n\t"
+		 "trap #6\n\t" : : "m" (a0), "m" (a1) : "d0", "a0", "a1");
+}
+
 inline void _zebulon_unboot (unsigned int bootSlot)
 {
 	volatile unsigned int b = bootSlot;
 	volatile void* a0 = &b;
 
-	asm ("moveb #2, %%d0\n\t"
+	asm ("moveb #3, %%d0\n\t"
 		 "movel %0, %%a0\n\t"
 		 "trap #6\n\t" : : "m" (a0) : "d0", "a0");
 }
@@ -248,7 +261,7 @@ inline void _zebulon_index (_zebulon_boot_table_entry bte [10])
 {
 	volatile void* a0 = bte;
 
-	asm ("moveb #3, %%d0\n\t"
+	asm ("moveb #4, %%d0\n\t"
 		 "movel %0, %%a0\n\t"
 		 "trap #6\n\t" : : "m" (a0) : "d0", "a0");
 }

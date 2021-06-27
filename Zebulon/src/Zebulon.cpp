@@ -65,6 +65,37 @@ void trap1 ()
 	}
 }
 
+namespace
+{
+
+file_handle openFile (const char* filename, const char* mode)
+{
+	return theFAT ().open (filename, mode);
+}
+
+
+unsigned long int readFile (file_handle fptr, unsigned char* data, long unsigned int numBytes)
+{
+	return theFAT ().read (fptr, data, numBytes);
+}
+
+unsigned long int writeFile (file_handle fptr, const unsigned char* data, long unsigned int numBytes)
+{
+	return theFAT ().write (fptr, data, numBytes);
+}
+
+void closeFile (file_handle fptr)
+{
+	theFAT ().close (fptr);
+}
+
+int eof (file_handle fptr)
+{
+	return theFAT ().EOF (fptr);
+}
+
+}
+
 // fileIO
 void trap2 () __attribute__ ((interrupt));
 void trap2 ()
@@ -82,11 +113,11 @@ void trap2 ()
 
 	switch (d0)
 	{
-		case 1: *((file_handle *) a0) = theFAT ().open ((char*) a1, (char*) a2); break;
-		case 2: *((long unsigned int*) a2) = theFAT ().write (*((file_handle*) a0), (const unsigned char*) a1, (long unsigned int) d1); break ;
-		case 3: *((long unsigned int*) a2) = theFAT ().read (*((file_handle*) a0), (unsigned char*) a1, (long unsigned int) d1); break ;
-		case 4: theFAT ().close (*((file_handle*) a0)); break;
-		case 5: *((long unsigned int*) a2) = theFAT ().EOF (*((file_handle*) a0)); break;
+		case 1: *((file_handle *) a0) = openFile ((char*) a1, (char*) a2); break;
+		case 2: *((long unsigned int*) a2) = writeFile (*((file_handle*) a0), (const unsigned char*) a1, (long unsigned int) d1); break ;
+		case 3: *((long unsigned int*) a2) = readFile (*((file_handle*) a0), (unsigned char*) a1, (long unsigned int) d1); break ;
+		case 4: closeFile (*((file_handle*) a0)); break;
+		case 5: *((long unsigned int*) a2) = eof (*((file_handle*) a0)); break;
 		default: break; 
 	}
 }
@@ -151,9 +182,10 @@ void trap6 ()
   				  "movel %%a1, %2\n\t" : "=m" (d0), "=m" (a0), "=m" (a1));
 	switch (d0)
 	{
-		case 1: theFAT ().boot (((const char*) a1), *((unsigned int*) a0)); break;
-		case 2: theFAT ().unboot (*((unsigned int*) a0)); break;
-		case 3: theFAT ().index (((_zebulon_boot_table_entry*) a0)); break;
+		case 1: theFAT ().save (((const char*) a1), *((unsigned int*) a0)); break;
+		case 2: theFAT ().boot (((const char*) a1), *((unsigned int*) a0)); break;
+		case 3: theFAT ().unboot (*((unsigned int*) a0)); break;
+		case 4: theFAT ().index (((_zebulon_boot_table_entry*) a0)); break;
 		default: break;
 	}
 }

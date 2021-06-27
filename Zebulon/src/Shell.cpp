@@ -5,7 +5,6 @@
 #include <list>
 #include <vector>
 #include <stdlib.h>
-#include <timer>
 #include <time.h>
 #include <filer.h>
 #include <print.h>
@@ -14,10 +13,6 @@ const char* version = "Z-Shell V1.36.0016";
 const char* filename = "Zebulon_V1.36.0016";
 	
 using namespace std;
-
-extern char* __begin;
-extern char* __end;
-extern char* start;
 
 namespace {
 
@@ -76,7 +71,7 @@ void printHelp (void)
 	printf ("save <bootNumber>\t\t - save code to disk\n\r");
 	printf ("unboot <bootNumber>\t\t - empty boot slot\n\r");
 	printf ("boot <file> <bootNumber>\t - make file bootable\n\r");
-	printf ("time\t\t\t\t - print mS since boot\n\r");
+	printf ("time\t\t\t\t - print ticks since boot\n\r");
 }
 
 void dump (long unsigned int block)
@@ -105,51 +100,7 @@ void save (const std::string& name, unsigned int bootNumber)
 {
 	printf ("saving '%s' to %d\n\r", name.c_str (), bootNumber);
 
-	static unsigned char* loadAddress = (unsigned char*) &__begin;
-	static unsigned char* end = (unsigned char*) &__end;
-	static unsigned char* goAddress = (unsigned char*) &start;
-
-	printf ("saving code: start 0x%x end 0x%x entry 0x%x\n\r", loadAddress, end, goAddress);
-
-	unsigned long int length = end - loadAddress;
-	unsigned long int numBlocks = (length / 512) + 1;
-
-	FILE* f = fopen (name.c_str (), "wb");
-	if (f == 0) return ;
-
-	setMetaData (name, (unsigned int) loadAddress, (unsigned int) goAddress);
-
-	unsigned long int bytesLeftToWrite = length;
-
-	unsigned char* p = loadAddress;
-
-	mdf::timer t;
-	while (bytesLeftToWrite > 0)
-	{
-		unsigned char buffer [512];
-		if (bytesLeftToWrite >= 512)
-		{
-			memcpy (buffer, p, 512);
-			fwrite (buffer, 1, 512, f);
-			bytesLeftToWrite -= 512;
-			p += 512;
-		}
-		else
-		{
-			memcpy (buffer, p, bytesLeftToWrite);
-			fwrite (buffer, 1, bytesLeftToWrite, f);
-			bytesLeftToWrite -= bytesLeftToWrite;
-		}
-
-		printf (".");
-	}
-
-	printf (" %dmS\n\r", t.elapsed ());
-
-	fclose (f);
-
-	mdf::unboot (bootNumber);
-	mdf::boot (name, bootNumber);
+	mdf::save (name, bootNumber);
 }
 
 void unboot (unsigned int bootNumber)
