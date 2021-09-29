@@ -9,9 +9,10 @@
 #include "FAT.h"
 #include <ctype.h>
 #include <filer.h>
+#include <bsp.h>
 
-const char* version = "Z-Shell V1.36.0016";
-const char* filename = "Zebulon_V1.36.0016";
+const char* version = "Z-Shell V1.37.0000";
+const char* filename = "Zebulon_V1.37.0000";
 	
 using namespace std;
 
@@ -107,6 +108,20 @@ void printBuffer (unsigned char* buffer, size_t bufferLen)
 }
 
 
+void writeB (FAT& fat, block_address_t block)
+{
+	printf ("writing to %d\n\r", block);
+
+	unsigned char data [fat.blockSize ()];
+
+	unsigned char data2 [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
+
+	memcpy (data2, data, 512);
+	
+	__ide_write (block, data);
+}
+
+
 void readB (FAT& fat, block_address_t block)
 {
 	printf ("reading from %d\n\r", block);
@@ -116,6 +131,14 @@ void readB (FAT& fat, block_address_t block)
 	if (fat.readBlock (block, data))
 		printBuffer (data, fat.blockSize ());
 }
+
+void ident ()
+{
+	DiskInfo di;
+	__ide_ident (di);
+	printf ("%s\n\r", di.modelNumber);
+}
+
 
 void printStat (struct mdf::stat s)
 {
@@ -306,7 +329,12 @@ void Shell::run () const
 				block_address_t block = atol (tokens [1].c_str ());
 				readB (m_fat, block);
 			}
-			if (tokens [0] == "save" && tokens.size () > 1)
+			if (tokens [0] == "writeB" && tokens.size () > 1) 
+			{
+				block_address_t block = atol (tokens [1].c_str ());
+				writeB (m_fat, block);
+			}
+				if (tokens [0] == "save" && tokens.size () > 1)
 			{
 				unsigned long bootNumber = atol (tokens [1].c_str ());
 				::save (filename, (unsigned int) bootNumber);
@@ -347,7 +375,11 @@ void Shell::run () const
 				string filename (tokens [1].c_str ());
 				read (filename);
 			}
-			if (tokens [0] == "ls") ls ();
+			if (tokens [0] == "ident")
+			{
+				ident ();
+			}
+				if (tokens [0] == "ls") ls ();
 			if (tokens [0] == "time") time ();
 			}
 	}
