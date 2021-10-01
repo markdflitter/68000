@@ -11,8 +11,8 @@
 #include <filer.h>
 #include <bsp.h>
 
-const char* version = "Z-Shell V1.37.0000";
-const char* filename = "Zebulon_V1.37.0000";
+const char* version = "Z-Shell V1.37.0001";
+const char* filename = "Zebulon_V1.37.0001";
 	
 using namespace std;
 
@@ -241,8 +241,6 @@ void read (const string& filename)
 	FILE* f = fopen (filename.c_str (), "rb");
 	if (f == 0) return ;
 	
-	printf ("hello\n\r");
-
 	struct mdf::stat s;
 	
 	if (!mdf::stat (filename, &s))
@@ -251,9 +249,7 @@ void read (const string& filename)
 		return ;
 	}	
 
-	printf ("byebye\n\r");
 	file_address_t bytesLeftToRead = s.size;
-	printf ("bytesLeftToRead %d\n\r", bytesLeftToRead);
 
 	while (!feof (f))
 	{
