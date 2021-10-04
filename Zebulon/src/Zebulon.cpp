@@ -55,6 +55,39 @@ void trap1 ()
 	}
 }
 
+/*
+enum ide_result {OK = 0x0, AMNF = 0x1, TK0NF = 0x2, ABRT = 0x4, MCR = 0x8,
+				IDNF = 0x10, MC = 0x20, UNC = 0x40, BBK = 0x80};
+extern "C" ide_result __ide_ident (DiskInfo& result);
+extern "C" ide_result __ide_write (unsigned long LBA, unsigned char data [512]);
+extern "C" ide_result __ide_read (unsigned long LBA, unsigned char data [512]);
+*/
+
+// ident / read_block / write_block
+void trap2 () __attribute__ ((interrupt));
+void trap2 ()
+{
+	volatile char d0 = 0;
+	volatile char d1 = 0;
+	volatile void* a0 = 0;
+	volatile void* a1 = 0;
+	asm volatile ("moveb %%d0, %0\n\t" 
+				  "moveb %%d1, %1\n\t" 
+				  "movel %%a0, %1\n\t"
+				  "movel %%a1, %1\n\t" : "=m" (d0), "=m" (d1), "=m" (a0), "=m" (a1));
+
+	unsigned int result = IDE_OK;
+	switch (d0)
+	{
+		case 1:	result = __ide_read (d1, (unsigned char*) a0); break;
+		case 2: result = __ide_write (d1, (unsigned char*) a0); break;
+		default: break;
+	}
+
+	*((unsigned int*) a1) = result;
+}
+
+
 int main ()
 {
 	__putstr (banner);	
@@ -84,6 +117,7 @@ int main ()
 	// install traps
 	v.setVector (32, &trap0);	
 	v.setVector (33, &trap1);
+	v.setVector (34, &trap2);
 
 	// detailed diagnostics
 	printf ("installed TRAPs\n\r");

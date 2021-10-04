@@ -38,6 +38,39 @@ inline int _zebulon_getch ()
 	return result;
 }	
 
+inline unsigned int _zebulon_read_block (unsigned long block, unsigned char data [512])
+{
+	volatile unsigned long d1 = block;
+	volatile void* a0 = data;
+	unsigned int result;
+	volatile void* a1 = &result;
+
+	asm ("moveb #2, %%d0\n\t"
+		 "moveb %0, %%d1\n\t"
+		 "movel %1, %%a0\n\t"
+		 "movel %2, %%a1\n\t"
+		 "trap #2\n\t" : : "m" (d1), "m" (a0), "m" (a1) : "d0", "d1", "a0", "a1");
+
+	return result;
+}
+
+inline unsigned int _zebulon_write_block (unsigned long block, unsigned char data [512])
+{
+	volatile unsigned long d1 = block;
+	volatile void* a0 = data;
+	unsigned int result;
+	volatile void* a1 = &result;
+
+	asm ("moveb #3, %%d0\n\t"
+		 "moveb %0, %%d1\n\t"
+		 "movel %1, %%a0\n\t"
+		 "movel %2, %%a1\n\t"
+		 "trap #2\n\t" : : "m" (d1), "m" (a0), "m" (a1) : "d0", "d1", "a0", "a1");
+
+	return result;
+}
+
+
 }
 #endif
 

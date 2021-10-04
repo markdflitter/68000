@@ -67,8 +67,8 @@ struct DiskInfo {
 
 const size_t ide_block_size = 512;
 
-enum ide_result {OK = 0x0, AMNF = 0x1, TK0NF = 0x2, ABRT = 0x4, MCR = 0x8,
-				IDNF = 0x10, MC = 0x20, UNC = 0x40, BBK = 0x80};
+enum ide_result {IDE_OK = 0x0, IDE_AMNF = 0x1, IDE_TK0NF = 0x2, IDE_ABRT = 0x4, IDE_MCR = 0x8,
+				IDE_IDNF = 0x10, IDE_MC = 0x20, IDE_UNC = 0x40, IDE_BBK = 0x80};
 extern "C" ide_result __ide_ident (DiskInfo& result);
 extern "C" ide_result __ide_write (unsigned long LBA, unsigned char data [512]);
 extern "C" ide_result __ide_read (unsigned long LBA, unsigned char data [512]);
