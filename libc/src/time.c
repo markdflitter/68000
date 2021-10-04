@@ -1,5 +1,5 @@
 #include "../include/time.h"
-#include <Zebulon.h>
+#include <ZebulonAPI.h>
 
 clock_t clock()
 {

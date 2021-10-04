@@ -1,6 +1,6 @@
 #include "../include/stdio.h"
 #include "../include/string.h"
-#include <Zebulon.h>
+#include <ZebulonAPI.h>
 
 int getchar(void)
 {
@@ -209,6 +209,7 @@ int printf (const char* format, ...)
 	return result;
 }
 
+/*
 FILE* fopen (const char* filename, const char* mode)
 {
 	return (FILE*) Zebulon::_zebulon_fopen (filename, mode);
@@ -233,3 +234,4 @@ void fclose (FILE* fptr)
 {
 	return Zebulon::_zebulon_fclose ((int) fptr);
 }
+*/
