@@ -38,6 +38,9 @@ inline int _zebulon_getch ()
 	return result;
 }	
 
+enum ide_result {IDE_OK = 0x0, IDE_AMNF = 0x1, IDE_TK0NF = 0x2, IDE_ABRT = 0x4, IDE_MCR = 0x8,
+				IDE_IDNF = 0x10, IDE_MC = 0x20, IDE_UNC = 0x40, IDE_BBK = 0x80};
+
 inline unsigned int _zebulon_read_block (unsigned long block, unsigned char data [512])
 {
 	volatile unsigned long d1 = block;
@@ -45,8 +48,8 @@ inline unsigned int _zebulon_read_block (unsigned long block, unsigned char data
 	unsigned int result;
 	volatile void* a1 = &result;
 
-	asm ("moveb #2, %%d0\n\t"
-		 "moveb %0, %%d1\n\t"
+	asm ("moveb #1, %%d0\n\t"
+		 "movel %0, %%d1\n\t"
 		 "movel %1, %%a0\n\t"
 		 "movel %2, %%a1\n\t"
 		 "trap #2\n\t" : : "m" (d1), "m" (a0), "m" (a1) : "d0", "d1", "a0", "a1");
@@ -61,15 +64,14 @@ inline unsigned int _zebulon_write_block (unsigned long block, unsigned char dat
 	unsigned int result;
 	volatile void* a1 = &result;
 
-	asm ("moveb #3, %%d0\n\t"
-		 "moveb %0, %%d1\n\t"
+	asm ("moveb #2, %%d0\n\t"
+		 "movel %0, %%d1\n\t"
 		 "movel %1, %%a0\n\t"
 		 "movel %2, %%a1\n\t"
 		 "trap #2\n\t" : : "m" (d1), "m" (a0), "m" (a1) : "d0", "d1", "a0", "a1");
 
 	return result;
 }
-
 
 }
 #endif
