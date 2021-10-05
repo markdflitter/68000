@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "VectorTable.h"
 #include "Shell.h"
+#include <ZebulonAPI.h>
 #include <TrapHelper.h>
 
 const char* banner = 
@@ -31,26 +32,24 @@ void tick ()
 void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
-	unsigned int* pResult = getResultAddress ();
+	volatile void* a0 = getA0 ();
 
 	double f = ((double) ticks) * tickIntervalInMs;
 
-	*pResult = (unsigned int) f;
+	*((unsigned int*) (a0)) = (unsigned int) f;
 }
 
 // putchar / getchar
 void trap1 () __attribute__ ((interrupt));
 void trap1 ()
 {
-	volatile char d0 = 0;
-	volatile void* a0 = 0;
-	asm volatile ("moveb %%d0, %0\n\t" 
-				  "movel %%a0, %1\n\t" : "=m" (d0), "=m" (a0));
-
-	switch (d0)
+	char opcode = getOpcode ();
+    volatile void* a0 = getA0();	
+	
+	switch (opcode)
 	{
-		case 1:	__putch ((char) *((const int*) a0)); break;
-		case 2: *((int*) a0) = (int) __getch (); break;
+		case Zebulon::write_char : __putch ((char) *((const int*) a0)); break;
+		case Zebulon::read_char  : *((int*) a0) = (int) __getch (); break;
 		default: break;
 	}
 }
