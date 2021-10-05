@@ -1,19 +1,32 @@
-#ifndef ZEBULON_H
-#define ZEBULON_H
+#ifndef ZEBULONAPI_H
+#define ZEBULONAPI_H
+
+// a lot of stuff in this file is technically not volatile, but marking it sit so forces the compiler to make a local copy of the parameter which defeats a compiler bug where it refences the wrong stack location
+
+#include "TrapHelper.h"
+
+namespace
+{
+	enum TRAP {time = 0};
+
+	unsigned int trap (unsigned char trap)
+  	{
+		volatile unsigned int result;
+		setResultAddress (&result);
+		
+		call_trap (trap);
+
+		return result;
+	}
+}
+
 
 namespace Zebulon
 {
-// a lot of stuff in this file is technically not volatile, but marking it sit so forces the compiler to make a local copy of the parameter which defeats a compiler bug where it refences the wrong stack location
-	
+
 inline unsigned int _zebulon_time ()
 {
-	volatile unsigned int result;
-	volatile void* a0 = &result;
-
-	asm ("movel %0, %%a0\n\t"
-		 "trap #0\n\t" : : "m" (a0) : "a0");
-
-	return result;
+	return trap (time);
 }
 
 inline void _zebulon_putch (int c)

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "VectorTable.h"
 #include "Shell.h"
+#include <TrapHelper.h>
 
 const char* banner = 
 "  ____\n\r"
@@ -12,7 +13,6 @@ const char* banner =
 "  /    |    |   \\  |   |  |    | | |  |  \\ |\n\r" 
 " /     |___ |___/  \\___/  |___ \\___/  |   \\|\n\r"
 "/____| _____________________________________\n\r\n\r";
-
 
 extern unsigned char* __vector_table;
 
@@ -26,16 +26,16 @@ void tick ()
 	__interrupt_handled ();
 }
 
+
 // time
 void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
-	volatile void* a0 = 0;
-	asm volatile ("movel %%a0, %0\n\t" : "=m" (a0));
+	unsigned int* pResult = getResultAddress ();
 
 	double f = ((double) ticks) * tickIntervalInMs;
 
-	*((unsigned int*) a0) = (unsigned int) f;
+	*pResult = (unsigned int) f;
 }
 
 // putchar / getchar
