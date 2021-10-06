@@ -10,14 +10,14 @@ inline void call_trap (unsigned char trap)
 }
 
 
-inline void setA0 (volatile void* p)
+inline void setResultPtr (volatile void* p)
 {
 	volatile void* a0 = p;
 	asm volatile ("movel %0, %%a0\n\t" : : "m" (a0) : "a0");
 }
 
 
-inline volatile void* getA0 ()
+inline volatile void* getResultPtr ()
 {
     volatile void* a0 = 0;
 	asm volatile ("movel %%a0, %0\n\t" : "=m" (a0));

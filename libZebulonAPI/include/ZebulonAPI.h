@@ -10,7 +10,7 @@ namespace
 	inline volatile unsigned int trapR (unsigned char trap_num)
   	{
 		volatile unsigned int result;
-		setA0 (&result);
+		setResultPtr (&result);
 		
 		call_trap (trap_num);
 

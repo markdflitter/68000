@@ -32,7 +32,7 @@ void tick ()
 void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
-	unsigned int* pResult = (unsigned int*) getA0 ();
+	unsigned int* pResult = (unsigned int*) getResultPtr ();
 
 	double f = ((double) ticks) * tickIntervalInMs;
 
@@ -44,13 +44,13 @@ void trap1 () __attribute__ ((interrupt));
 void trap1 ()
 {
 	char opcode = getOpcode ();
-    int* pChar = (int*) getA0();	
+    int* pResult = (int*) getResultPtr();
 	int c = (int) getP1();	
 		
 	switch (opcode)
 	{
 		case Zebulon::serialIO_write_char : __putch ((char) c); break;
-		case Zebulon::serialIO_read_char  : *pChar = (int) __getch (); break;
+		case Zebulon::serialIO_read_char  : *pResult = (int) __getch (); break;
 		default: break;
 	}
 }
