@@ -32,11 +32,11 @@ void tick ()
 void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
-	volatile void* a0 = getA0 ();
+	unsigned int* pResult = (unsigned int*) getA0 ();
 
 	double f = ((double) ticks) * tickIntervalInMs;
 
-	*((unsigned int*) (a0)) = (unsigned int) f;
+	*pResult = (unsigned int) f;
 }
 
 // putchar / getchar
@@ -44,12 +44,12 @@ void trap1 () __attribute__ ((interrupt));
 void trap1 ()
 {
 	char opcode = getOpcode ();
-    volatile void* a0 = getA0();	
+    int* pChar = (int*) getA0();	
 	
 	switch (opcode)
 	{
-		case Zebulon::write_char : __putch ((char) *((const int*) a0)); break;
-		case Zebulon::read_char  : *((int*) a0) = (int) __getch (); break;
+		case Zebulon::IO_write_char : __putch ((char) *pChar); break;
+		case Zebulon::IO_read_char  : *pChar = (int) __getch (); break;
 		default: break;
 	}
 }
@@ -58,24 +58,20 @@ void trap1 ()
 void trap2 () __attribute__ ((interrupt));
 void trap2 ()
 {
-	volatile char d0 = 0;
-	volatile unsigned long d1 = 0;
-	volatile void* a0 = 0;
-	volatile void* a1 = 0;
-	asm volatile ("moveb %%d0, %0\n\t" 
-				  "movel %%d1, %1\n\t" 
-				  "movel %%a0, %2\n\t"
-				  "movel %%a1, %3\n\t" : "=m" (d0), "=m" (d1), "=m" (a0), "=m" (a1));
-
+	char opcode = getOpcode ();
+   	volatile unsigned long block = getP1 ();
+	volatile void* pResult = getA0 ();	
+ 	volatile void* pBuffer = getA1 ();
+	
 	unsigned int result = IDE_OK;
-	switch (d0)
+	switch (opcode)
 	{
-		case 1:	result = __ide_read (d1, (unsigned char*) a0); break;
-		case 2: result = __ide_write (d1, (unsigned char*) a0); break;
+		case Zebulon::block_read_block  : result = __ide_read (block, (unsigned char*) pBuffer); break;
+		case Zebulon::block_write_block : result = __ide_write (block, (unsigned char*) pBuffer); break;
 		default: break;
 	}
 
-	*((unsigned int*) a1) = result;
+	*((unsigned int*) pResult) = result;
 }
 
 
