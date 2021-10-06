@@ -87,8 +87,8 @@ void printHelp (void)
 	printf ("help\t\t\t\t - print this help\n\r");
 	printf ("exit\t\t\t\t - exit to monitor\n\r");
 	printf ("uptime\t\t\t\t - print time since boot\n\r");
-	printf ("read block <block>\t\t - read specified block from disk\n\r");
-	printf ("write block <block> <pattern>\t - write pattern to specified block on disk\n\r");
+	printf ("disk read <block>\t\t - read specified block from disk\n\r");
+	printf ("disk write <block> <pattern>\t - write pattern to specified block on disk\n\r");
 }
 
 void uptime ()
@@ -148,25 +148,20 @@ void Shell::run () const
 			if (tokens [0] == "help") printHelp ();
 			if (tokens [0] == "exit") exit = 1;
 			if (tokens [0] == "uptime") uptime ();
-			if (tokens [0] == "read" && tokens.size () > 2) 
+			if (tokens [0] == "disk" && tokens.size () > 2) 
 			{
-				if (tokens [1] == "block")
+				unsigned long block = atol (tokens [2].c_str ());
+				if (tokens [1] == "read")
 				{
-					unsigned long block = atol (tokens [2].c_str ());
 					read_block (block);				
 				}
-			}
-			if (tokens [0] == "write" && tokens.size () > 2) 
-			{
-				if (tokens [1] == "block" && tokens.size () > 3)
+				if (tokens [1] == "write" && tokens.size () > 3)
 				{
-					unsigned long block = atol (tokens [2].c_str ());
 					unsigned char pattern = (unsigned char) atol (tokens [3].c_str ());
 					write_block (block, pattern);
 				}
 			}
 		}
 	}
-
 	return ;
 }

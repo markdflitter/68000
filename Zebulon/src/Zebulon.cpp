@@ -32,7 +32,7 @@ void tick ()
 void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
-	unsigned int* pResult = (unsigned int*) getResultPtr ();
+	unsigned int* pResult = (unsigned int*) untrap ();
 
 	double f = ((double) ticks) * tickIntervalInMs;
 
@@ -43,14 +43,13 @@ void trap0 ()
 void trap1 () __attribute__ ((interrupt));
 void trap1 ()
 {
-	char opcode = getOpcode ();
-    int* pResult = (int*) getResultPtr();
-	int c = (int) getP1();	
+	unsigned char opcode;
+	int* p = (int*) untrap (opcode);
 		
 	switch (opcode)
 	{
-		case Zebulon::serialIO_write_char : __putch ((char) c); break;
-		case Zebulon::serialIO_read_char  : *pResult = (int) __getch (); break;
+		case Zebulon::serialIO_write_char : __putch ((char) *p); break;
+		case Zebulon::serialIO_read_char  : *p = (int) __getch (); break;
 		default: break;
 	}
 }
@@ -60,20 +59,24 @@ void trap2 () __attribute__ ((interrupt));
 void trap2 ()
 {
 /*
-	char opcode = getOpcode ();
-   	volatile unsigned long block = getP1 ();
-	volatile void* pResult = getA0 ();	
- 	volatile void* pBuffer = getA1 ();
+	char opcode;// = getOpcode ();
+   	asm volatile ("moveb %%d0, %0\n\t" : "=m" (opcode));
+	unsigned long block = getP1 ();
+	unsigned int* pResult = (unsigned int*) getResultPtr ();	
+ 	unsigned char* pBuffer = (unsigned char*) getA1 ();
 	
+	char buf [256];
+	sprintf (buf, "opcode %d\n\r", opcode);
+	__putstr (buf);
 	unsigned int result = IDE_OK;
 	switch (opcode)
 	{
-		case Zebulon::block_read_block  : result = __ide_read (block, (unsigned char*) pBuffer); break;
-		case Zebulon::block_write_block : result = __ide_write (block, (unsigned char*) pBuffer); break;
+		case Zebulon::ide_read_block  : {char buf [256]; sprintf (buf, "rd %d 0x%x\n\r", block, pBuffer); __putstr (buf); result = __ide_read (block, pBuffer); break;}
+		case Zebulon::ide_write_block : result = __ide_write (block, pBuffer); break;
 		default: break;
 	}
 
-	*((unsigned int*) pResult) = result;
+	*pResult = result;
 */
 }
 
