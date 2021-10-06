@@ -45,11 +45,12 @@ void trap1 ()
 {
 	char opcode = getOpcode ();
     int* pChar = (int*) getA0();	
-	
+	int c = (int) getP1();	
+		
 	switch (opcode)
 	{
-		case Zebulon::IO_write_char : __putch ((char) *pChar); break;
-		case Zebulon::IO_read_char  : *pChar = (int) __getch (); break;
+		case Zebulon::serialIO_write_char : __putch ((char) c); break;
+		case Zebulon::serialIO_read_char  : *pChar = (int) __getch (); break;
 		default: break;
 	}
 }
@@ -58,6 +59,7 @@ void trap1 ()
 void trap2 () __attribute__ ((interrupt));
 void trap2 ()
 {
+/*
 	char opcode = getOpcode ();
    	volatile unsigned long block = getP1 ();
 	volatile void* pResult = getA0 ();	
@@ -72,6 +74,7 @@ void trap2 ()
 	}
 
 	*((unsigned int*) pResult) = result;
+*/
 }
 
 

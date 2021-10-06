@@ -63,9 +63,9 @@ inline void setP1 (unsigned long p1)
 }
 
 
-inline unsigned long getP1 ()
+inline volatile unsigned long getP1 ()
 {
-	volatile long d1 = 0;
+	volatile unsigned long d1 = 0;
 	asm volatile ("movel %%d1, %0\n\t" : "=m" (d1));
 	return d1;
 }

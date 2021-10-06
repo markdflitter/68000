@@ -7,38 +7,41 @@
 
 namespace
 {
-	inline volatile unsigned int trap (unsigned char trap)
+	inline volatile unsigned int trapR (unsigned char trap_num)
   	{
 		volatile unsigned int result;
 		setA0 (&result);
 		
-		call_trap (trap);
+		call_trap (trap_num);
 
 		return result;
 	}
 
-	inline volatile void trap (unsigned char trap, unsigned char opcode, int p1)
+	inline volatile unsigned int trapR (unsigned char trap_num, unsigned char opcode)
   	{
 		setOpcode (opcode);
-
-		setA0 (&p1);	
-
-		call_trap (trap);
+		return trapR (trap_num);
 	}
 
-	inline volatile int trap (unsigned char trap, unsigned char opcode)
+	inline void trap (unsigned char trap_num)
+  	{
+		call_trap (trap_num);
+	}
+
+	inline void trap (unsigned char trap_num, unsigned char opcode)
   	{
 		setOpcode (opcode);
-
-		volatile int result;	
-		setA0 (&result);	
-
-		call_trap (trap);
-
-		return result;
+		trap (trap_num);
 	}
 
-	inline volatile unsigned int trap (unsigned int trap, unsigned char opcode, unsigned long p1, unsigned char* data)
+	inline void trap (unsigned char trap_num, unsigned char opcode, unsigned int p1)
+  	{
+		setP1 (p1);
+		trap (trap_num, opcode);
+	}
+
+	/*
+inline volatile unsigned int trap (unsigned int trap, unsigned char opcode, unsigned long p1, unsigned char* data)
 	{
 		setOpcode (opcode);
 		setP1 (p1);
@@ -52,29 +55,29 @@ namespace
 	
 		return result;	
 	}
+*/
 }
 
 
 namespace Zebulon
 {
-	enum TRAP {trap_time = 0, trap_IO = 1, trap_block = 2};
-	enum IO {IO_write_char = 1, IO_read_char = 2};
-	enum block {block_write_block = 1, block_read_block = 2};
+	enum TRAP {trap_time = 0, trap_serialIO = 1, trap_ide = 2};
+	enum serialIO {serialIO_write_char = 1, serialIO_read_char = 2};
+	//enum ide_operations {ide_write_block = 1, ide_read_block = 2};
 
 inline unsigned int _zebulon_time ()
 {
-	return trap (trap_time);
+	return trapR (trap_time);
 }
 
 inline void _zebulon_putch (int c)
 {
-	trap (trap_IO, IO_write_char, c);
+	trap (trap_serialIO, serialIO_write_char, c);
 }
 
 inline int _zebulon_getch ()
 {
-	int result = trap (trap_IO, IO_read_char);
-	return result;
+	return (int) trapR (trap_serialIO, serialIO_read_char);
 }
 
 enum ide_result {IDE_OK = 0x0, IDE_AMNF = 0x1, IDE_TK0NF = 0x2, IDE_ABRT = 0x4, IDE_MCR = 0x8,
@@ -82,12 +85,12 @@ enum ide_result {IDE_OK = 0x0, IDE_AMNF = 0x1, IDE_TK0NF = 0x2, IDE_ABRT = 0x4, 
 
 inline unsigned int _zebulon_read_block (unsigned long block, unsigned char data [512])
 {
-	return trap (trap_block, block_read_block, block, data);
+	return 0x80;//trap (trap_block, block_read_block, block, data);
 }
 
 inline unsigned int _zebulon_write_block (unsigned long block, unsigned char data [512])
 {
-	return trap (trap_block, block_write_block, block, data);
+	return 0x80;//trap (trap_block, block_write_block, block, data);
 }
 
 }
