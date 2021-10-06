@@ -8,8 +8,8 @@
 #include <ctype.h>
 #include <ZebulonAPI.h>
 
-const char* version = "Z-Shell V2.00.0001";
-const char* filename = "Zebulon_V2.0.0001";
+const char* version = "Z-Shell V2.00.0002";
+const char* filename = "Zebulon_V2.0.0002";
 
 using namespace std;
 using namespace Zebulon;

@@ -7,7 +7,7 @@
 
 namespace
 {
-	unsigned int trap (unsigned char trap)
+	inline volatile unsigned int trap (unsigned char trap)
   	{
 		volatile unsigned int result;
 		setA0 (&result);
@@ -17,7 +17,7 @@ namespace
 		return result;
 	}
 
-	void trap (unsigned char trap, unsigned char opcode, int p1)
+	inline volatile void trap (unsigned char trap, unsigned char opcode, int p1)
   	{
 		setOpcode (opcode);
 
@@ -26,7 +26,7 @@ namespace
 		call_trap (trap);
 	}
 
-	int trap (unsigned char trap, unsigned char opcode)
+	inline volatile int trap (unsigned char trap, unsigned char opcode)
   	{
 		setOpcode (opcode);
 
@@ -38,12 +38,12 @@ namespace
 		return result;
 	}
 
-	unsigned int trap (unsigned int trap, unsigned char opcode, unsigned long p1, unsigned char* data)
+	inline volatile unsigned int trap (unsigned int trap, unsigned char opcode, unsigned long p1, unsigned char* data)
 	{
 		setOpcode (opcode);
 		setP1 (p1);
 
-		int result;	
+		volatile int result;	
 		setA0 (&result);	
 
 		setA1 (data);
@@ -73,7 +73,8 @@ inline void _zebulon_putch (int c)
 
 inline int _zebulon_getch ()
 {
-	return trap (trap_IO, IO_read_char);
+	int result = trap (trap_IO, IO_read_char);
+	return result;
 }
 
 enum ide_result {IDE_OK = 0x0, IDE_AMNF = 0x1, IDE_TK0NF = 0x2, IDE_ABRT = 0x4, IDE_MCR = 0x8,
