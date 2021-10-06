@@ -1,9 +1,9 @@
 #ifndef ZEBULONAPI_H
 #define ZEBULONAPI_H
 
-// a lot of stuff in this file is technically not volatile, but marking it sit so forces the compiler to make a local copy of the parameter which defeats a compiler bug where it refences the wrong stack location
-
 #include "TrapHelper.h"
+
+// a lot of stuff in this file is technically not volatile, but marking it so forces the compiler to make a local copy of the parameter which defeats a compiler bug where it references the wrong stack location
 
 namespace
 {
@@ -30,7 +30,7 @@ namespace
   	{
 		setOpcode (opcode);
 
-		int result;	
+		volatile int result;	
 		setA0 (&result);	
 
 		call_trap (trap);
