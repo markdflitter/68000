@@ -89,6 +89,7 @@ void printHelp (void)
 	printf ("uptime\t\t\t\t - print time since boot\n\r");
 	printf ("disk read <block>\t\t - read specified block from disk\n\r");
 	printf ("disk write <block> <pattern>\t - write pattern to specified block on disk\n\r");
+	printf ("disk soak\t\t\t - soak test the disk\n\r");
 }
 
 void uptime ()
@@ -96,7 +97,7 @@ void uptime ()
 	printf ("%d seconds\n\r", clock () / 1000);
 }
 
-void read_block (unsigned long block)
+void disk_read (unsigned long block)
 {
 	printf ("reading block %d\n\r", block);
 
@@ -110,7 +111,7 @@ void read_block (unsigned long block)
 		printf (">>> read error 0x%x\n\r", result);
 }
 
-void write_block (unsigned long block, unsigned char pattern)
+void disk_write (unsigned long block, unsigned char pattern)
 {
 	printf ("writing block %d\n\r", block);
 
@@ -122,6 +123,21 @@ void write_block (unsigned long block, unsigned char pattern)
 		printf ("OK\n\r");
 	else
 		printf (">>> write error 0x%x\n\r", result);
+}
+
+void disk_soak ()
+{
+	unsigned long t = clock () / 1000;
+	t = t - 10;
+	while (true)
+	{
+		if (clock () / 1000 > t + 10)	
+		{
+			disk_read (1);
+			t = clock () / 1000;
+			printf ("\n\r");
+		}
+	}
 }
 
 }
@@ -148,17 +164,24 @@ void Shell::run () const
 			if (tokens [0] == "help") printHelp ();
 			if (tokens [0] == "exit") exit = 1;
 			if (tokens [0] == "uptime") uptime ();
-			if (tokens [0] == "disk" && tokens.size () > 2) 
+			if (tokens [0] == "disk" && tokens.size () > 1) 
 			{
-				unsigned long block = atol (tokens [2].c_str ());
-				if (tokens [1] == "read")
+				if (tokens [1] == "soak")
 				{
-					read_block (block);				
+					disk_soak ();				
 				}
-				if (tokens [1] == "write" && tokens.size () > 3)
+				else if (tokens.size () > 2)
 				{
-					unsigned char pattern = (unsigned char) atol (tokens [3].c_str ());
-					write_block (block, pattern);
+					unsigned long block = atol (tokens [2].c_str ());
+					if (tokens [1] == "read")
+					{
+						disk_read (block);				
+					}
+					if (tokens [1] == "write" && tokens.size () > 3)
+					{
+						unsigned char pattern = (unsigned char) atol (tokens [3].c_str ());
+						disk_write (block, pattern);
+					}
 				}
 			}
 		}
