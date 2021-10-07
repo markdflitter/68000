@@ -58,7 +58,6 @@ void trap1 ()
 void trap2 () __attribute__ ((interrupt));
 void trap2 ()
 {
-
 	unsigned char opcode;
 	unsigned long block;
 	void* data;

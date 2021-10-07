@@ -4,8 +4,6 @@
 #include "TrapHelper.h"
 #include <stdio.h>
 
-// a lot of stuff in this file is technically not volatile, but marking it so forces the compiler to make a local copy of the parameter which defeats a compiler bug where it references the wrong stack location
-
 namespace Zebulon
 {
 	enum TRAP {trap_time = 0, trap_serialIO = 1, trap_ide = 2};
@@ -21,9 +19,10 @@ inline unsigned int _zebulon_time ()
 
 inline void _zebulon_putch (int c)
 {
+	// technically not volatile, but marking it so forces the compiler to make a local copy of the parameter which defeats a compiler bug where it references the wrong stack location
 	volatile int cc = c;
-	volatile void* a0 = &cc;
-	trap (trap_serialIO, serialIO_write_char, a0);
+	//volatile void* a0 = &cc;
+	trap (trap_serialIO, serialIO_write_char, &cc);
 }
 
 inline int _zebulon_getch ()

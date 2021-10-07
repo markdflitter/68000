@@ -4,7 +4,7 @@
 namespace
 {
 
-void trap (unsigned char trap_num, void* a0)
+void trap (unsigned char trap_num, volatile void* a0)
 {
 	asm volatile ("movel %0, %%a0\n\t"
 		 		  "trap %1\n\t" : : "m" (a0), "i" (trap_num) : "a0");
@@ -36,7 +36,7 @@ void* untrap (unsigned char& opcode)
 }
 
 
-void trap (unsigned char trap_num, unsigned char opcode, unsigned long p1, void* data, void* result)
+void trap (unsigned char trap_num, unsigned char opcode, unsigned long p1, volatile void* data, volatile void* result)
 {
 	asm volatile ("moveb %0, %%d0\n\t"
 				  "movel %1, %%d1\n\t"
