@@ -58,26 +58,21 @@ void trap1 ()
 void trap2 () __attribute__ ((interrupt));
 void trap2 ()
 {
-/*
-	char opcode;// = getOpcode ();
-   	asm volatile ("moveb %%d0, %0\n\t" : "=m" (opcode));
-	unsigned long block = getP1 ();
-	unsigned int* pResult = (unsigned int*) getResultPtr ();	
- 	unsigned char* pBuffer = (unsigned char*) getA1 ();
-	
-	char buf [256];
-	sprintf (buf, "opcode %d\n\r", opcode);
-	__putstr (buf);
+
+	unsigned char opcode;
+	unsigned long block;
+	void* data;
+	unsigned int* pResult = (unsigned int*) untrap (opcode, block, data);
+
 	unsigned int result = IDE_OK;
 	switch (opcode)
 	{
-		case Zebulon::ide_read_block  : {char buf [256]; sprintf (buf, "rd %d 0x%x\n\r", block, pBuffer); __putstr (buf); result = __ide_read (block, pBuffer); break;}
-		case Zebulon::ide_write_block : result = __ide_write (block, pBuffer); break;
+		case Zebulon::ide_read_block  : result = __ide_read (block, (unsigned char*) data); break;
+		case Zebulon::ide_write_block : result = __ide_write (block, (unsigned char*) data); break;
 		default: break;
 	}
 
 	*pResult = result;
-*/
 }
 
 
