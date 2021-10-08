@@ -87,6 +87,7 @@ void printHelp (void)
 	printf ("help\t\t\t\t - print this help\n\r");
 	printf ("exit\t\t\t\t - exit to monitor\n\r");
 	printf ("uptime\t\t\t\t - print time since boot\n\r");
+	printf ("disk ident\t\t\t - ident the disk and print data\n\r");
 	printf ("disk read <block>\t\t - read specified block from disk\n\r");
 	printf ("disk write <block> <pattern>\t - write pattern to specified block on disk\n\r");
 	printf ("disk soak\t\t\t - soak test the disk\n\r");
@@ -97,6 +98,17 @@ void uptime ()
 	printf ("%d seconds\n\r", clock () / 1000);
 }
 
+void disk_ident ()
+{
+	Zebulon::DiskInfo info;
+	unsigned int result = _zebulon_ide_ident (info);
+	if (result == IDE_OK)
+		printf ("%s\n\r", info.modelNumber);
+	else
+		printf (">>> ident error 0x%x\n\r", result);
+}
+
+
 void disk_read (unsigned long block)
 {
 	printf ("reading block %d\n\r", block);
@@ -104,7 +116,7 @@ void disk_read (unsigned long block)
 	unsigned char buffer [512];
 	memset (buffer, '\0', 512);
 
-	unsigned int result = _zebulon_read_block (block, buffer);
+	unsigned int result = _zebulon_ide_read_block (block, buffer);
 	if (result == IDE_OK)
 		printBuffer (buffer, 512);
 	else
@@ -118,7 +130,7 @@ void disk_write (unsigned long block, unsigned char pattern)
 	unsigned char buffer [512];
 	memset (buffer, pattern, 512);
 
-	unsigned int result = _zebulon_write_block (block, buffer);
+	unsigned int result = _zebulon_ide_write_block (block, buffer);
 	if (result == IDE_OK)
 		printf ("OK\n\r");
 	else
@@ -166,6 +178,10 @@ void Shell::run () const
 			if (tokens [0] == "uptime") uptime ();
 			if (tokens [0] == "disk" && tokens.size () > 1) 
 			{
+				if (tokens [1] == "ident")
+				{
+					disk_ident ();				
+				}
 				if (tokens [1] == "soak")
 				{
 					disk_soak ();				
