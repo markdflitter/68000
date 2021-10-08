@@ -5,6 +5,7 @@
 #include <ZebulonAPI.h>
 #include <TrapHelper.h>
 #include <string.h>
+#include "Filer.h"
 
 const char* banner = 
 "  ____\n\r"
@@ -20,6 +21,14 @@ extern unsigned char* __vector_table;
 
 static unsigned int ticks = 0;
 static double tickIntervalInMs = 0.0;
+
+
+Zebulon::Filer& theFiler ()
+{
+	static Zebulon::Filer f;
+	return f;
+}
+
 
 void tick () __attribute__ ((interrupt));
 void tick ()
@@ -144,8 +153,12 @@ void trap3 ()
 {
 	unsigned char opcode;
 	unsigned int* pResult = (unsigned int*) untrap (opcode);
-
-	*pResult = 0;
+	
+	switch (opcode)
+	{
+		case 0: *pResult = theFiler ().format (); break;
+		default: break;
+	}
 }
 	
 int main ()
@@ -191,8 +204,10 @@ int main ()
 		printf ("identified %s (%d Gb)\n\r", info.modelNumber, (unsigned long) capacity);
 		printf (" serial number\t\t: %s\n\r",info.serialNumber);
 		printf (" firmware revision\t: %s\n\r",info.firmwareRevision);
-		}
-
+	}
+	theFiler ();
+	
+	printf ("\n\r");
 	Shell ().run ();
 
 	__disable_interrupts ();
