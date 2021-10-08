@@ -152,11 +152,21 @@ void trap3 () __attribute__ ((interrupt));
 void trap3 ()
 {
 	unsigned char opcode;
-	unsigned int* pResult = (unsigned int*) untrap (opcode);
+	int* pResult = (int*) untrap (opcode);
 	
 	switch (opcode)
 	{
-		case 0: *pResult = theFiler ().format (); break;
+		case 0:
+		{
+			::DiskInfo info;
+			if (__ide_ident (info) == IDE_OK)
+			{
+				int numSectors = info.totalNumOfUserSectors;
+				*pResult = theFiler ().format (numSectors);
+			}
+			else *pResult = -1;
+		}
+	
 		default: break;
 	}
 }
