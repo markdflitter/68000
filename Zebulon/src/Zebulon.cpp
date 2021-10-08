@@ -138,7 +138,16 @@ void trap2 ()
 	*pResult = result;
 }
 
+// filer
+void trap3 () __attribute__ ((interrupt));
+void trap3 ()
+{
+	unsigned char opcode;
+	unsigned int* pResult = (unsigned int*) untrap (opcode);
 
+	*pResult = 0;
+}
+	
 int main ()
 {
 	__putstr (banner);	
@@ -169,6 +178,8 @@ int main ()
 	v.setVector (32, &trap0);	
 	v.setVector (33, &trap1);
 	v.setVector (34, &trap2);
+	v.setVector (35, &trap3);
+
 
 	// detailed diagnostics
 	printf ("installed TRAPs\n\r");

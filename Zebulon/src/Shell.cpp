@@ -91,6 +91,7 @@ void printHelp (void)
 	printf ("disk read <block>\t\t - read specified block from disk\n\r");
 	printf ("disk write <block> <pattern>\t - write pattern to specified block on disk\n\r");
 	printf ("disk soak\t\t\t - soak test the disk\n\r");
+	printf ("filer format\t\t\t - format the filing system\n\r");
 }
 
 void uptime ()
@@ -204,6 +205,21 @@ void disk_soak ()
 	}
 }
 
+void format_filer ()
+{
+	printf ("formatting...");
+
+	int result = _zebulon_filer_format ();
+	if (result >= 0)
+	{
+		printf ("OK\n\r");
+		printf ("chunks = %d\n\r",result);
+	}
+	else
+		printf ("Failed\n\r");
+}
+
+
 }
 
 void Shell::run () const
@@ -250,6 +266,13 @@ void Shell::run () const
 						unsigned char pattern = (unsigned char) atol (tokens [3].c_str ());
 						disk_write (block, pattern);
 					}
+				}
+			}
+			if (tokens [0] == "filer" && tokens.size () > 1)
+			{
+				if (tokens [1] == "format")
+				{
+					format_filer ();
 				}
 			}
 		}
