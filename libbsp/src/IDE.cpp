@@ -266,12 +266,15 @@ IDE::Result IDE::ident (DiskInfo& result)
 	result.numBytesPerTrack = response [4];
 	result.numBytesPerSector = response [5];
 	result.numSectorsPerTrack = response [6];
+	__memset (result.serialNumber,0, 21);
 	__memcpy (&(result.serialNumber), &(response [10]), 2 * 10);
 
 	result.bufferType = response [20];
 	result.bufferSize = response [21];
 	result.numEccBytes = response [22];
+	__memset (result.firmwareRevision,0, 9);
 	__memcpy (&(result.firmwareRevision), &(response [23]), 2 * 4);
+	__memset (result.modelNumber,0, 41);
 	__memcpy (&(result.modelNumber), &(response [27]), 2 * 20);
 
 	result.maxRwSectorsPerInterrupt = response [47] & 0xFF;
@@ -287,9 +290,10 @@ IDE::Result IDE::ident (DiskInfo& result)
 	result.numCurrentCylinders = response [54];
 	result.numCurrentHeads = response [55];
 	result.numCurrentSectorsPerTrack = response [56];
-	__memcpy (&(result.currentCapacityInSectors), &(response [57]), 2 * 2);
+	result.currentCapacityInSectors = response [57] + (response[58] << 16);
+	
 	result.currentRwSectorsPerInterrupt = response [59] & 0xFF;
-	__memcpy (&(result.totalNumOfUserSectors), &(response [60]), 2 * 2);
+	result.totalNumOfUserSectors = response [60] + (response[61] << 16);
 			
 	result.singlewordDmaModesSupported = response [62] & 0xFF;
 	result.singlewordDmaModesActive = response [62] >> 8;
