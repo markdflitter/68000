@@ -56,12 +56,12 @@ struct DiskInfo {
 	unsigned short numBytesPerTrack;
 	unsigned short numBytesPerSector;
 	unsigned short numSectorsPerTrack;
-	unsigned char serialNumber [20];
+	unsigned char serialNumber [21];
 	unsigned short bufferType;
 	unsigned short bufferSize;
 	unsigned short numEccBytes;
-	unsigned short firmwareRevision [8];
-	unsigned char modelNumber[40];
+	unsigned short firmwareRevision [9];
+	unsigned char modelNumber[41];
 	unsigned short maxRwSectorsPerInterrupt;
 	bool doubleWordIO;
 	unsigned short capabilities;

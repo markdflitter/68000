@@ -55,6 +55,61 @@ void trap1 ()
 	}
 }
 
+void convert_disk_info (::DiskInfo* source, Zebulon::DiskInfo* target)
+{
+	target->general = source->general;
+
+	target->hardSectored = source->hardSectored;
+	target->softSectored = source->softSectored;
+	target->notMfmEncoded = source->notMfmEncoded;
+	target->headSwitchTime15uS = source->headSwitchTime15uS;
+	source->spindleMotorControlOptionImplemented = source->spindleMotorControlOptionImplemented;
+	target->fixedDrive = source->fixedDrive;
+	target->removeableCartridgeDrive = source->removeableCartridgeDrive;
+	target->transferRateLt5Mbs = source->transferRateLt5Mbs;
+	target->transferRateLt10Mbs = source->transferRateLt10Mbs;
+	target->transferRateGt10Mbs = source->transferRateGt10Mbs;
+	target->rotationalSpeedTolerance = source->rotationalSpeedTolerance;
+	target->dataStrobeOffsetOptionAvailable = source->dataStrobeOffsetOptionAvailable;
+	target->trackOffsetOptionAvailable = source->trackOffsetOptionAvailable;
+	target->formatSpeedToleranceGapRequired = source->formatSpeedToleranceGapRequired;
+
+	target->numCylinders = source->numCylinders;
+	target->numHeads = source->numHeads;
+	target->numBytesPerTrack = source->numBytesPerTrack;
+	target->numBytesPerSector = source->numBytesPerSector;
+	target->numSectorsPerTrack = source->numSectorsPerTrack;
+	memcpy (target->serialNumber, source->serialNumber, 21);
+	target->bufferSize = source->bufferSize;
+	target->numEccBytes = source->numEccBytes;
+ 	
+	memcpy (target->firmwareRevision, source->firmwareRevision, 9);
+	memcpy (target->modelNumber, source->modelNumber, 41);
+
+	target->maxRwSectorsPerInterrupt = source->maxRwSectorsPerInterrupt;
+	target->doubleWordIO = source->doubleWordIO;
+	target->capabilities = source->capabilities;
+	target->DmaSupported = source->DmaSupported;
+	target->LbaSupported = source->LbaSupported;
+	target->PioMode = source->PioMode;
+	target->DmaMode = source->DmaMode;
+
+	target->currentValid =source->currentValid;
+	target->numCurrentCylinders = source->numCurrentCylinders;
+	target->numCurrentHeads = source->numCurrentHeads;
+
+	target->numCurrentSectorsPerTrack = source->numCurrentSectorsPerTrack;
+	target->currentCapacityInSectors = source->currentCapacityInSectors;
+	
+	target->currentRwSectorsPerInterrupt = source->currentRwSectorsPerInterrupt;
+	target->totalNumOfUserSectors = source->totalNumOfUserSectors;
+			
+	target->singlewordDmaModesSupported = source->singlewordDmaModesSupported;
+	target->singlewordDmaModesActive = source->singlewordDmaModesActive;
+	target->multiwordDmaModesActive = source->multiwordDmaModesActive;
+}
+
+
 // ident / read_block / write_block
 void trap2 () __attribute__ ((interrupt));
 void trap2 ()
@@ -71,7 +126,7 @@ void trap2 ()
 		{
 			::DiskInfo info;
 			result = __ide_ident (info);
-			memcpy (data, &info, sizeof (info));
+			convert_disk_info (&info, (Zebulon::DiskInfo*) data);
 			break;
 		}
 
@@ -134,4 +189,3 @@ int main ()
 
 	return 0;
 }
-
