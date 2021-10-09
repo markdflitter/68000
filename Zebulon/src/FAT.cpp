@@ -13,16 +13,36 @@ namespace Zebulon
 const char* FatIdent = "__Zebulon_FAT__1__";
 const char* FatVersion = "2.0";
 
-void FAT::load ()
-{
-	do_load ();
-}
-
 int FAT::initialise (int diskSize)
 {
 	int result = m_spaceManager.initialise (diskSize);
 	do_save ();
 	return result;
+}
+
+void FAT::load ()
+{
+	do_load ();
+}
+
+void FAT::save ()
+{
+	do_save ();
+}
+
+bool FAT::createFile (const std::string& name, unsigned long initialSize, bool contiguous)
+{
+	return true;
+}
+
+void FAT::deleteFile (const std::string& name)
+{
+}
+
+
+bool FAT::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
+{
+	return true;
 }
 
 void FAT::serialise (unsigned char*& p) const

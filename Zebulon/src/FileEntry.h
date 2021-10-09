@@ -20,6 +20,11 @@ public:
 	std::string name () const;
 	void setName (const std::string& name);
 
+	unsigned long size () const;
+	void setSize (unsigned long bytes);
+
+	unsigned long allocSize () const;
+	
 	std::list <Chunk::Ptr>& chunks ();
 	const std::list <Chunk::Ptr>& chunks () const;
 	void setChunks (const std::list <Chunk::Ptr>& chunks);
@@ -27,6 +32,7 @@ public:
 	void extend (std::list<Chunk::Ptr>& newAllocation);
 private:
 	std::string m_name;
+	unsigned int m_size;
 	std::list <Chunk::Ptr> m_chunks;
 };
 
