@@ -92,6 +92,7 @@ void printHelp (void)
 	printf ("disk write <block> <pattern>\t - write pattern to specified block on disk\n\r");
 	printf ("disk soak\t\t\t - soak test the disk\n\r");
 	printf ("filer format\t\t\t - format the filing system\n\r");
+	printf ("filer diag\t\t\t - print filing system diagnostics\n\r");
 }
 
 void uptime ()
@@ -219,6 +220,11 @@ void format_filer ()
 		printf ("Failed\n\r");
 }
 
+void diag_filer ()
+{
+	_zebulon_filer_diag ();
+}
+
 
 }
 
@@ -274,7 +280,11 @@ void Shell::run () const
 				{
 					format_filer ();
 				}
-			}
+				if (tokens [1] == "diag")
+				{
+					diag_filer ();
+				}
+				}
 		}
 	}
 	return ;

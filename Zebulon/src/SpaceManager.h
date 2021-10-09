@@ -17,6 +17,8 @@ public:
 
 	void serialise (unsigned char*& p) const;
 	void deserialise (const unsigned char*& p);
+
+	void diag () const;
 private:	
 	std::list<Chunk::Ptr> m_free;
 };

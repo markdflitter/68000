@@ -55,5 +55,16 @@ void SpaceManager::deserialise (const unsigned char*& p)
  	printf ("> loaded %d free chunks\n\r",m_free.size ());
 }
 
+void SpaceManager::diag () const
+{
+	printf ("--- Space Table ---\n\r");
+	int n  = 0;
+	for (std::list<Chunk::Ptr>::const_iterator i = m_free.begin (); i != m_free.end (); i++)
+	{
+		printf (" %d : free chunk: %d -> %d (length %d)\n\r", n, (*i)->start, (*i)->start + (*i)->length, (*i)->length);
+		n++;	
+	}
+}
+
 }
 

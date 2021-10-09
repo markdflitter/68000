@@ -21,4 +21,10 @@ int Filer::format (int diskSize)
   	return m_FAT.initialise (diskSize);
 }
 
+
+void Filer::diag () const
+{
+	m_FAT.diag ();
+}
+
 }

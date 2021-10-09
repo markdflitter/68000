@@ -209,5 +209,10 @@ FileEntry::Ptr FAT::findFile (const string& name)
 	return result;
 }
 
+void FAT::diag () const
+{
+	m_spaceManager.diag ();
+}
+
 }
 

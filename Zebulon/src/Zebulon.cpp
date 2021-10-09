@@ -165,8 +165,9 @@ void trap3 ()
 				*pResult = theFiler ().format (numSectors);
 			}
 			else *pResult = -1;
+			break;
 		}
-	
+		case 1: theFiler().diag (); break;
 		default: break;
 	}
 }

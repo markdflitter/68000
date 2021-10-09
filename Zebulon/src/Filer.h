@@ -13,6 +13,8 @@ public:
 
 	void load();
 	int format (int diskSize);
+
+	void diag () const;
 private:
 	FAT m_FAT;
 };

@@ -9,7 +9,7 @@ namespace Zebulon
 	enum TRAP {trap_time = 0, trap_serialIO = 1, trap_ide = 2, trap_filer};
 	enum serialIO {serialIO_write_char = 1, serialIO_read_char = 2};
 	enum ide_operations {ide_ident = 0, ide_write_block = 1, ide_read_block = 2};
-	enum filer_operations {filer_format = 0};
+	enum filer_operations {filer_format = 0, filer_diag = 1};
 
 inline unsigned int _zebulon_time ()
 {
@@ -111,6 +111,12 @@ inline int _zebulon_filer_format ()
 	trap (trap_filer, filer_format, &result);
 	return result;
 }
+
+inline void _zebulon_filer_diag ()
+{
+	trap (trap_filer, filer_diag, 0);
+}
+
 
 }
 #endif

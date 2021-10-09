@@ -19,6 +19,8 @@ public:
 	void deleteFile (const std::string& name);
 
 	bool extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks = 1);	
+
+	void diag () const;
 private:
 	void serialise (unsigned char*& p) const;
 	bool deserialise (const unsigned char*& p);
