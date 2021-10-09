@@ -178,14 +178,17 @@ void trap4 () __attribute__ ((interrupt));
 void trap4 ()
 {
 	unsigned char opcode;
-	const volatile void* filename;
-	const volatile void* mode;
-	int* pResult = (int*) untrap (opcode, filename, mode);
+	const volatile void* a1;
+	const volatile void* a2;
+	const volatile void* a3;
+	void* pResult = (int*) untrap (opcode, a1, a2, a3);
 
 	switch (opcode)
 	{
-		case Zebulon::c_IO_fopen: *pResult = theFiler ().fopen ((const char*) filename, (const char*) mode); break;
-		default: break;
+		case Zebulon::c_IO_fopen: * ((int*) pResult) = theFiler ().fopen ((const char*) a1, (const char*) a2); break;
+		case Zebulon::c_IO_fclose: theFiler ().fclose ((int) a1); break;
+		case Zebulon::c_IO_fwrite: *((unsigned long*) pResult) = theFiler ().fwrite ((int) a1, (const unsigned char*) a2, (unsigned long) a3); break;
+			default: break;
 	}
 }
 

@@ -217,20 +217,20 @@ FILE* fopen (const char* filename, const char* mode)
 
 int feof (FILE* fptr)
 {
-	return Zebulon::_zebulon_feof ((int) fptr);
+	return Zebulon::_zebulon_feof ((unsigned int) fptr);
 }
 
 long unsigned int fwrite (const void* data, long unsigned int data_size, long unsigned int number_data, void* fptr)
 {
-	return Zebulon::_zebulon_fwrite (data, data_size, number_data, (int) fptr);
+	return Zebulon::_zebulon_fwrite (data, data_size, number_data, (unsigned int) fptr);
 }
 
 long unsigned int fread (const void* data, long unsigned int data_size, long unsigned int number_data, void* fptr)
 {
-	return Zebulon::_zebulon_fread (data, data_size, number_data, (int) fptr);
+	return Zebulon::_zebulon_fread (data, data_size, number_data, (unsigned int) fptr);
 }
 
 void fclose (FILE* fptr)
 {
-	return Zebulon::_zebulon_fclose ((int) fptr);
+	return Zebulon::_zebulon_fclose ((unsigned int) fptr);
 }

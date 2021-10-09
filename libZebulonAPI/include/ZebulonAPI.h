@@ -131,29 +131,21 @@ inline FreeSpace _zebulon_filer_free_space ()
 	return fs;
 }
 
-inline int _zebulon_fopen (const char* filename, const char* mode)
+inline unsigned int _zebulon_fopen (const char* filename, const char* mode)
 {
 	int result;
 
-	trap (trap_c_IO, c_IO_fopen, filename, mode, &result);	
+	trap (trap_c_IO, c_IO_fopen, filename, mode, 0, &result);	
 
 	return result == -1 ? 0 : result + 1;
 }
 
-inline void _zebulon_fclose (int fptr)
+inline void _zebulon_fclose (unsigned int fptr)
 {
-/*
-	volatile int f = fptr - 1;
-	volatile void* a0 = &f;
-
-	asm ("moveb #4,%%d0\n\t"
-		 "movel %0,%%a0\n\t"
-		 "trap #2\n\t" : : "m" (a0) : "d0", "a0");
-*/
+	trap (trap_c_IO, c_IO_fclose, (const volatile void*) (fptr - 1), 0, 0, 0);	
 }
 
-
-inline int _zebulon_feof (int fptr)
+inline int _zebulon_feof (unsigned int fptr)
 {
 /*
 	volatile int f = fptr - 1;
@@ -173,31 +165,17 @@ inline int _zebulon_feof (int fptr)
 }
 
 
-inline long unsigned int _zebulon_fwrite (const void* data, long unsigned int data_size, long unsigned int number_data, int fptr)
+inline unsigned long _zebulon_fwrite (const void* data, long unsigned int data_size, long unsigned int number_data, unsigned int fptr)
 {
-/*
-	volatile int f = fptr - 1;
-	const volatile void* a0 = &f;
-	const volatile void* a1 = data;
+	unsigned long result;
+	unsigned long bytes = data_size * number_data;
 
-	volatile long unsigned int result;
-	volatile void* a2 = &result;
-
-	volatile long unsigned int d1 = data_size * number_data;
-
-	asm ("moveb #2, %%d0\n\t"
-		 "movel %0, %%a0\n\t"
-		 "movel %1, %%a1\n\t"
-		 "movel %2, %%a2\n\t"
-		 "movel %3, %%d1\n\t"
-		 "trap #2\n\t" : : "m" (a0), "m" (a1), "m" (a2), "m" (d1) : "d0", "a0", "a1", "a2", "d1");
+	trap (trap_c_IO, c_IO_fwrite, ((const volatile void*) (fptr - 1)), data, (const volatile void*) bytes, &result);	
 
 	return result;
-*/
-	return 0;
 }
 
-inline long unsigned int _zebulon_fread (const void* data, long unsigned int data_size, long unsigned int number_data, int fptr)
+inline unsigned long _zebulon_fread (const void* data, long unsigned int data_size, long unsigned int number_data, unsigned int fptr)
 {
 /*
 	volatile int f = fptr - 1;

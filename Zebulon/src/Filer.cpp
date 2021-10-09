@@ -89,6 +89,20 @@ int Filer::fopen (const std::string& filename, const std::string& mode)
 	return result;
 }
 
+void Filer::fclose (file_handle handle)
+{
+	getOpenFile (handle);
+	m_openFiles [handle].reset ();	
+}
+
+unsigned long Filer::fwrite (file_handle file, const unsigned char* data, unsigned long numBytes)
+{
+	OpenFile::Ptr of = getOpenFile (file);
+	if (!of.isNull ())
+		of->write (data, numBytes);
+	return 0;
+}
+
 void Filer::diag () const
 {
 	m_FAT.diag ();
@@ -98,5 +112,17 @@ FreeSpace Filer::getFreeSpace () const
 {
 	return m_FAT.getFreeSpace ();
 }
+
+OpenFile::Ptr Filer::getOpenFile (file_handle file)
+{
+	if ((file >= m_openFiles.size ()) || (m_openFiles [file].isNull ()))
+	{
+		printf (">> file %d not open\n\r", file);
+		return OpenFile::Ptr ();
+	}
+
+	return m_openFiles [file];
+}
+
 
 }
