@@ -99,13 +99,12 @@ void FAT::serialise (unsigned char*& p) const
 
 	m_spaceManager.serialise (p);
 
-	//Serialise::serialise (m_fileHeaders, p);	
+	Serialise::serialise (m_fileEntries, p);	
 }
 
 bool FAT::deserialise (const unsigned char*& p)
 {
-	//m_openFiles.clear ();
-	//m_fileHeaders.clear ();
+	m_fileEntries.clear ();
 
 	string readIdent;
 	Serialise::deserialise (readIdent, p, strlen (FatIdent));
@@ -129,11 +128,9 @@ bool FAT::deserialise (const unsigned char*& p)
 	
 	m_spaceManager.deserialise (p);
 		
-	//Serialise::deserialise (m_fileHeaders, p);
-	//for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin(); i != m_fileHeaders.end (); i++)
-	//	(*i)->setFat (this);
+	Serialise::deserialise (m_fileEntries, p);
 
-	//printf ("> found %d files\n\r", m_fileHeaders.size ());
+	printf ("> found %d file(s)\n\r", m_fileEntries.size ());
 	
 	return true;
 }

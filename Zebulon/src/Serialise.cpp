@@ -48,6 +48,13 @@ void Serialise::serialise (Chunk::Ptr chunk, unsigned char*& p)
 	copyTo (p, (const unsigned char*) chunk.get_raw (), sz);
 }
 
+void Serialise::serialise (FileEntry::Ptr file, unsigned char*& p)
+{
+	serialise (file->name (), p);
+	serialise (file->size (), p);
+	serialise (file->chunks (), p);
+}
+
 void Serialise::deserialise (unsigned long& l, const unsigned char*& p)
 {
 	size_t sz = sizeof (l);
@@ -72,6 +79,21 @@ void Serialise::deserialise (Chunk::Ptr chunk, const unsigned char*& p)
 {
 	size_t sz = sizeof (*chunk);
 	copyFrom ((unsigned char*) chunk.get_raw (), p, sz);
+}
+
+void Serialise::deserialise (FileEntry::Ptr file, const unsigned char*& p)
+{
+	string name;	
+	deserialise (name, p, 255);
+	file->setName (name);
+
+	unsigned long size;	
+	deserialise (size, p);
+	file->setSize (size);
+
+	list<Chunk::Ptr> chunks;
+	deserialise (chunks, p);
+	file->setChunks (chunks);
 }
 
 }
