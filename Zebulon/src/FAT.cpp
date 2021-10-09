@@ -12,7 +12,7 @@ namespace Zebulon
 {
 
 const char* FatIdent = "__Zebulon_FAT__1__";
-const char* FatVersion = "2.0";
+const char* FatVersion = "2.1";
 
 int FAT::initialise (int diskSize)
 {
@@ -209,6 +209,13 @@ FileEntry::Ptr FAT::findFile (const string& name)
 void FAT::diag () const
 {
 	m_spaceManager.diag ();
+
+	printf ("--- files ---\n\r");
+	int n = 0;
+	for (list<FileEntry::Ptr>::const_iterator i = m_fileEntries.begin (); i != m_fileEntries.end (); i++)
+	{
+		printf ("%d : %s\t\t(%d byte(s))\n\t", n, (*i)->name (), (*i)->size ());
+	}	
 }
 
 }
