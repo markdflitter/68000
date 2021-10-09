@@ -68,7 +68,7 @@ void SpaceManager::diag () const
 	unsigned int free = 0;
 	for (std::list<Chunk::Ptr>::const_iterator i = m_free.begin (); i != m_free.end (); i++)
 	{
-		printf (" %d : free chunk: %d -> %d (length %d)\n\r", n, (*i)->start, (*i)->start + (*i)->length, (*i)->length);
+		printf (" %d : free chunk from %d -> %d (length %d)\n\r", n, (*i)->start, (*i)->start + (*i)->length, (*i)->length);
 		n++;	
 		free += (*i)->length;
 	}
