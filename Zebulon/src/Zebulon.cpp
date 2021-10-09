@@ -156,7 +156,7 @@ void trap3 ()
 	
 	switch (opcode)
 	{
-		case 0:
+		case Zebulon::filer_format:
 		{
 			::DiskInfo info;
 			if (__ide_ident (info) == IDE_OK)
@@ -167,7 +167,8 @@ void trap3 ()
 			else *pResult = -1;
 			break;
 		}
-		case 1: theFiler().diag (); break;
+		case Zebulon::filer_diag: theFiler().diag (); break;
+		case Zebulon::filer_free_space : *((Zebulon::FreeSpace*) pResult) = theFiler ().getFreeSpace (); break;
 		default: break;
 	}
 }

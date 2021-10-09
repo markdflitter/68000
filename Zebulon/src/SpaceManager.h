@@ -3,6 +3,7 @@
 
 #include <list>
 #include "Chunk.h"
+#include <ZebulonAPI.h>
 
 namespace Zebulon
 {
@@ -19,13 +20,6 @@ public:
 	void deserialise (const unsigned char*& p);
 
 	void diag () const;
-
-	struct FreeSpace
-	{
-		unsigned long totalSpace;
-		unsigned long freeSpace;
-	};
-
 	FreeSpace getFreeSpace () const;
 private:	
 	static void printFreeSpace (FreeSpace fs);

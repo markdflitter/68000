@@ -93,7 +93,9 @@ void printHelp (void)
 	printf ("disk soak\t\t\t - soak test the disk\n\r");
 	printf ("filer format\t\t\t - format the filing system\n\r");
 	printf ("filer diag\t\t\t - print filing system diagnostics\n\r");
+	printf ("filer space\t\t\t - print filing system free space\n\r");
 }
+
 
 void uptime ()
 {
@@ -226,6 +228,14 @@ void diag_filer ()
 }
 
 
+void free_space_filer ()
+{
+	FreeSpace fs = _zebulon_filer_free_space ();
+
+	printf ("total free: %d out of %d (%d%%)\n\r", fs.freeSpace, fs.totalSpace, ((unsigned int) (100 * double(fs.freeSpace) / fs.totalSpace)));
+}
+
+
 }
 
 void Shell::run () const
@@ -284,8 +294,13 @@ void Shell::run () const
 				{
 					diag_filer ();
 				}
+				if (tokens [1] == "space")
+				{
+					free_space_filer ();
 				}
+			}
 		}
+
 	}
 	return ;
 }

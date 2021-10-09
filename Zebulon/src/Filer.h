@@ -15,6 +15,7 @@ public:
 	int format (int diskSize);
 
 	void diag () const;
+	FreeSpace getFreeSpace () const;
 private:
 	FAT m_FAT;
 };

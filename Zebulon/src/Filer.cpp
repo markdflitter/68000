@@ -27,4 +27,9 @@ void Filer::diag () const
 	m_FAT.diag ();
 }
 
+FreeSpace Filer::getFreeSpace () const
+{
+	return m_FAT.getFreeSpace ();
+}
+
 }

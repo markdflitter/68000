@@ -218,5 +218,10 @@ void FAT::diag () const
 	}	
 }
 
+FreeSpace FAT::getFreeSpace () const
+{
+	return m_spaceManager.getFreeSpace ();
+}
+
 }
 

@@ -78,7 +78,7 @@ void SpaceManager::diag () const
 }
 
 
-SpaceManager::FreeSpace SpaceManager::getFreeSpace () const
+FreeSpace SpaceManager::getFreeSpace () const
 {
 	FreeSpace fs;
 	fs.freeSpace = 0;
