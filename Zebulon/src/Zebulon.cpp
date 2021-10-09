@@ -58,8 +58,8 @@ void trap1 ()
 		
 	switch (opcode)
 	{
-		case Zebulon::serialIO_write_char : __putch ((char) *p); break;
-		case Zebulon::serialIO_read_char  : *p = (int) __getch (); break;
+		case Zebulon::serial_IO_write_char : __putch ((char) *p); break;
+		case Zebulon::serial_IO_read_char  : *p = (int) __getch (); break;
 		default: break;
 	}
 }

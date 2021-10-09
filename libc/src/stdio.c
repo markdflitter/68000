@@ -209,7 +209,7 @@ int printf (const char* format, ...)
 	return result;
 }
 
-/*
+
 FILE* fopen (const char* filename, const char* mode)
 {
 	return (FILE*) Zebulon::_zebulon_fopen (filename, mode);
@@ -234,4 +234,3 @@ void fclose (FILE* fptr)
 {
 	return Zebulon::_zebulon_fclose ((int) fptr);
 }
-*/

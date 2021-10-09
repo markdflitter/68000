@@ -235,6 +235,61 @@ void free_space_filer ()
 	printf ("total free: %d out of %d (%d%%)\n\r", fs.freeSpace, fs.totalSpace, ((unsigned int) (100 * double(fs.freeSpace) / fs.totalSpace)));
 }
 
+void read_file ()
+{
+	string filename = "test";
+	printf ("reading file '%s'\n\r", filename.c_str ());
+
+	FILE* f = fopen (filename.c_str (), "rb");
+	if (f == 0) return ;
+	
+	while (!feof (f))
+	{
+		unsigned char buffer [512];
+		fread (buffer, 1, 512, f);
+		printBuffer (buffer, 480);
+	}
+
+	fclose (f);
+}
+
+void write_file ()
+{
+	string filename = "test";
+	unsigned long size = 1000;
+
+	printf ("writing %d bytes to file '%s'\n\r", size, filename.c_str ());
+	
+	FILE* f = fopen (filename.c_str (), "wb");
+	if (f == 0) return ;
+
+	unsigned long bytesLeftToWrite = size;
+
+	unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
+
+	unsigned char* p = data;
+
+	while (bytesLeftToWrite > 0)
+	{
+		unsigned char buffer [100];
+		if (bytesLeftToWrite >= 100)
+		{
+			memcpy (buffer, p, 100);
+			fwrite (buffer, 1, 100, f);
+			bytesLeftToWrite -= 100;
+			p += 100;
+			if (p - data >= 600) p = data;
+		}
+		else
+		{
+			memcpy (buffer, p, bytesLeftToWrite);
+			fwrite (buffer, 1, bytesLeftToWrite, f);
+			bytesLeftToWrite -= bytesLeftToWrite;
+		}
+	}
+
+	fclose (f);
+}
 
 }
 
@@ -249,6 +304,7 @@ void Shell::run () const
 	{
 		printf ("$ ");
 		char* p = gets (buf);
+
 		*p = '\0';
 		printf ("\n\r");
 		string command (buf);
@@ -297,6 +353,20 @@ void Shell::run () const
 				if (tokens [1] == "space")
 				{
 					free_space_filer ();
+				}
+				if (tokens.size () > 2)
+				{
+					if (tokens [1] == "file")
+					{
+						if (tokens [2] == "read")
+						{
+							read_file ();
+						}
+						if (tokens [3] == "write")
+						{
+							write_file ();
+						}
+					}
 				}
 			}
 		}
