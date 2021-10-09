@@ -10,8 +10,10 @@ namespace Zebulon
 
 int SpaceManager::initialise (int initialSize)
 {
+	m_totalSpace = initialSize;
+
 	m_free.clear ();
-	m_free.push_back (make_shared (new Chunk (0, initialSize)));
+	m_free.push_back (make_shared (new Chunk (2, initialSize - 2)));
 
 	return initialSize;
 }
@@ -44,27 +46,55 @@ void SpaceManager::deallocate (std::list<Chunk::Ptr>& chunks)
 
 void SpaceManager::serialise (unsigned char*& p) const
 {
+	Serialise::serialise (m_totalSpace, p);
 	Serialise::serialise (m_free, p);
 }
 
 void SpaceManager::deserialise (const unsigned char*& p)
 {
+	Serialise::deserialise (m_totalSpace, p);
+
 	m_free.clear ();
 	Serialise::deserialise (m_free, p);
 
- 	printf ("> loaded %d free chunk(s)\n\r",m_free.size ());
+ 	printf ("loaded %d free chunk(s)\n\r",m_free.size ());
+	printFreeSpace (getFreeSpace ());
 }
 
 void SpaceManager::diag () const
 {
 	printf ("--- Space Table ---\n\r");
 	int n  = 0;
+	unsigned int free = 0;
 	for (std::list<Chunk::Ptr>::const_iterator i = m_free.begin (); i != m_free.end (); i++)
 	{
 		printf (" %d : free chunk: %d -> %d (length %d)\n\r", n, (*i)->start, (*i)->start + (*i)->length, (*i)->length);
 		n++;	
+		free += (*i)->length;
 	}
+
+	printFreeSpace (getFreeSpace ());
+	printf ("\n\r");
 }
+
+
+SpaceManager::FreeSpace SpaceManager::getFreeSpace () const
+{
+	FreeSpace fs;
+	fs.freeSpace = 0;
+	fs.totalSpace = m_totalSpace;
+
+	for (std::list<Chunk::Ptr>::const_iterator i = m_free.begin (); i != m_free.end (); i++)
+		fs.freeSpace += (*i)->length;
+
+	return fs;	
+}
+
+void SpaceManager::printFreeSpace (FreeSpace fs)
+{
+	printf ("total free: %d out of %d (%d%%)\n\r", fs.freeSpace, fs.totalSpace, ((unsigned int) (100 * double(fs.freeSpace) / fs.totalSpace)));
+}
+
 
 }
 

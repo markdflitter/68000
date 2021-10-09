@@ -19,7 +19,18 @@ public:
 	void deserialise (const unsigned char*& p);
 
 	void diag () const;
+
+	struct FreeSpace
+	{
+		unsigned long totalSpace;
+		unsigned long freeSpace;
+	};
+
+	FreeSpace getFreeSpace () const;
 private:	
+	static void printFreeSpace (FreeSpace fs);
+
+	unsigned long m_totalSpace;
 	std::list<Chunk::Ptr> m_free;
 };
 

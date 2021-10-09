@@ -12,7 +12,7 @@ namespace Zebulon
 {
 
 const char* FatIdent = "__Zebulon_FAT__1__";
-const char* FatVersion = "2.1";
+const char* FatVersion = "2.2";
 
 int FAT::initialise (int diskSize)
 {
@@ -130,7 +130,7 @@ bool FAT::deserialise (const unsigned char*& p)
 		
 	Serialise::deserialise (m_fileEntries, p);
 
-	printf ("> found %d file(s)\n\r", m_fileEntries.size ());
+	printf ("found %d file(s)\n\r", m_fileEntries.size ());
 	
 	return true;
 }
