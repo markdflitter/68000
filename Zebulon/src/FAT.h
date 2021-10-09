@@ -15,6 +15,8 @@ public:
 	void load ();
 	void save ();
 
+	FileEntry::Ptr findFile (const std::string& name);
+
 	bool createFile (const std::string& name, unsigned long initialSize = 0, bool contiguous = false);
 	void deleteFile (const std::string& name);
 
@@ -28,8 +30,6 @@ private:
 
 	void do_load ();
 	void do_save () const;
-
-	FileEntry::Ptr findFile (const std::string& name);
 
 	SpaceManager m_spaceManager;	
 	std::list<FileEntry::Ptr> m_fileEntries;

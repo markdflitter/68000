@@ -31,11 +31,28 @@ void FAT::save ()
 	do_save ();
 }
 
+FileEntry::Ptr FAT::findFile (const string& name)
+{
+	FileEntry::Ptr result;
+
+	if (name.length () > 0)
+	{
+		for (list<FileEntry::Ptr>::iterator i = m_fileEntries.begin (); i != m_fileEntries.end (); i++)
+			if ((*i)->name () == name)
+			{
+				result = (*i);
+				break ;
+			}
+	}
+
+	return result;
+}
+
 bool FAT::createFile (const std::string& name, unsigned long initialSize, bool contiguous)
 {
-	if (name.length () > 255)
+	if (name.length () > 64)
 	{
-		printf (">> filename may not be > 255 characters\n\r");
+		printf (">> filename may not be > 64 characters\n\r");
 		return false;
 	}
 
@@ -45,7 +62,6 @@ bool FAT::createFile (const std::string& name, unsigned long initialSize, bool c
 		return false;
 	}
 
-	printf ("create %d\n\r", initialSize);
 	list<Chunk::Ptr> allocation = m_spaceManager.allocate (initialSize, contiguous);
 	if ((initialSize > 0) && (allocation.size () == 0))
 	{
@@ -189,23 +205,6 @@ void FAT::do_save () const
 		Utils::printIdeError (result);
 }
 
-FileEntry::Ptr FAT::findFile (const string& name)
-{
-	FileEntry::Ptr result;
-
-	if (name.length () > 0)
-	{
-		for (list<FileEntry::Ptr>::iterator i = m_fileEntries.begin (); i != m_fileEntries.end (); i++)
-			if ((*i)->name () == name)
-			{
-				result = (*i);
-				break ;
-			}
-	}
-
-	return result;
-}
-
 void FAT::diag () const
 {
 	m_spaceManager.diag ();
@@ -214,8 +213,15 @@ void FAT::diag () const
 	int n = 0;
 	for (list<FileEntry::Ptr>::const_iterator i = m_fileEntries.begin (); i != m_fileEntries.end (); i++)
 	{
-		printf ("%d : %s\t\t(%d byte(s))\n\t", n, (*i)->name (), (*i)->size ());
-	}	
+		string name = (*i)->name ();
+		
+		string pad (64 - name.length (), ' ');	
+
+		printf ("%d : %s%s %d byte(s)\n\r", n, (*i)->name ().c_str(), pad.c_str (), (*i)->size ());
+		n++;
+	}
+
+	printf ("\n\r");	
 }
 
 FreeSpace FAT::getFreeSpace () const

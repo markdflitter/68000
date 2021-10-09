@@ -1,6 +1,25 @@
 #include "Filer.h"
 #include <stdio.h>
 
+using namespace mdf;
+
+namespace
+{
+bool mode_is (const std::string& mode, char what)
+{
+	const char* str = mode.c_str ();
+	char ch;
+	while ((ch = *str++) != '\0')
+	{
+		if (ch == what) return true;
+	}
+	
+	return false;
+}
+
+}
+
+
 namespace Zebulon
 {
 
@@ -9,12 +28,15 @@ Filer::Filer ()
 	printf ("Filer::Filer()\n\r");
 }
 
+Filer::~Filer ()
+{
+	m_openFiles.clear ();
+}
 
 void Filer::load ()
 {
 	m_FAT.load ();
 }
-
 
 int Filer::format (int diskSize)
 {
@@ -23,8 +45,48 @@ int Filer::format (int diskSize)
 
 int Filer::fopen (const std::string& filename, const std::string& mode)
 {
-	printf ("Filer::fopen %s %s\n\r", filename.c_str (), mode.c_str ());
-	return -1;
+	file_handle result = file_not_found;
+
+	if (m_FAT.findFile (filename).isNull ())
+	{
+		//printf ("file doesn't exist\n\r");
+		if (mode_is (mode, 'w'))
+		{
+			//printf ("create file\n\r");
+	    	m_FAT.createFile (filename);
+		}
+		else
+		{
+			//printf ("file not found\n\r");
+			return result;
+		}			
+	}
+	else
+	{
+		//printf ("file exists\n\r");
+		if (mode_is (mode, 'w'))
+		{
+			//printf ("delete and create file\n\r");
+			m_FAT.deleteFile (filename);
+	    	m_FAT.createFile (filename);
+		}
+	}
+
+	FileEntry::Ptr f = m_FAT.findFile (filename);
+	if (f.isNull ())
+	{
+		printf (">> file not found\n\r");
+		return file_not_found;
+	}
+	
+	m_openFiles.push_back (make_shared(new OpenFile(f, &m_FAT)));
+
+	result = m_openFiles.size () - 1;
+
+	if (mode_is (mode, 'r'))
+		result |= 0x8000;
+	
+	return result;
 }
 
 void Filer::diag () const
