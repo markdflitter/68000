@@ -4,58 +4,80 @@
 namespace
 {
 
-void trap (unsigned char trap_num, volatile void* a0)
+void trap (unsigned char trap_num, volatile void* pResult)
 {
 	asm volatile ("movel %0, %%a0\n\t"
-		 		  "trap %1\n\t" : : "m" (a0), "i" (trap_num) : "a0");
+		 		  "trap %1\n\t" : : "m" (pResult), "i" (trap_num) : "a0");
 }
 
 void* untrap ()
 {
-	void* a0;
-	asm ("movel %%a0, %0\n\t" : "=m" (a0));
-	return a0;
+	void* pResult;
+	asm ("movel %%a0, %0\n\t" : "=m" (pResult));
+	return pResult;
 }
 
 
-void trap (unsigned char trap_num, unsigned char opcode, volatile void* a0)
+void trap (unsigned char trap_num, unsigned char opcode, volatile void* pResult)
 {
 	asm volatile ("moveb %0, %%d0\n\t"
 	              "movel %1, %%a0\n\t"
-	              "trap %2\n\t" : : "m" (opcode), "m" (a0), "i" (trap_num) : "d0", "a0");
+	              "trap %2\n\t" : : "m" (opcode), "m" (pResult), "i" (trap_num) : "d0", "a0");
 }
 
 void* untrap (unsigned char& opcode)
 {
-	void* a0;
+	void* pResult;
 
 	asm ("moveb %%d0, %0\n\t"
-		 "movel %%a0, %1\n\t" : "=m" (opcode), "=m" (a0));
+		 "movel %%a0, %1\n\t" : "=m" (opcode), "=m" (pResult));
 
-	return a0;
+	return pResult;
 }
 
-
-void trap (unsigned char trap_num, unsigned char opcode, unsigned long p1, volatile void* data, volatile void* result)
+void trap (unsigned char trap_num, unsigned char opcode, unsigned long p1, volatile void* a1, volatile void* pResult)
 {
 	asm volatile ("moveb %0, %%d0\n\t"
 				  "movel %1, %%d1\n\t"
                   "movel %2, %%a0\n\t"
 	              "movel %3, %%a1\n\t"
 	              "trap %4\n\t" 
-				  : : "m" (opcode), "m" (p1), "m" (result), "m" (data), "i" (trap_num) : "d0", "d1", "a0", "a1");
+				  : : "m" (opcode), "m" (p1), "m" (pResult), "m" (a1), "i" (trap_num) : "d0", "d1", "a0", "a1");
 }
 
-void* untrap (unsigned char& opcode, unsigned long& p1, void*& data)
+void* untrap (unsigned char& opcode, unsigned long& p1, void*& a1)
 {
-	void* a0;
+	void* pResult;
 
 	asm ("moveb %%d0, %0\n\t"
 		 "movel %%d1, %1\n\t"
 		 "movel %%a0, %2\n\t"
-		 "movel %%a1, %3\n\t" : "=m" (opcode), "=m" (p1), "=m" (a0), "=m" (data));
+		 "movel %%a1, %3\n\t" : "=m" (opcode), "=m" (p1), "=m" (pResult), "=m" (a1));
 
-	return a0;
+	return pResult;
+}
+
+
+void trap (unsigned char trap_num, unsigned char opcode, const volatile void* a1, const volatile void* a2, volatile void* pResult)
+{
+	asm volatile ("moveb %0, %%d0\n\t"
+                  "movel %1, %%a0\n\t"
+	              "movel %2, %%a1\n\t"
+	              "movel %3, %%a2\n\t"
+	              "trap %4\n\t" 
+				  : : "m" (opcode), "m" (pResult), "m" (a1), "m" (a2), "i" (trap_num) : "d0", "a0", "a1", "a2");
+}
+
+void* untrap (unsigned char& opcode, const volatile void*& a1, const volatile void*& a2)
+{
+	void* pResult;
+
+	asm ("moveb %%d0, %0\n\t"
+		 "movel %%a0, %1\n\t"
+		 "movel %%a1, %2\n\t" 
+		 "movel %%a2, %3\n\t" :  "=m" (opcode), "=m" (pResult), "=m" (a1), "=m" (a2));
+
+	return pResult;
 }
 
 }

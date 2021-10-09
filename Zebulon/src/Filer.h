@@ -14,6 +14,8 @@ public:
 	void load();
 	int format (int diskSize);
 
+	int fopen (const std::string& filename, const std::string& mode);
+
 	void diag () const;
 	FreeSpace getFreeSpace () const;
 private:

@@ -87,7 +87,8 @@ struct DiskInfo {
 inline unsigned int _zebulon_ide_ident (DiskInfo& info)
 {
 	unsigned int result;
-	trap (trap_ide, ide_ident, 0, &info, &result);
+	unsigned long ignore = 0;
+	trap (trap_ide, ide_ident, ignore, &info, &result);
 	return result;
 }
 
@@ -132,22 +133,11 @@ inline FreeSpace _zebulon_filer_free_space ()
 
 inline int _zebulon_fopen (const char* filename, const char* mode)
 {
-	/*
-	volatile int fptr;
-	volatile void* a0 = &fptr;
+	int result;
 
-	const volatile void* a1 = filename;
-	const volatile void* a2 = mode;
-	
-	asm ("moveb #1, %%d0\n\t"
-		 "movel %0, %%a0\n\t"
-		 "movel %1, %%a1\n\t"
-		 "movel %2, %%a2\n\t"
-		 "trap #2\n\t" : : "m" (a0), "m" (a1), "m" (a2) : "d0", "a0", "a1", "a2");
+	trap (trap_c_IO, c_IO_fopen, filename, mode, &result);	
 
-	return fptr == -1 ? 0 : fptr + 1;
-	*/
-	return -1;
+	return result == -1 ? 0 : result + 1;
 }
 
 inline void _zebulon_fclose (int fptr)

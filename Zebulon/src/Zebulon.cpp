@@ -172,7 +172,23 @@ void trap3 ()
 		default: break;
 	}
 }
-	
+
+// c file IO
+void trap4 () __attribute__ ((interrupt));
+void trap4 ()
+{
+	unsigned char opcode;
+	const volatile void* filename;
+	const volatile void* mode;
+	int* pResult = (int*) untrap (opcode, filename, mode);
+
+	switch (opcode)
+	{
+		case Zebulon::c_IO_fopen: *pResult = theFiler ().fopen ((const char*) filename, (const char*) mode); break;
+		default: break;
+	}
+}
+
 int main ()
 {
 	__putstr (banner);	
@@ -204,6 +220,8 @@ int main ()
 	v.setVector (33, &trap1);
 	v.setVector (34, &trap2);
 	v.setVector (35, &trap3);
+	v.setVector (36, &trap4);
+
 
 
 	// detailed diagnostics

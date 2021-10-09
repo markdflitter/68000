@@ -8,8 +8,8 @@
 #include <ctype.h>
 #include <ZebulonAPI.h>
 
-const char* version = "Z-Shell V2.00.0003";
-const char* filename = "Zebulon_V2.0.0003";
+const char* version = "Z-Shell V2.00.0004";
+const char* filename = "Zebulon_V2.0.0004";
 
 using namespace std;
 using namespace Zebulon;
@@ -94,6 +94,9 @@ void printHelp (void)
 	printf ("filer format\t\t\t - format the filing system\n\r");
 	printf ("filer diag\t\t\t - print filing system diagnostics\n\r");
 	printf ("filer space\t\t\t - print filing system free space\n\r");
+	printf ("filer file read <filename>\t - read file\n\r");
+	printf ("filer file write <filename>\t - write file\n\r");
+}
 }
 
 
@@ -235,9 +238,8 @@ void free_space_filer ()
 	printf ("total free: %d out of %d (%d%%)\n\r", fs.freeSpace, fs.totalSpace, ((unsigned int) (100 * double(fs.freeSpace) / fs.totalSpace)));
 }
 
-void read_file ()
+void read_file (const std::string& filename)
 {
-	string filename = "test";
 	printf ("reading file '%s'\n\r", filename.c_str ());
 
 	FILE* f = fopen (filename.c_str (), "rb");
@@ -253,9 +255,8 @@ void read_file ()
 	fclose (f);
 }
 
-void write_file ()
+void write_file (const std::string& filename)
 {
-	string filename = "test";
 	unsigned long size = 1000;
 
 	printf ("writing %d bytes to file '%s'\n\r", size, filename.c_str ());
@@ -289,8 +290,6 @@ void write_file ()
 	}
 
 	fclose (f);
-}
-
 }
 
 void Shell::run () const
@@ -354,17 +353,18 @@ void Shell::run () const
 				{
 					free_space_filer ();
 				}
-				if (tokens.size () > 2)
+				if (tokens.size () > 3)
 				{
+					string filename = tokens [3];
 					if (tokens [1] == "file")
 					{
 						if (tokens [2] == "read")
 						{
-							read_file ();
+							read_file (filename);
 						}
-						if (tokens [3] == "write")
+						if (tokens [2] == "write")
 						{
-							write_file ();
+							write_file (filename);
 						}
 					}
 				}

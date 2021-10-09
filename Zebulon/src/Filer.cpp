@@ -21,6 +21,11 @@ int Filer::format (int diskSize)
   	return m_FAT.initialise (diskSize);
 }
 
+int Filer::fopen (const std::string& filename, const std::string& mode)
+{
+	printf ("Filer::fopen %s %s\n\r", filename.c_str (), mode.c_str ());
+	return -1;
+}
 
 void Filer::diag () const
 {
