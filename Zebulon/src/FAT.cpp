@@ -6,6 +6,7 @@
 #include <string>
 
 using namespace std;
+using namespace mdf;
 
 namespace Zebulon
 {
@@ -32,16 +33,61 @@ void FAT::save ()
 
 bool FAT::createFile (const std::string& name, unsigned long initialSize, bool contiguous)
 {
+	if (name.length () > 255)
+	{
+		printf (">> filename may not be > 255 characters\n\r");
+		return false;
+	}
+
+	if (!findFile (name).isNull ())
+	{
+		printf (">> file already exists\n\r");
+		return false;
+	}
+
+	printf ("create %d\n\r", initialSize);
+	list<Chunk::Ptr> allocation = m_spaceManager.allocate (initialSize, contiguous);
+	if ((initialSize > 0) && (allocation.size () == 0))
+	{
+		printf (">>> disk full\n\r");
+		return false;
+	}
+
+	m_fileEntries.push_back (make_shared (new FileEntry (name, allocation)));
+
+	save ();	
 	return true;
 }
 
 void FAT::deleteFile (const std::string& name)
 {
-}
+	list<FileEntry::Ptr>::iterator i = m_fileEntries.begin ();
 
+	for ( ; i != m_fileEntries.end (); i++)
+		if ((*i)->name () == name)
+		{
+			m_spaceManager.deallocate ((*i)->chunks ());
+			m_fileEntries.erase (i);
+			save ();
+	 		return ;
+		}
+
+	printf (">> file not found\n\r");
+}
 
 bool FAT::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
 {
+	list<Chunk::Ptr> newAllocation = m_spaceManager.allocate (numBlocks);
+
+	if ((numBlocks > 0) && (newAllocation.size () == 0))
+	{
+		printf (">>> disk full\n\r");
+		return false;
+	}
+
+	fileEntry->extend (newAllocation);
+	save ();
+
 	return true;
 }
 
@@ -144,6 +190,23 @@ void FAT::do_save () const
 	::ide_result result = __ide_write (1, block);	
 	if (result != ::IDE_OK)
 		Utils::printIdeError (result);
+}
+
+FileEntry::Ptr FAT::findFile (const string& name)
+{
+	FileEntry::Ptr result;
+
+	if (name.length () > 0)
+	{
+		for (list<FileEntry::Ptr>::iterator i = m_fileEntries.begin (); i != m_fileEntries.end (); i++)
+			if ((*i)->name () == name)
+			{
+				result = (*i);
+				break ;
+			}
+	}
+
+	return result;
 }
 
 }

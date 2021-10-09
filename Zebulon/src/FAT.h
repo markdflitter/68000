@@ -26,7 +26,10 @@ private:
 	void do_load ();
 	void do_save () const;
 
+	FileEntry::Ptr findFile (const std::string& name);
+
 	SpaceManager m_spaceManager;	
+	std::list<FileEntry::Ptr> m_fileEntries;
 };
 
 }
