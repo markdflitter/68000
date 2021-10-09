@@ -1,26 +1,32 @@
 #include "SpaceManager.h"
+#include <shared_ptr>
+#include "Serialise.h"
+#include <stdio.h>
+
+using namespace mdf;
 
 namespace Zebulon
 {
 
-void SpaceManager::load ()
+int SpaceManager::initialise (int initialSize)
 {
-	do_load ();
+	m_free.clear ();
+	m_free.push_back (make_shared (new Chunk (0, initialSize)));
+
+	return initialSize;
 }
 
-int SpaceManager::initialise (int initialChunks)
+void SpaceManager::serialise (unsigned char*& p) const
 {
-	do_save ();
-	return initialChunks;
+	Serialise::serialise (m_free, p);
 }
 
-
-void SpaceManager::do_load ()
+void SpaceManager::deserialise (const unsigned char*& p)
 {
-}
+	m_free.clear ();
+	Serialise::deserialise (m_free, p);
 
-void SpaceManager::do_save () const
-{
+ 	printf ("> loaded %d free chunks\n\r",m_free.size ());
 }
 
 }

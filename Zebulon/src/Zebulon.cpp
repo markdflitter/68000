@@ -215,7 +215,8 @@ int main ()
 		printf (" serial number\t\t: %s\n\r",info.serialNumber);
 		printf (" firmware revision\t: %s\n\r",info.firmwareRevision);
 	}
-	theFiler ();
+	
+	theFiler ().load ();
 	
 	printf ("\n\r");
 	Shell ().run ();
