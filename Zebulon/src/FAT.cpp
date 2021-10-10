@@ -242,6 +242,7 @@ void FAT::diag () const
 		string pad (MAX_FILENAME_LENGTH - name.length (), ' ');	
 
 		printf ("%d\t: %s%s %d byte(s)\n\r", n, (*i)->name ().c_str(), pad.c_str (), (*i)->size ());
+		(*i)->diag ();
 		n++;
 	}
 

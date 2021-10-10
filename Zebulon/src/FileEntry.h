@@ -30,6 +30,8 @@ public:
 	void setChunks (const std::list <Chunk::Ptr>& chunks);
 
 	void extend (std::list<Chunk::Ptr>& newAllocation);
+
+	void diag () const;
 private:
 	std::string m_name;
 	unsigned int m_size;

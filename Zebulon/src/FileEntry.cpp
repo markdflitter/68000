@@ -1,4 +1,5 @@
 #include "FileEntry.h"
+#include <stdio.h>
 
 using namespace std;
 
@@ -60,4 +61,9 @@ void FileEntry::extend (std::list<Chunk::Ptr>& newAllocation)
 	m_chunks.splice (m_chunks.end (), newAllocation);
 }
 
+void FileEntry::diag () const
+{
+	for (std::list<Chunk::Ptr>::const_iterator i = m_chunks.begin (); i != m_chunks.end (); i++)
+		printf ("  %d -> %d (length %d)\n\r", (*i)->start, (*i)->start + (*i)->length - 1, (*i)->length);
+}
 }
