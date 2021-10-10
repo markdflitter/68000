@@ -409,7 +409,7 @@ void Shell::run () const
 						}
 						if (tokens [2] == "write" && tokens.size () > 4)
 						{
-							unsigned char bytes = (unsigned char) atol (tokens [4].c_str ());
+							unsigned long bytes = (unsigned long) atol (tokens [4].c_str ());
 							write_file (filename, bytes);
 						}
 						if (tokens [2] == "stat")
