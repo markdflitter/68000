@@ -244,12 +244,12 @@ void read_file (const std::string& filename)
 
 	FILE* f = fopen (filename.c_str (), "rb");
 	if (f == 0) return ;
-	
+		
 	while (!feof (f))
 	{
 		unsigned char buffer [512];
 		fread (buffer, 1, 512, f);
-		printBuffer (buffer, 480);
+		printBuffer (buffer, 512);
 	}
 
 	fclose (f);

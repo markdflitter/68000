@@ -167,26 +167,12 @@ inline unsigned long _zebulon_fwrite (const void* data, long unsigned int data_s
 
 inline unsigned long _zebulon_fread (const void* data, long unsigned int data_size, long unsigned int number_data, unsigned int fptr)
 {
-/*
-	volatile int f = fptr - 1;
-	const volatile void* a0 = &f;
-	const volatile void* a1 = data;
+	unsigned long result;
+	unsigned long bytes = data_size * number_data;
 
-	volatile long unsigned int result;
-	volatile void* a2 = &result;
-
-	volatile long unsigned int d1 = data_size * number_data;
-
-	asm ("moveb #3, %%d0\n\t"
-		 "movel %0, %%a0\n\t"
-		 "movel %1, %%a1\n\t"
-		 "movel %2, %%a2\n\t"
-		 "movel %3, %%d1\n\t"
-		 "trap #2\n\t" : : "m" (a0), "m" (a1), "m" (a2), "m" (d1) : "d0", "a0", "a1", "a2", "d1");
+	trap (trap_c_IO, c_IO_fread, ((const volatile void*) (fptr - 1)), data, (const volatile void*) bytes, &result);	
 
 	return result;
-*/
-	return 0;
 }
 
 }

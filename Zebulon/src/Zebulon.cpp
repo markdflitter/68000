@@ -187,9 +187,10 @@ void trap4 ()
 	{
 		case Zebulon::c_IO_fopen: * ((int*) pResult) = theFiler ().fopen ((const char*) a1, (const char*) a2); break;
 		case Zebulon::c_IO_fclose: theFiler ().fclose ((int) a1); break;
-		case Zebulon::c_IO_fwrite: *((unsigned long*) pResult) = theFiler ().fwrite ((int) a1, (const unsigned char*) a2, (unsigned long) a3); break;
-			default: break;
 		case Zebulon::c_IO_feof: * ((int*) pResult) = theFiler ().feof ((int) a1); break;
+		case Zebulon::c_IO_fwrite: *((unsigned long*) pResult) = theFiler ().fwrite ((int) a1, (const unsigned char*) a2, (unsigned long) a3); break;
+		case Zebulon::c_IO_fread: *((unsigned long*) pResult) = theFiler ().fread ((int) a1, (unsigned char*) a2, (unsigned long) a3); break;
+			default: break;
 	}
 }
 

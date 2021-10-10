@@ -17,6 +17,18 @@ bool mode_is (const std::string& mode, char what)
 	return false;
 }
 
+void set_read_only (int& handle)
+{
+	handle |= 0x8000;
+}
+
+bool check_read_only (int& handle)
+{
+	bool result = (handle & 0x8000) == 0x8000;
+	handle &= ~0x8000;
+	return result;
+}
+
 }
 
 
@@ -84,19 +96,21 @@ int Filer::fopen (const std::string& filename, const std::string& mode)
 	result = m_openFiles.size () - 1;
 
 	if (mode_is (mode, 'r'))
-		result |= 0x8000;
+		set_read_only (result);
 	
 	return result;
 }
 
 void Filer::fclose (file_handle handle)
 {
-	getOpenFile (handle);
-	m_openFiles [handle].reset ();	
+	check_read_only (handle);
+	if (!getOpenFile (handle).isNull ())
+		m_openFiles [handle].reset ();	
 }
 
 bool Filer::feof (file_handle handle)
 {
+	check_read_only (handle);
 	OpenFile::Ptr of = getOpenFile (handle);
 	if (!of.isNull ())
 		return of->EOF ();
@@ -104,12 +118,26 @@ bool Filer::feof (file_handle handle)
 	return true;
 }
 
-
-unsigned long Filer::fwrite (file_handle file, const unsigned char* data, unsigned long numBytes)
+unsigned long Filer::fwrite (file_handle handle, const unsigned char* data, unsigned long numBytes)
 {
-	OpenFile::Ptr of = getOpenFile (file);
+	if (check_read_only (handle))
+	{
+		printf (">> file opened as read-only\n\t");
+		return 0;
+	}
+
+	OpenFile::Ptr of = getOpenFile (handle);
 	if (!of.isNull ())
 		of->write (data, numBytes);
+	return 0;
+}
+
+unsigned long Filer::fread (file_handle handle, unsigned char* data, unsigned long numBytes)
+{
+	check_read_only (handle);
+	OpenFile::Ptr of = getOpenFile (handle);
+	if (!of.isNull ())
+		of->read (data, numBytes);
 	return 0;
 }
 
