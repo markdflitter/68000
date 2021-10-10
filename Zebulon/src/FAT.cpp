@@ -4,6 +4,7 @@
 #include <bsp.h>
 #include <string.h>
 #include <string>
+#include <ZebulonAPI.h>
 
 using namespace std;
 using namespace mdf;
@@ -50,9 +51,9 @@ FileEntry::Ptr FAT::findFile (const string& name)
 
 bool FAT::createFile (const std::string& name, unsigned long initialSize, bool contiguous)
 {
-	if (name.length () > 64)
+	if (name.length () > MAX_FILENAME_LENGTH)
 	{
-		printf (">> filename may not be > 64 characters\n\r");
+		printf (">> filename may not be > %d characters\n\r", MAX_FILENAME_LENGTH);
 		return false;
 	}
 
@@ -124,6 +125,10 @@ _zebulon_stats FAT::statFile (const std::string& name)
 	return stats;
 }
 
+FileSearch::Ptr FAT::findFirstFile ()
+{
+	return make_shared(new FileSearch (m_fileEntries));
+}
 
 void FAT::serialise (unsigned char*& p) const
 {
@@ -233,7 +238,7 @@ void FAT::diag () const
 	{
 		string name = (*i)->name ();
 		
-		string pad (64 - name.length (), ' ');	
+		string pad (MAX_FILENAME_LENGTH - name.length (), ' ');	
 
 		printf ("%d\t: %s%s %d byte(s)\n\r", n, (*i)->name ().c_str(), pad.c_str (), (*i)->size ());
 		n++;

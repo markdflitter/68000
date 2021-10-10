@@ -88,7 +88,7 @@ unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned lon
 
 void printStats (const std::string& filename, const _zebulon_stats stats)
 {
-	string pad (64 - filename.length (), ' ');	
+	string pad (MAX_FILENAME_LENGTH - filename.length (), ' ');	
 
 	printf ("%s%s : %d byte(s), allocated %d\n\r", filename.c_str (), pad.c_str (), stats.size, stats.sizeOnDisk);
 }
@@ -110,6 +110,7 @@ void printHelp (void)
 	printf ("filer format\t\t\t - format the filing system\n\r");
 	printf ("filer diag\t\t\t - print filing system diagnostics\n\r");
 	printf ("filer space\t\t\t - print filing system free space\n\r");
+	printf ("filer ls\t\t\t - list files\n\r");
 	printf ("filer file read <filename>\t - read file\n\r");
 	printf ("filer file write <filename>\t - write file\n\r");
 	printf ("filer file stat <filename>\t - stat file\n\r");
@@ -117,7 +118,6 @@ void printHelp (void)
 }
 
 }
-
 
 void uptime ()
 {
@@ -249,12 +249,33 @@ void diag_filer ()
 	_zebulon_filer_diag ();
 }
 
-
 void free_space_filer ()
 {
 	_zebulon_free_space fs = _zebulon_filer_free_space ();
 
 	printf ("total free: %d out of %d (%d%%)\n\r", fs.freeSpace, fs.totalSpace, ((unsigned int) (100 * double(fs.freeSpace) / fs.totalSpace)));
+}
+
+void ls_filer ()
+{
+	char buffer [FILENAME_BUFFER_SIZE];
+
+	int sh = _zebulon_find_first_file (buffer);
+	
+	int numFiles = 0;
+	while (sh > -1)
+	{
+		_zebulon_stats stats = _zebulon_stat_file (buffer);
+		printStats (buffer, stats);
+		numFiles++;
+		bool result = _zebulon_find_next_file (sh, buffer);
+		if (!result) 
+		{
+			_zebulon_find_close (sh);
+			break;
+		}
+	}
+	printf (" %d file(s)\n\r", numFiles);
 }
 
 void read_file (const std::string& filename)
@@ -372,6 +393,10 @@ void Shell::run () const
 				if (tokens [1] == "space")
 				{
 					free_space_filer ();
+				}
+				if (tokens [1] == "ls")
+				{
+					ls_filer ();
 				}
 				if (tokens.size () > 3)
 				{

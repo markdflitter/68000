@@ -58,7 +58,7 @@ void trap1 ()
 	switch (tp.opcode)
 	{
 		case Zebulon::serial_IO_write_char : __putch ((char) *((int*) tp.pResult)); break;
-		case Zebulon::serial_IO_read_char  : *((int*) tp.pResult) = (int) __getch (); break;
+		case Zebulon::serial_IO_read_char  : *((int*) tp.pResult) = __getch (); break;
 		default: break;
 	}
 }
@@ -194,10 +194,27 @@ void trap5 ()
 	switch (tp.opcode)
 	{
 		case Zebulon::file_stat: *((Zebulon::_zebulon_stats*) tp.pResult) = theFiler ().statFile ((const char*) tp.a1); break;
-		case Zebulon::file_delete: *((unsigned int*) tp.pResult) = (unsigned int) theFiler ().deleteFile ((const char*) tp.a1); break;
+		case Zebulon::file_delete: *((unsigned int*) tp.pResult) = theFiler ().deleteFile ((const char*) tp.a1); break;
 		default: break;
 	}
 }
+
+// file search operations
+void trap6 () __attribute__ ((interrupt));
+void trap6 ()
+{
+	trap_params tp = untrap ();
+
+	switch (tp.opcode)
+	{
+		case Zebulon::file_search_find_first: *((int*) tp.pResult) = theFiler ().findFirstFile ((char*) tp.a1); break;
+		case Zebulon::file_search_find_next: *((bool*) tp.pResult) = theFiler ().findNextFile ((int) tp.a2, (char*) tp.a1); break;
+		case Zebulon::file_search_close: theFiler ().closeFind((int) tp.a2); break;
+
+		default: break;
+	}
+}
+
 
 int main ()
 {
@@ -232,6 +249,8 @@ int main ()
 	v.setVector (35, &trap3);
 	v.setVector (36, &trap4);
 	v.setVector (37, &trap5);
+	v.setVector (38, &trap6);
+
 
 	// detailed diagnostics
 	printf ("installed TRAPs\n\r");

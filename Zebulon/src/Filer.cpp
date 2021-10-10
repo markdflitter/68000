@@ -1,5 +1,6 @@
 #include "Filer.h"
 #include <stdio.h>
+#include <string.h>
 
 using namespace mdf;
 
@@ -43,6 +44,7 @@ Filer::Filer ()
 Filer::~Filer ()
 {
 	m_openFiles.clear ();
+	m_fileSearches.clear ();
 }
 
 void Filer::load ()
@@ -153,6 +155,51 @@ bool Filer::deleteFile (const std::string& name)
 	return m_FAT.deleteFile (name);
 }
 
+Filer::file_search_handle Filer::findFirstFile (char filename [FILENAME_BUFFER_SIZE])
+{
+	FileSearch::Ptr fileSearch = m_FAT.findFirstFile ();
+	FileEntry::Ptr fileEntry = fileSearch->next ();
+
+	if (!fileEntry.isNull ())
+	{
+		memcpy (filename, fileEntry->name ().c_str (), fileEntry->name ().length ());
+		filename [fileEntry->name ().length ()] = '\0';
+
+		m_fileSearches.push_back (fileSearch);
+	
+		return m_fileSearches.size () - 1;
+	}
+	else
+		return -1;
+}
+
+bool Filer::findNextFile (file_search_handle handle, char filename [FILENAME_BUFFER_SIZE])
+{
+	FileSearch::Ptr fs = getFileSearch (handle);
+	if (fs.isNull ())
+	{
+		printf (">> search %d not found\n\r", handle);
+		return false;
+	}
+
+	FileEntry::Ptr fileEntry = fs->next ();
+	if (!fileEntry.isNull ())
+	{
+		memcpy (filename, fileEntry->name ().c_str (), fileEntry->name ().length ());
+		filename [fileEntry->name ().length ()] = '\0';
+
+		return true;
+	}
+	else
+		return false;
+}
+
+void Filer::closeFind (file_search_handle handle)
+{
+	if (!getFileSearch (handle).isNull ())
+		m_fileSearches [handle].reset ();
+}
+
 void Filer::diag () const
 {
 	m_FAT.diag ();
@@ -174,5 +221,15 @@ OpenFile::Ptr Filer::getOpenFile (file_handle file)
 	return m_openFiles [file];
 }
 
+FileSearch::Ptr Filer::getFileSearch (file_search_handle handle)
+{
+	if ((handle >= m_fileSearches.size ()) || (m_fileSearches [handle].isNull ()))
+	{
+		printf (">> search %d not found\n\r", handle);
+		return FileSearch::Ptr ();
+	}
+
+	return m_fileSearches [handle];
+}
 
 }

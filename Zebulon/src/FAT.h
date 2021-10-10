@@ -3,6 +3,7 @@
 
 #include "SpaceManager.h"
 #include "FileEntry.h"
+#include "FileSearch.h"
 
 namespace Zebulon
 {
@@ -23,6 +24,8 @@ public:
 	bool extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks = 1);	
 
 	_zebulon_stats statFile (const std::string& name);
+
+	FileSearch::Ptr findFirstFile ();
 
 	void diag () const;
 	_zebulon_free_space getFreeSpace () const;

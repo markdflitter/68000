@@ -6,12 +6,14 @@
 
 namespace Zebulon
 {
-	enum TRAP {trap_time = 0, trap_serial_IO = 1, trap_ide = 2, trap_filer = 3, trap_c_IO = 4, trap_file = 5};
+	enum TRAP {trap_time = 0, trap_serial_IO = 1, trap_ide = 2, trap_filer = 3, trap_c_IO = 4, trap_file = 5, trap_file_search = 6};
 	enum serial_IO_operations {serial_IO_write_char = 1, serial_IO_read_char = 2};
 	enum ide_operations {ide_ident = 0, ide_write_block = 1, ide_read_block = 2};
 	enum filer_operations {filer_format = 0, filer_diag = 1, filer_free_space = 2};
 	enum c_IO_operations {c_IO_fopen = 0, c_IO_fclose = 1, c_IO_feof = 2, c_IO_fread = 3, c_IO_fwrite = 4};
 	enum file_operations {file_stat = 0, file_delete = 1};
+	enum file_search_operations {file_search_find_first = 0, file_search_find_next = 1, file_search_close = 2};
+
 
 inline unsigned int _zebulon_time ()
 {
@@ -230,6 +232,27 @@ inline unsigned int  _zebulon_delete_file (const char* filename)
 	return result;
 }
 
+#define MAX_FILENAME_LENGTH 64
+#define FILENAME_BUFFER_SIZE MAX_FILENAME_LENGTH+1
+
+inline int _zebulon_find_first_file (char filename[FILENAME_BUFFER_SIZE])
+{
+	volatile int result;
+	trap (trap_file_search, trap_params (file_search_find_first, &result, (void*) filename));
+	return result;
+}
+
+inline bool _zebulon_find_next_file (int find_handle, char filename [FILENAME_BUFFER_SIZE])
+{
+	volatile bool result;
+	trap (trap_file_search, trap_params (file_search_find_next, &result, (void*) filename, (void*) find_handle));
+	return result;
+}
+
+inline void _zebulon_find_close (int find_handle)
+{
+	trap (trap_file_search, trap_params (file_search_close, 0, 0, (void*) find_handle));
+}
 
 }
 #endif

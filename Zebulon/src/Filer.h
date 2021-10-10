@@ -3,6 +3,7 @@
 
 #include "FAT.h"
 #include "OpenFile.h"
+#include "FileSearch.h"
 #include <vector>
 
 namespace Zebulon
@@ -29,13 +30,20 @@ public:
 	_zebulon_stats statFile (const std::string& name);	
 	bool deleteFile (const std::string& name);
 
+	typedef int file_search_handle;	
+	file_search_handle findFirstFile (char filename [FILENAME_BUFFER_SIZE]);
+	bool findNextFile (file_search_handle handle, char filename [FILENAME_BUFFER_SIZE]);
+	void closeFind (file_search_handle handle);
+
 	void diag () const;
 	_zebulon_free_space getFreeSpace () const;
 private:
 	OpenFile::Ptr getOpenFile (file_handle file);
-	
+	FileSearch::Ptr getFileSearch (file_search_handle handle);
+
 	FAT m_FAT;
 	std::vector<OpenFile::Ptr> m_openFiles;
+	std::vector<FileSearch::Ptr> m_fileSearches;
 };
 
 }
