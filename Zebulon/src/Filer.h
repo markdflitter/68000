@@ -20,11 +20,14 @@ public:
 	typedef int file_handle;
 	enum {file_not_found = -1};
 
-	file_handle fopen (const std::string& filename, const std::string& mode);
+	file_handle fopen (const std::string& name, const std::string& mode);
 	void fclose (file_handle handle);
 	bool feof (file_handle handle);
 	unsigned long fwrite (file_handle handle, const unsigned char* data, unsigned long numBytes);
 	unsigned long fread (file_handle handle, unsigned char* data, unsigned long numBytes);
+
+	_zebulon_stats statFile (const std::string& name);	
+	bool deleteFile (const std::string& name);
 
 	void diag () const;
 	FreeSpace getFreeSpace () const;

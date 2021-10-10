@@ -190,7 +190,25 @@ void trap4 ()
 		case Zebulon::c_IO_feof: * ((int*) pResult) = theFiler ().feof ((int) a1); break;
 		case Zebulon::c_IO_fwrite: *((unsigned long*) pResult) = theFiler ().fwrite ((int) a1, (const unsigned char*) a2, (unsigned long) a3); break;
 		case Zebulon::c_IO_fread: *((unsigned long*) pResult) = theFiler ().fread ((int) a1, (unsigned char*) a2, (unsigned long) a3); break;
-			default: break;
+		default: break;
+	}
+}
+
+// file operations
+void trap5 () __attribute__ ((interrupt));
+void trap5 ()
+{
+	unsigned char opcode;
+	const volatile void* a1;
+	const volatile void* a2;
+	const volatile void* a3;
+	void* pResult = (int*) untrap (opcode, a1, a2, a3);
+
+	switch (opcode)
+	{
+		case Zebulon::file_stat: *((Zebulon::_zebulon_stats*) pResult) = theFiler ().statFile ((const char*) a1); break;
+		case Zebulon::file_delete: *((unsigned int*) pResult) = (unsigned int) theFiler ().deleteFile ((const char*) a1); break;
+		default: break;
 	}
 }
 
@@ -226,8 +244,7 @@ int main ()
 	v.setVector (34, &trap2);
 	v.setVector (35, &trap3);
 	v.setVector (36, &trap4);
-
-
+	v.setVector (37, &trap5);
 
 	// detailed diagnostics
 	printf ("installed TRAPs\n\r");

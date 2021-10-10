@@ -75,7 +75,7 @@ bool FAT::createFile (const std::string& name, unsigned long initialSize, bool c
 	return true;
 }
 
-void FAT::deleteFile (const std::string& name)
+bool FAT::deleteFile (const std::string& name)
 {
 	list<FileEntry::Ptr>::iterator i = m_fileEntries.begin ();
 
@@ -85,10 +85,11 @@ void FAT::deleteFile (const std::string& name)
 			m_spaceManager.deallocate ((*i)->chunks ());
 			m_fileEntries.erase (i);
 			save ();
-	 		return ;
+	 		return true;
 		}
 
 	printf (">> file not found\n\r");
+	return false;
 }
 
 bool FAT::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
@@ -106,6 +107,23 @@ bool FAT::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
 
 	return true;
 }
+
+_zebulon_stats FAT::statFile (const std::string& name)
+{
+	_zebulon_stats stats;
+	stats.size = 0;
+	stats.sizeOnDisk = 0;
+
+	FileEntry::Ptr file = findFile (name);
+	if (!file.isNull ())
+	{
+		stats.size = file->size ();
+		stats.sizeOnDisk = file->allocSize ();
+	}
+
+	return stats;
+}
+
 
 void FAT::serialise (unsigned char*& p) const
 {

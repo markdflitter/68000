@@ -86,6 +86,13 @@ unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned lon
 	return address;
 }
 
+void printStats (const std::string& filename, const _zebulon_stats stats)
+{
+	string pad (64 - filename.length (), ' ');	
+
+	printf ("%s%s : %d byte(s), allocated %d\n\r", filename.c_str (), pad.c_str (), stats.size, stats.sizeOnDisk);
+}
+
 }	
 
 namespace {
@@ -105,7 +112,10 @@ void printHelp (void)
 	printf ("filer space\t\t\t - print filing system free space\n\r");
 	printf ("filer file read <filename>\t - read file\n\r");
 	printf ("filer file write <filename>\t - write file\n\r");
+	printf ("filer file stat <filename>\t - stat file\n\r");
+	printf ("filer file delete <filename>\t - delete file\n\r");
 }
+
 }
 
 
@@ -290,6 +300,18 @@ void write_file (const std::string& filename, unsigned long bytes)
 	fclose (f);
 }
 
+void stat_file (const std::string& filename)
+{
+	_zebulon_stats stats = _zebulon_stat_file (filename.c_str  ());
+	printStats (filename, stats);
+}
+
+void delete_file (const std::string& filename)
+{
+	if (_zebulon_delete_file (filename.c_str ()))
+		printf ("deleted file %s\n\r", filename.c_str ());
+}
+
 void Shell::run () const
 {
 	printf ("\n\r%s\n\r",version);
@@ -364,6 +386,14 @@ void Shell::run () const
 						{
 							unsigned char bytes = (unsigned char) atol (tokens [4].c_str ());
 							write_file (filename, bytes);
+						}
+						if (tokens [2] == "stat")
+						{
+							stat_file (filename);
+						}
+						if (tokens [2] == "delete")
+						{
+							delete_file (filename);
 						}
 					}
 				}

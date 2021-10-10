@@ -18,9 +18,11 @@ public:
 	FileEntry::Ptr findFile (const std::string& name);
 
 	bool createFile (const std::string& name, unsigned long initialSize = 0, bool contiguous = false);
-	void deleteFile (const std::string& name);
+	bool deleteFile (const std::string& name);
 
 	bool extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks = 1);	
+
+	_zebulon_stats statFile (const std::string& name);
 
 	void diag () const;
 	FreeSpace getFreeSpace () const;

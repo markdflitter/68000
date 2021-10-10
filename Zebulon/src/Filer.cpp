@@ -55,17 +55,17 @@ int Filer::format (int diskSize)
   	return m_FAT.initialise (diskSize);
 }
 
-int Filer::fopen (const std::string& filename, const std::string& mode)
+int Filer::fopen (const std::string& name, const std::string& mode)
 {
 	file_handle result = file_not_found;
 
-	if (m_FAT.findFile (filename).isNull ())
+	if (m_FAT.findFile (name).isNull ())
 	{
 		//printf ("file doesn't exist\n\r");
 		if (mode_is (mode, 'w'))
 		{
 			//printf ("create file\n\r");
-	    	m_FAT.createFile (filename);
+	    	m_FAT.createFile (name);
 		}
 		else
 		{
@@ -79,12 +79,12 @@ int Filer::fopen (const std::string& filename, const std::string& mode)
 		if (mode_is (mode, 'w'))
 		{
 			//printf ("delete and create file\n\r");
-			m_FAT.deleteFile (filename);
-	    	m_FAT.createFile (filename);
+			m_FAT.deleteFile (name);
+	    	m_FAT.createFile (name);
 		}
 	}
 
-	FileEntry::Ptr f = m_FAT.findFile (filename);
+	FileEntry::Ptr f = m_FAT.findFile (name);
 	if (f.isNull ())
 	{
 		printf (">> file not found\n\r");
@@ -141,6 +141,16 @@ unsigned long Filer::fread (file_handle handle, unsigned char* data, unsigned lo
 		return of->read (data, numBytes);
 
 	return 0;
+}
+
+_zebulon_stats Filer::statFile (const std::string& name)
+{
+	return m_FAT.statFile (name);
+}
+
+bool Filer::deleteFile (const std::string& name)
+{
+	return m_FAT.deleteFile (name);
 }
 
 void Filer::diag () const
