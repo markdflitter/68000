@@ -7,6 +7,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <ZebulonAPI.h>
+#include "Utils.h"
 
 const char* version = "Z-Shell V2.00.0004";
 const char* filename = "Zebulon_V2.0.0004";
@@ -46,11 +47,6 @@ vector<string> tokenize (const string& command)
 	return result;
 }
 
-size_t min (size_t l, size_t r)
-{
-	return l < r ? l : r;
-}
-
 unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned long startAddress)
 {
 	unsigned char* p = buffer;
@@ -59,7 +55,7 @@ unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned lon
 
 	while (bufferLen > 0)
 	{
-		size_t rowLen = min (bufferLen, 16);
+		size_t rowLen = Utils::min (bufferLen, 16);
 
 		printf ("%d\t : ", address);
 		address += rowLen;
@@ -122,7 +118,7 @@ void disk_ident ()
 {
 	Zebulon::DiskInfo info;
 	unsigned int result = _zebulon_ide_ident (info);
-	if (result == IDE_OK)
+	if (result == Zebulon::IDE_OK)
 	{
 		printf ("model number\t\t\t\t: %s\n\r",info.modelNumber);
 		printf ("serial number\t\t\t\t: %s\n\r",info.serialNumber);
@@ -189,7 +185,7 @@ void disk_read (unsigned long block)
 	memset (buffer, '\0', 512);
 
 	unsigned int result = _zebulon_ide_read_block (block, buffer);
-	if (result == IDE_OK)
+	if (result == Zebulon::IDE_OK)
 		printBuffer (buffer, 512, 0);
 	else
 		printf (">>> read error 0x%x\n\r", result);
@@ -203,7 +199,7 @@ void disk_write (unsigned long block, unsigned char pattern)
 	memset (buffer, pattern, 512);
 
 	unsigned int result = _zebulon_ide_write_block (block, buffer);
-	if (result == IDE_OK)
+	if (result == Zebulon::IDE_OK)
 		printf ("OK\n\r");
 	else
 		printf (">>> write error 0x%x\n\r", result);
@@ -280,27 +276,15 @@ void write_file (const std::string& filename, unsigned long bytes)
 
 	unsigned long bytesLeftToWrite = bytes;
 
-	unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
-
-	unsigned char* p = data;
+	char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile; ";
+	size_t len = strlen (data);
 
 	while (bytesLeftToWrite > 0)
 	{
-		unsigned char buffer [100];
-		if (bytesLeftToWrite >= 100)
-		{
-			memcpy (buffer, p, 100);
-			fwrite (buffer, 1, 100, f);
-			bytesLeftToWrite -= 100;
-			p += 100;
-			if (p - data >= 600) p = data;
-		}
-		else
-		{
-			memcpy (buffer, p, bytesLeftToWrite);
-			fwrite (buffer, 1, bytesLeftToWrite, f);
-			bytesLeftToWrite -= bytesLeftToWrite;
-		}
+		unsigned long bytesThisTime = Utils::min (bytesLeftToWrite, len);
+
+		fwrite ((unsigned char*) data, 1, bytesThisTime, f);
+		bytesLeftToWrite -= bytesThisTime;
 	}
 
 	fclose (f);

@@ -29,6 +29,12 @@ public:
 		if (error == ::IDE_BBK)
 			printf (">>>  bad block\n\r");
 	}
+
+	template <class T1, class T2>
+	static T1 min (const T1& t1, const T2& t2)
+	{
+		return t1 < t2 ? t1 : t2;
+	}	
 };
 
 }
