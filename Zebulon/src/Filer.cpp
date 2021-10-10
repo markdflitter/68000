@@ -54,6 +54,8 @@ void Filer::load ()
 
 int Filer::format (int diskSize)
 {
+	m_openFiles.clear ();
+	m_fileSearches.clear ();
   	return m_FAT.initialise (diskSize);
 }
 

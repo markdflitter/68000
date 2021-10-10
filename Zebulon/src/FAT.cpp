@@ -18,6 +18,7 @@ const char* FatVersion = "2.2";
 int FAT::initialise (int diskSize)
 {
 	int result = m_spaceManager.initialise (diskSize);
+	m_fileEntries.clear ();
 	do_save ();
 	return result;
 }
