@@ -95,6 +95,16 @@ void Filer::fclose (file_handle handle)
 	m_openFiles [handle].reset ();	
 }
 
+bool Filer::feof (file_handle handle)
+{
+	OpenFile::Ptr of = getOpenFile (handle);
+	if (!of.isNull ())
+		return of->EOF ();
+
+	return true;
+}
+
+
 unsigned long Filer::fwrite (file_handle file, const unsigned char* data, unsigned long numBytes)
 {
 	OpenFile::Ptr of = getOpenFile (file);

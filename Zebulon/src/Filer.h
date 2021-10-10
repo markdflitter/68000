@@ -22,6 +22,7 @@ public:
 
 	file_handle fopen (const std::string& filename, const std::string& mode);
 	void fclose (file_handle handle);
+	bool feof (file_handle handle);
 	unsigned long fwrite (file_handle file, const unsigned char* data, unsigned long numBytes);
 
 	void diag () const;

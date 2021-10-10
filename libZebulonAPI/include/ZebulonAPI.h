@@ -147,21 +147,11 @@ inline void _zebulon_fclose (unsigned int fptr)
 
 inline int _zebulon_feof (unsigned int fptr)
 {
-/*
-	volatile int f = fptr - 1;
-	const volatile void* a0 = &f;
+	int result;
 
-	volatile long unsigned int result;
-	volatile void* a2 = &result;
-
-	asm ("moveb #5, %%d0\n\t"
-		 "movel %0, %%a0\n\t"
-		 "movel %1, %%a2\n\t"
-		 "trap #2\n\t" : : "m" (a0), "m" (a2) : "d0", "a0", "a2");
+	trap (trap_c_IO, c_IO_feof, (const volatile void*) (fptr -1), 0, 0, &result);	
 
 	return result;
-*/
-	return -1;
 }
 
 
