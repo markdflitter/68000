@@ -18,8 +18,8 @@ public:
 	OpenFile (FileEntry::Ptr file, FAT* fat);
 	~OpenFile ();
 
-	void read (unsigned char* data, unsigned long numBytes);	
-	void write (const unsigned char* data, unsigned long numBytes);	
+	unsigned long read (unsigned char* data, unsigned long numBytes);	
+	unsigned long write (const unsigned char* data, unsigned long numBytes);	
 
 	bool EOF () const;
 

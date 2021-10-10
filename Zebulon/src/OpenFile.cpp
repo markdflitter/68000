@@ -28,33 +28,43 @@ OpenFile::~OpenFile ()
 	}
 }
 
-void OpenFile::read (unsigned char* data, unsigned long numBytes)	
+unsigned long OpenFile::read (unsigned char* data, unsigned long numBytes)	
 {
+	//limit to file length
+	unsigned long bytesLeftInFile = m_fileEntry->size () - m_filePointer;
+	if (bytesLeftInFile < numBytes) numBytes = bytesLeftInFile;
+	
+	unsigned long bytesLeftToRead = numBytes;
+
 	//printf ("read %d bytes from %d\n\r", numBytes, m_filePointer);
 	unsigned char* p = data;
-	while (numBytes > 0)
+	while (bytesLeftToRead > 0)
 	{
-		if (!readCurBlock ()) return ;
+		if (!readCurBlock ()) return numBytes - bytesLeftToRead;
 
-		unsigned long bytesToCopy = numBytes;
-	
+		unsigned long bytesToCopy = bytesLeftToRead;
+
 		unsigned long bytesLeftInCurrentBuffer = ide_block_size - (m_bufferPointer - m_buffer);
 		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
 
 		p = copyFromBuffer (p, bytesToCopy);
-		numBytes -= bytesToCopy;
+		bytesLeftToRead -= bytesToCopy;
 	}
+
+	return numBytes;
 }
 	
-void OpenFile::write (const unsigned char* data, unsigned long numBytes)	
+unsigned long OpenFile::write (const unsigned char* data, unsigned long numBytes)	
 {
 	//printf ("writing %d bytes to %d\n\r", numBytes, m_filePointer);
-	const unsigned char* p = data;
-	while (numBytes > 0)
-	{
-		if (!readCurBlock ()) return ;
+	unsigned long bytesLeftToRead = numBytes;
 
-		unsigned long bytesToCopy = numBytes;
+	const unsigned char* p = data;
+	while (bytesLeftToRead > 0)
+	{
+		if (!readCurBlock ()) return numBytes - bytesLeftToRead;
+
+		unsigned long bytesToCopy = bytesLeftToRead;
 	
 		unsigned long bytesLeftInCurrentBuffer = ide_block_size - (m_bufferPointer - m_buffer);
 		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
@@ -66,8 +76,10 @@ void OpenFile::write (const unsigned char* data, unsigned long numBytes)
    			m_fileEntry->setSize (m_filePointer);
 			m_fileEntryModified = true;
 		}
-		numBytes -= bytesToCopy;
+		bytesLeftToRead -= bytesToCopy;
 	}
+
+	return numBytes;
 }
 
 bool OpenFile::EOF () const

@@ -51,11 +51,11 @@ size_t min (size_t l, size_t r)
 	return l < r ? l : r;
 }
 
-void printBuffer (unsigned char* buffer, size_t bufferLen)
+unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned long startAddress)
 {
 	unsigned char* p = buffer;
 	
-	unsigned long address = 0;
+	unsigned long address = startAddress;
 
 	while (bufferLen > 0)
 	{
@@ -86,6 +86,8 @@ void printBuffer (unsigned char* buffer, size_t bufferLen)
 		bufferLen -= rowLen;
 		printf ("\n\r");
 	}
+
+	return address;
 }
 
 }	
@@ -188,7 +190,7 @@ void disk_read (unsigned long block)
 
 	unsigned int result = _zebulon_ide_read_block (block, buffer);
 	if (result == IDE_OK)
-		printBuffer (buffer, 512);
+		printBuffer (buffer, 512, 0);
 	else
 		printf (">>> read error 0x%x\n\r", result);
 }
@@ -255,12 +257,15 @@ void read_file (const std::string& filename)
 
 	FILE* f = fopen (filename.c_str (), "rb");
 	if (f == 0) return ;
-		
+	
+	unsigned long address = 0;	
 	while (!feof (f))
 	{
 		unsigned char buffer [512];
-		fread (buffer, 1, 512, f);
-		printBuffer (buffer, 512);
+		memset (buffer, 0, 512);
+
+		unsigned int bytesRead = fread (buffer, 1, 512, f);
+		address = printBuffer (buffer, bytesRead, address);
 	}
 
 	fclose (f);

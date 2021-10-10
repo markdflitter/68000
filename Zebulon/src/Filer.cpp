@@ -128,7 +128,8 @@ unsigned long Filer::fwrite (file_handle handle, const unsigned char* data, unsi
 
 	OpenFile::Ptr of = getOpenFile (handle);
 	if (!of.isNull ())
-		of->write (data, numBytes);
+		return of->write (data, numBytes);
+
 	return 0;
 }
 
@@ -137,7 +138,8 @@ unsigned long Filer::fread (file_handle handle, unsigned char* data, unsigned lo
 	check_read_only (handle);
 	OpenFile::Ptr of = getOpenFile (handle);
 	if (!of.isNull ())
-		of->read (data, numBytes);
+		return of->read (data, numBytes);
+
 	return 0;
 }
 
