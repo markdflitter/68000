@@ -242,7 +242,7 @@ void FAT::diag () const
 	printf ("\n\r");	
 }
 
-FreeSpace FAT::getFreeSpace () const
+_zebulon_free_space FAT::getFreeSpace () const
 {
 	return m_spaceManager.getFreeSpace ();
 }

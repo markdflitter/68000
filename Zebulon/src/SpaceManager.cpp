@@ -5,6 +5,18 @@
 
 using namespace mdf;
 
+
+namespace
+{
+
+void printFreeSpace (Zebulon::_zebulon_free_space fs)
+{
+	printf ("total free: %d out of %d (%d%%)\n\r", fs.freeSpace, fs.totalSpace, ((unsigned int) (100 * double(fs.freeSpace) / fs.totalSpace)));
+}
+
+}
+
+
 namespace Zebulon
 {
 
@@ -78,9 +90,9 @@ void SpaceManager::diag () const
 }
 
 
-FreeSpace SpaceManager::getFreeSpace () const
+_zebulon_free_space SpaceManager::getFreeSpace () const
 {
-	FreeSpace fs;
+	_zebulon_free_space fs;
 	fs.freeSpace = 0;
 	fs.totalSpace = m_totalSpace;
 
@@ -89,12 +101,6 @@ FreeSpace SpaceManager::getFreeSpace () const
 
 	return fs;	
 }
-
-void SpaceManager::printFreeSpace (FreeSpace fs)
-{
-	printf ("total free: %d out of %d (%d%%)\n\r", fs.freeSpace, fs.totalSpace, ((unsigned int) (100 * double(fs.freeSpace) / fs.totalSpace)));
-}
-
 
 }
 

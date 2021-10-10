@@ -30,7 +30,7 @@ public:
 	bool deleteFile (const std::string& name);
 
 	void diag () const;
-	FreeSpace getFreeSpace () const;
+	_zebulon_free_space getFreeSpace () const;
 private:
 	OpenFile::Ptr getOpenFile (file_handle file);
 	

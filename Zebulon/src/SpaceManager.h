@@ -20,10 +20,8 @@ public:
 	void deserialise (const unsigned char*& p);
 
 	void diag () const;
-	FreeSpace getFreeSpace () const;
+	_zebulon_free_space getFreeSpace () const;
 private:	
-	static void printFreeSpace (FreeSpace fs);
-
 	unsigned long m_totalSpace;
 	std::list<Chunk::Ptr> m_free;
 };

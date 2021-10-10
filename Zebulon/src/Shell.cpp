@@ -252,7 +252,7 @@ void diag_filer ()
 
 void free_space_filer ()
 {
-	FreeSpace fs = _zebulon_filer_free_space ();
+	_zebulon_free_space fs = _zebulon_filer_free_space ();
 
 	printf ("total free: %d out of %d (%d%%)\n\r", fs.freeSpace, fs.totalSpace, ((unsigned int) (100 * double(fs.freeSpace) / fs.totalSpace)));
 }

@@ -42,24 +42,23 @@ void tick ()
 void trap0 () __attribute__ ((interrupt));
 void trap0 ()
 {
-	unsigned int* pResult = (unsigned int*) untrap ();
+	trap_params tp = untrap ();
 
 	double f = ((double) ticks) * tickIntervalInMs;
 
-	*pResult = (unsigned int) f;
+	*((unsigned int*) tp.pResult) = (unsigned int) f;
 }
 
 // putchar / getchar
 void trap1 () __attribute__ ((interrupt));
 void trap1 ()
 {
-	unsigned char opcode;
-	int* p = (int*) untrap (opcode);
-		
-	switch (opcode)
+	trap_params tp = untrap ();
+
+	switch (tp.opcode)
 	{
-		case Zebulon::serial_IO_write_char : __putch ((char) *p); break;
-		case Zebulon::serial_IO_read_char  : *p = (int) __getch (); break;
+		case Zebulon::serial_IO_write_char : __putch ((char) *((int*) tp.pResult)); break;
+		case Zebulon::serial_IO_read_char  : *((int*) tp.pResult) = (int) __getch (); break;
 		default: break;
 	}
 }
@@ -123,38 +122,34 @@ void convert_disk_info (::DiskInfo* source, Zebulon::DiskInfo* target)
 void trap2 () __attribute__ ((interrupt));
 void trap2 ()
 {
-	unsigned char opcode;
-	unsigned long block;
-	void* data;
-	unsigned int* pResult = (unsigned int*) untrap (opcode, block, data);
+	trap_params tp = untrap ();
 
 	unsigned int result = IDE_OK;
-	switch (opcode)
+	switch (tp.opcode)
 	{
 		case Zebulon::ide_ident  :
 		{
 			::DiskInfo info;
 			result = __ide_ident (info);
-			convert_disk_info (&info, (Zebulon::DiskInfo*) data);
+			convert_disk_info (&info, (Zebulon::DiskInfo*) tp.a1);
 			break;
 		}
 
-		case Zebulon::ide_read_block  : result = __ide_read (block, (unsigned char*) data); break;
-		case Zebulon::ide_write_block : result = __ide_write (block, (unsigned char*) data); break;
+		case Zebulon::ide_read_block  : result = __ide_read ((unsigned int) tp.a1, (unsigned char*) tp.a2); break;
+		case Zebulon::ide_write_block : result = __ide_write ((unsigned int) tp.a1, (unsigned char*) tp.a2); break;
 		default: break;
 	}
 
-	*pResult = result;
+	*((unsigned int*) tp.pResult) = result;
 }
 
 // filer
 void trap3 () __attribute__ ((interrupt));
 void trap3 ()
 {
-	unsigned char opcode;
-	int* pResult = (int*) untrap (opcode);
+	trap_params tp = untrap ();
 	
-	switch (opcode)
+	switch (tp.opcode)
 	{
 		case Zebulon::filer_format:
 		{
@@ -162,13 +157,13 @@ void trap3 ()
 			if (__ide_ident (info) == IDE_OK)
 			{
 				int numSectors = info.totalNumOfUserSectors;
-				*pResult = theFiler ().format (numSectors);
+				*((int*) tp.pResult) = theFiler ().format (numSectors);
 			}
-			else *pResult = -1;
+			else *((int*) tp.pResult) = -1;
 			break;
 		}
 		case Zebulon::filer_diag: theFiler().diag (); break;
-		case Zebulon::filer_free_space : *((Zebulon::FreeSpace*) pResult) = theFiler ().getFreeSpace (); break;
+		case Zebulon::filer_free_space : *((Zebulon::_zebulon_free_space*) tp.pResult) = theFiler ().getFreeSpace (); break;
 		default: break;
 	}
 }
@@ -177,19 +172,15 @@ void trap3 ()
 void trap4 () __attribute__ ((interrupt));
 void trap4 ()
 {
-	unsigned char opcode;
-	const volatile void* a1;
-	const volatile void* a2;
-	const volatile void* a3;
-	void* pResult = (int*) untrap (opcode, a1, a2, a3);
+	trap_params tp = untrap ();
 
-	switch (opcode)
+	switch (tp.opcode)
 	{
-		case Zebulon::c_IO_fopen: * ((int*) pResult) = theFiler ().fopen ((const char*) a1, (const char*) a2); break;
-		case Zebulon::c_IO_fclose: theFiler ().fclose ((int) a1); break;
-		case Zebulon::c_IO_feof: * ((int*) pResult) = theFiler ().feof ((int) a1); break;
-		case Zebulon::c_IO_fwrite: *((unsigned long*) pResult) = theFiler ().fwrite ((int) a1, (const unsigned char*) a2, (unsigned long) a3); break;
-		case Zebulon::c_IO_fread: *((unsigned long*) pResult) = theFiler ().fread ((int) a1, (unsigned char*) a2, (unsigned long) a3); break;
+		case Zebulon::c_IO_fopen: * ((int*) tp.pResult) = theFiler ().fopen ((const char*) tp.a1, (const char*) tp.a2); break;
+		case Zebulon::c_IO_fclose: theFiler ().fclose ((int) tp.a1); break;
+		case Zebulon::c_IO_feof: * ((int*) tp.pResult) = theFiler ().feof ((int) tp.a1); break;
+		case Zebulon::c_IO_fwrite: *((unsigned long*) tp.pResult) = theFiler ().fwrite ((int) tp.a1, (const unsigned char*) tp.a2, (unsigned long) tp.a3); break;
+		case Zebulon::c_IO_fread: *((unsigned long*) tp.pResult) = theFiler ().fread ((int) tp.a1, (unsigned char*) tp.a2, (unsigned long) tp.a3); break;
 		default: break;
 	}
 }
@@ -198,16 +189,12 @@ void trap4 ()
 void trap5 () __attribute__ ((interrupt));
 void trap5 ()
 {
-	unsigned char opcode;
-	const volatile void* a1;
-	const volatile void* a2;
-	const volatile void* a3;
-	void* pResult = (int*) untrap (opcode, a1, a2, a3);
+	trap_params tp = untrap ();
 
-	switch (opcode)
+	switch (tp.opcode)
 	{
-		case Zebulon::file_stat: *((Zebulon::_zebulon_stats*) pResult) = theFiler ().statFile ((const char*) a1); break;
-		case Zebulon::file_delete: *((unsigned int*) pResult) = (unsigned int) theFiler ().deleteFile ((const char*) a1); break;
+		case Zebulon::file_stat: *((Zebulon::_zebulon_stats*) tp.pResult) = theFiler ().statFile ((const char*) tp.a1); break;
+		case Zebulon::file_delete: *((unsigned int*) tp.pResult) = (unsigned int) theFiler ().deleteFile ((const char*) tp.a1); break;
 		default: break;
 	}
 }

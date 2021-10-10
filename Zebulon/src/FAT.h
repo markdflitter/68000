@@ -25,7 +25,7 @@ public:
 	_zebulon_stats statFile (const std::string& name);
 
 	void diag () const;
-	FreeSpace getFreeSpace () const;
+	_zebulon_free_space getFreeSpace () const;
 private:
 	void serialise (unsigned char*& p) const;
 	bool deserialise (const unsigned char*& p);

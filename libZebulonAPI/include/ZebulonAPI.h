@@ -15,8 +15,8 @@ namespace Zebulon
 
 inline unsigned int _zebulon_time ()
 {
-	unsigned int result;
-	trap (trap_time, &result);
+	volatile unsigned int result;
+	trap (trap_time, trap_params (0, &result));
 	return result;
 }
 
@@ -24,13 +24,13 @@ inline void _zebulon_putch (int c)
 {
 	// technically not volatile, but marking it so forces the compiler to make a local copy of the parameter which defeats a compiler bug where it references the wrong stack location
 	volatile int cc = c;
-	trap (trap_serial_IO, serial_IO_write_char, &cc);
+	trap (trap_serial_IO, trap_params (serial_IO_write_char, &cc));
 }
 
 inline int _zebulon_getch ()
 {
-	int result;
-	trap (trap_serial_IO, serial_IO_read_char, &result);
+	volatile int result;
+	trap (trap_serial_IO, trap_params (serial_IO_read_char, &result));
 	return result;
 }
 
@@ -87,70 +87,85 @@ struct DiskInfo {
 
 inline unsigned int _zebulon_ide_ident (DiskInfo& info)
 {
-	unsigned int result;
+	volatile unsigned int result;
 	unsigned long ignore = 0;
-	trap (trap_ide, ide_ident, ignore, &info, &result);
+	trap (trap_ide, trap_params (ide_ident, &result, &info));
 	return result;
 }
 
 inline unsigned int _zebulon_ide_read_block (unsigned long block, unsigned char data [512])
 {
-	unsigned int result;
-	trap (trap_ide, ide_read_block, block, data, &result);
+	volatile unsigned int result;
+	trap (trap_ide, trap_params (ide_read_block, &result, (const void*) block, data));
 	return result;
 }
 
 inline unsigned int _zebulon_ide_write_block (unsigned long block, unsigned char data [512])
 {
-	unsigned int result;
-	trap (trap_ide, ide_write_block, block, data, &result);
+	volatile unsigned int result;
+	trap (trap_ide, trap_params (ide_write_block, &result, (const void*) block, data));
 	return result;
 }
 
 inline int _zebulon_filer_format ()
 {
-	int result;
-	trap (trap_filer, filer_format, &result);
+	volatile int result;
+	trap (trap_filer, trap_params (filer_format, &result));
 	return result;
 }
 
 inline void _zebulon_filer_diag ()
 {
-	trap (trap_filer, filer_diag, 0);
+	trap (trap_filer, trap_params (filer_diag));
 }
 
-struct FreeSpace
+struct _zebulon_free_space
 {
+	_zebulon_free_space ()
+		: totalSpace (0), freeSpace (0)
+	{
+	}
+
+	_zebulon_free_space (const _zebulon_free_space& other)
+		: totalSpace (other.totalSpace), freeSpace (other.freeSpace)
+	{
+	}
+
+	_zebulon_free_space (const volatile _zebulon_free_space& other)
+		: totalSpace (other.totalSpace), freeSpace (other.freeSpace)
+	{
+	}
+
 	unsigned long totalSpace;
 	unsigned long freeSpace;
 };
 
-inline FreeSpace _zebulon_filer_free_space ()
+inline _zebulon_free_space  _zebulon_filer_free_space ()
 {
-	FreeSpace fs;
-	trap (trap_filer, filer_free_space, &fs);
+	volatile _zebulon_free_space fs;
+	trap (trap_filer, trap_params (filer_free_space, &fs));
 	return fs;
 }
 
 inline unsigned int _zebulon_fopen (const char* filename, const char* mode)
 {
-	int result;
+	volatile int result;
 
-	trap (trap_c_IO, c_IO_fopen, filename, mode, 0, &result);	
+	trap (trap_c_IO, trap_params (c_IO_fopen, &result, filename, mode));	
 
 	return result == -1 ? 0 : result + 1;
 }
 
 inline void _zebulon_fclose (unsigned int fptr)
 {
-	trap (trap_c_IO, c_IO_fclose, (const volatile void*) (fptr - 1), 0, 0, 0);	
+	trap (trap_c_IO, trap_params (c_IO_fclose, 0, (const void*) (fptr - 1)));	
 }
 
 inline int _zebulon_feof (unsigned int fptr)
 {
-	int result;
+	volatile int result;
 
-	trap (trap_c_IO, c_IO_feof, (const volatile void*) (fptr -1), 0, 0, &result);	
+	trap (trap_c_IO, trap_params (c_IO_feof, &result, (const void*) (fptr -1)));	
 
 	return result;
 }
@@ -158,44 +173,59 @@ inline int _zebulon_feof (unsigned int fptr)
 
 inline unsigned long _zebulon_fwrite (const void* data, long unsigned int data_size, long unsigned int number_data, unsigned int fptr)
 {
-	unsigned long result;
+	volatile unsigned long result;
 	unsigned long bytes = data_size * number_data;
 
-	trap (trap_c_IO, c_IO_fwrite, ((const volatile void*) (fptr - 1)), data, (const volatile void*) bytes, &result);	
+	trap (trap_c_IO, trap_params (c_IO_fwrite, &result, ((const void*) (fptr - 1)), data, (const void*) bytes));	
 
 	return result;
 }
 
 inline unsigned long _zebulon_fread (const void* data, long unsigned int data_size, long unsigned int number_data, unsigned int fptr)
 {
-	unsigned long result;
+	volatile unsigned long result;
 	unsigned long bytes = data_size * number_data;
 
-	trap (trap_c_IO, c_IO_fread, ((const volatile void*) (fptr - 1)), data, (const volatile void*) bytes, &result);	
+	trap (trap_c_IO, trap_params (c_IO_fread, &result, ((const void*) (fptr - 1)), data, (const void*) bytes));	
 
 	return result;
 }
 
 struct _zebulon_stats
 {
+	_zebulon_stats ()
+		: size (0), sizeOnDisk (0)
+	{
+	}
+
+	_zebulon_stats (const _zebulon_stats& other)
+		: size (other.size), sizeOnDisk (other.sizeOnDisk)
+	{
+	}
+
+	_zebulon_stats (const volatile _zebulon_stats& other)
+		: size (other.size), sizeOnDisk (other.sizeOnDisk)
+	{
+	}
+
 	long unsigned int size;	
 	long unsigned int sizeOnDisk;	
 };
 
 inline _zebulon_stats _zebulon_stat_file (const char* filename)
 {
-	_zebulon_stats result;
+	volatile _zebulon_stats result;
 
-	trap (trap_file, file_stat, filename, 0, 0, &result);	
+	trap (trap_file, trap_params (file_stat, &result, filename));	
 
 	return result;
 }
 
 inline unsigned int  _zebulon_delete_file (const char* filename)
 {
-	unsigned int result;
+	volatile unsigned int result;
 
-	trap (trap_file, file_delete, filename, 0, 0, &result);	
+	trap (trap_file, trap_params (file_delete, &result, filename));	
 
 	return result;
 }

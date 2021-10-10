@@ -158,7 +158,7 @@ void Filer::diag () const
 	m_FAT.diag ();
 }
 
-FreeSpace Filer::getFreeSpace () const
+_zebulon_free_space Filer::getFreeSpace () const
 {
 	return m_FAT.getFreeSpace ();
 }
