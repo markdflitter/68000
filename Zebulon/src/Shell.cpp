@@ -255,16 +255,14 @@ void read_file (const std::string& filename)
 	fclose (f);
 }
 
-void write_file (const std::string& filename)
+void write_file (const std::string& filename, unsigned long bytes)
 {
-	unsigned long size = 1000;
-
-	printf ("writing %d bytes to file '%s'\n\r", size, filename.c_str ());
+	printf ("writing %d bytes to file '%s'\n\r", bytes, filename.c_str ());
 	
 	FILE* f = fopen (filename.c_str (), "wb");
 	if (f == 0) return ;
 
-	unsigned long bytesLeftToWrite = size;
+	unsigned long bytesLeftToWrite = bytes;
 
 	unsigned char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile;           ";
 
@@ -362,9 +360,10 @@ void Shell::run () const
 						{
 							read_file (filename);
 						}
-						if (tokens [2] == "write")
+						if (tokens [2] == "write" && tokens.size () > 4)
 						{
-							write_file (filename);
+							unsigned char bytes = (unsigned char) atol (tokens [4].c_str ());
+							write_file (filename, bytes);
 						}
 					}
 				}
