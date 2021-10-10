@@ -60,6 +60,8 @@ else
 endif
 BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(BUILD_TARGET))
 
+AUTOGEN_FILE := $(SRC_DIRECTORY)/version.h
+
 .DEFAULT_GOAL := all
 
 #top level rules
@@ -114,8 +116,13 @@ $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.s
 %.S68: %.out
 	$(OBJCOPY) $(OBJCOPY_FLAGS) $^ $@
 
+NEXT = $(shell expr $$(awk '/\#define BUILD_NUMBER/' $(AUTOGEN_FILE) | tr -cd "[0-9]") + 1)
+
 .PRECIOUS: %.out
 %.out : $(LINK_FILES) $(SRC_FILES)
+	sed -i "s/#define BUILD .*/#define BUILD \"$(NEXT)\"/" $(AUTOGEN_FILE)		
+	sed -i "s/#define BUILD_DATE.*/#define BUILD_DATE \"$$(date +'%d %B %Y')\"/" $(AUTOGEN_FILE)
+	sed -i "s/#define BUILD_TIME.*/#define BUILD_TIME \"$$(date +'%H:%M:%S')\"/" $(AUTOGEN_FILE)
 	$(CC) $(SRC_FILES) -o $@ $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINK_FILES)
 
 _install: $(INSTALLED_HEADER_FILES) $(INSTALLED_TARGET)

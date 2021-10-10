@@ -8,9 +8,9 @@
 #include <ctype.h>
 #include <ZebulonAPI.h>
 #include "Utils.h"
+#include "version.h"
 
-const char* version = "Z-Shell V2.00.0004";
-const char* filename = "Zebulon_V2.0.0004";
+const char* version = "Zebulon V" VERSION;
 
 using namespace std;
 using namespace Zebulon;
@@ -335,7 +335,7 @@ void delete_file (const std::string& filename)
 
 void Shell::run () const
 {
-	printf ("\n\r%s\n\r",version);
+	printf ("\n\r%s (built on %s at %s)\n\r", version, BUILD_DATE, BUILD_TIME);
 	printf ("type help for help\n\r\n\r");
 
 	char buf [255];
