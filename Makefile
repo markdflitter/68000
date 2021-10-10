@@ -120,7 +120,7 @@ NEXT = $(shell expr $$(awk '/\#define BUILD_NUM/' $(AUTOGEN_FILE) | tr -cd "[0-9
 
 .PRECIOUS: %.out
 %.out : $(LINK_FILES) $(SRC_FILES)
-	sed -i "s/#define BUILD .*/#define BUILD_NUM \"$(NEXT)\"/" $(AUTOGEN_FILE)		
+	sed -i "s/#define BUILD_NUM .*/#define BUILD_NUM \"$(NEXT)\"/" $(AUTOGEN_FILE)		
 	sed -i "s/#define BUILD_DATE.*/#define BUILD_DATE \"$$(date +'%d %B %Y')\"/" $(AUTOGEN_FILE)
 	sed -i "s/#define BUILD_TIME.*/#define BUILD_TIME \"$$(date +'%H:%M:%S')\"/" $(AUTOGEN_FILE)
 	$(CC) $(SRC_FILES) -o $@ $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINK_FILES)
