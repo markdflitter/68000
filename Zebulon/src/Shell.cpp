@@ -54,13 +54,24 @@ size_t min (size_t l, size_t r)
 void printBuffer (unsigned char* buffer, size_t bufferLen)
 {
 	unsigned char* p = buffer;
+	
+	unsigned long address = 0;
 
 	while (bufferLen > 0)
 	{
 		size_t rowLen = min (bufferLen, 16);
-		for (int c = 0; c < rowLen; c++) printf ("%x",*p++);
-	
-		string pad (2 * (16 - rowLen) + 1, ' ');	
+
+		printf ("%d\t : ", address);
+		address += rowLen;
+
+		for (int c = 0; c < rowLen; c++) 
+		{
+			if (c != 0) printf (" ");
+			printf ("%x",*p++);
+		}
+
+			
+		string pad (3 * (16 - rowLen) + 4, ' ');	
 		printf ("%s", pad.c_str ());
 
 		p -= rowLen;
