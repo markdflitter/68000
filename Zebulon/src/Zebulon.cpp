@@ -267,10 +267,10 @@ int main ()
 	theFiler ().load ();
 	
 	printf ("\n\r");
-	Shell ().run ();
+	int result = Shell ().run ();
 
 	__disable_interrupts ();
 	printf ("byebye\n\r");
 
-	return 0;
+	return result;
 }

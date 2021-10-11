@@ -105,6 +105,7 @@ void printHelp (void)
 	printf ("version\t\t\t\t - print version\n\r");
 	printf ("help\t\t\t\t - print this help\n\r");
 	printf ("exit\t\t\t\t - exit to monitor\n\r");
+	printf ("restart\t\t\t\t - restart the system\n\r");
 	printf ("uptime\t\t\t\t - print time since boot\n\r");
 	printf ("disk ident\t\t\t - ident the disk and print data\n\r");
 	printf ("disk read <block>\t\t - read specified block from disk\n\r");
@@ -336,7 +337,7 @@ void delete_file (const std::string& filename)
 		printf ("deleted file %s\n\r", filename.c_str ());
 }
 
-void Shell::run () const
+int Shell::run () const
 {
 	printf ("\n\r");
 	printVersion();
@@ -344,6 +345,7 @@ void Shell::run () const
 
 	char buf [255];
 	int exit = 0;
+	int result = 0;
 	while (!exit)
 	{
 		printf ("$ ");
@@ -359,6 +361,11 @@ void Shell::run () const
 			if (tokens [0] == "version") printVersion ();
 			if (tokens [0] == "help") printHelp ();
 			if (tokens [0] == "exit") exit = 1;
+			if (tokens [0] == "restart") 
+			{
+				exit = 1;
+				result = 1;
+			}
 			if (tokens [0] == "uptime") uptime ();
 			if (tokens [0] == "disk" && tokens.size () > 1) 
 			{
@@ -430,5 +437,5 @@ void Shell::run () const
 		}
 
 	}
-	return ;
+	return result;
 }

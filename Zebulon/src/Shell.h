@@ -3,7 +3,7 @@
 
 class Shell {
 public:
-	void run () const;
+	int run () const;
 };
 
 #endif
