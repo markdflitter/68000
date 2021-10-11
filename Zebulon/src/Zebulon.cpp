@@ -220,7 +220,14 @@ int main ()
 {
 	__putstr (banner);	
 
-	unsigned char* vectorBaseAddress = (unsigned char*) 0x200000;
+	unsigned char* vectorBaseAddress = __vector_table;
+	{
+		char buf [200];
+		sprintfn (buf, 200, "initialised vector table at 0x%x\n\r", vectorBaseAddress);
+		__putstr (buf);
+	}
+
+	//(unsigned char*) 0x200000;
 	VectorTable v (vectorBaseAddress);	
 	{
 		char buf [200];
