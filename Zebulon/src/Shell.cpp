@@ -90,10 +90,9 @@ unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned lon
 	return address;
 }
 
-void printStats (const string& filename, const _zebulon_stats stats)
+void printStats (const string& filename, const _zebulon_stats& stats)
 {
 	string pad (MAX_FILENAME_LENGTH - filename.length (), ' ');	
-
 	printf ("%s%s : %d byte(s), allocated %d\n\r", filename.c_str (), pad.c_str (), stats.size, stats.sizeOnDisk);
 }
 
@@ -267,6 +266,7 @@ void free_space_filer ()
 	printf ("total free: %d out of %d (%d%%)\n\r", fs.freeSpace, fs.totalSpace, ((unsigned int) (100 * double(fs.freeSpace) / fs.totalSpace)));
 }
 
+void stat_file (const string& filename);
 void ls_filer ()
 {
 	char buffer [FILENAME_BUFFER_SIZE];
@@ -276,8 +276,8 @@ void ls_filer ()
 	int numFiles = 0;
 	while (sh > -1)
 	{
-		_zebulon_stats stats = _zebulon_stat_file (buffer);
-		printStats (buffer, stats);
+		stat_file (buffer);
+	
 		numFiles++;
 		bool result = _zebulon_find_next_file (sh, buffer);
 		if (!result) 
@@ -334,8 +334,9 @@ void write_file (const string& filename, unsigned long bytes)
 
 void stat_file (const string& filename)
 {
-	_zebulon_stats stats = _zebulon_stat_file (filename.c_str  ());
-	printStats (filename, stats);
+	_zebulon_stats stats;
+	if (_zebulon_stat_file (filename.c_str  (), &stats) == 0)
+		printStats (filename, stats);
 }
 
 void delete_file (const string& filename)

@@ -147,9 +147,9 @@ unsigned long Filer::fread (file_handle handle, unsigned char* data, unsigned lo
 	return 0;
 }
 
-_zebulon_stats Filer::statFile (const std::string& name)
+int Filer::statFile (const std::string& name, _zebulon_stats* stats)	
 {
-	return m_FAT.statFile (name);
+	return m_FAT.statFile (name, stats);
 }
 
 bool Filer::deleteFile (const std::string& name)

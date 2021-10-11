@@ -214,11 +214,11 @@ struct _zebulon_stats
 	long unsigned int sizeOnDisk;	
 };
 
-inline _zebulon_stats _zebulon_stat_file (const char* filename)
+inline int _zebulon_stat_file (const char* filename, _zebulon_stats* stats)
 {
-	volatile _zebulon_stats result;
+	volatile int result;
 
-	trap (trap_file, trap_params (file_stat, &result, filename));	
+	trap (trap_file, trap_params (file_stat, &result, filename, stats));	
 
 	return result;
 }

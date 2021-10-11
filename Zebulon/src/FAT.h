@@ -23,7 +23,7 @@ public:
 
 	bool extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks = 1);	
 
-	_zebulon_stats statFile (const std::string& name);
+	int statFile (const std::string& name, _zebulon_stats* stats);
 
 	FileSearch::Ptr findFirstFile ();
 

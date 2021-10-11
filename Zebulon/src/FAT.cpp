@@ -108,20 +108,18 @@ bool FAT::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
 	return true;
 }
 
-_zebulon_stats FAT::statFile (const std::string& name)
+int FAT::statFile (const std::string& name, _zebulon_stats* stats)
 {
-	_zebulon_stats stats;
-	stats.size = 0;
-	stats.sizeOnDisk = 0;
-
 	FileEntry::Ptr file = findFile (name);
 	if (!file.isNull ())
 	{
-		stats.size = file->size ();
-		stats.sizeOnDisk = file->allocSize ();
+		stats->size = file->size ();
+		stats->sizeOnDisk = file->allocSize ();
+		return 0;
 	}
 
-	return stats;
+	printf (">> file not found\n\r");
+	return -1;
 }
 
 FileSearch::Ptr FAT::findFirstFile ()

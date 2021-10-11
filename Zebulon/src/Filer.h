@@ -27,7 +27,7 @@ public:
 	unsigned long fwrite (file_handle handle, const unsigned char* data, unsigned long numBytes);
 	unsigned long fread (file_handle handle, unsigned char* data, unsigned long numBytes);
 
-	_zebulon_stats statFile (const std::string& name);	
+	int statFile (const std::string& name, _zebulon_stats* stats);	
 	bool deleteFile (const std::string& name);
 
 	typedef int file_search_handle;	
