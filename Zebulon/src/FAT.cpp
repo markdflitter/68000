@@ -5,15 +5,13 @@
 #include <string.h>
 #include <string>
 #include <ZebulonAPI.h>
+#include "version.h"
 
 using namespace std;
 using namespace mdf;
 
 namespace Zebulon
 {
-
-const char* FatIdent = "__Zebulon_FAT__1__";
-const char* FatVersion = "2.2";
 
 int FAT::initialise (int diskSize)
 {
@@ -133,8 +131,8 @@ FileSearch::Ptr FAT::findFirstFile ()
 
 void FAT::serialise (unsigned char*& p) const
 {
-	Serialise::serialise (FatIdent, p);
-	Serialise::serialise (FatVersion, p);
+	Serialise::serialise (FAT_IDENT, p);
+	Serialise::serialise (FAT_VERSION, p);
 	//Serialise::serialise ((unsigned long) m_lastIndex, p);
 
 	m_spaceManager.serialise (p);
@@ -147,18 +145,18 @@ bool FAT::deserialise (const unsigned char*& p)
 	m_fileEntries.clear ();
 
 	string readIdent;
-	Serialise::deserialise (readIdent, p, strlen (FatIdent));
-	if (string (FatIdent) != readIdent)
+	Serialise::deserialise (readIdent, p, strlen (FAT_IDENT));
+	if (string (FAT_IDENT) != readIdent)
 	{
-		printf (">>> FAT - ident mismatch.  Expected %s, got %s\n\r", FatIdent, readIdent.c_str ());
+		printf (">>> FAT - ident mismatch.  Expected %s, got %s\n\r", FAT_IDENT, readIdent.c_str ());
 		return false;
 	}
 
 	string readVersion;
-	Serialise::deserialise (readVersion, p, strlen (FatVersion));
-	if (string (FatVersion) != readVersion)
+	Serialise::deserialise (readVersion, p, strlen (FAT_VERSION));
+	if (string (FAT_VERSION) != readVersion)
 	{
-		printf (">>> FAT - version mismatch.  Expected %s, got %s\n\r", FatVersion, readVersion.c_str());
+		printf (">>> FAT - version mismatch.  Expected %s, got %s\n\r", FAT_VERSION, readVersion.c_str());
 		return false;
 	}
 

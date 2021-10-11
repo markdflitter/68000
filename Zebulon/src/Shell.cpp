@@ -10,8 +10,6 @@
 #include "Utils.h"
 #include "version.h"
 
-const char* version = "Zebulon V" VERSION;
-
 using namespace std;
 using namespace Zebulon;
 
@@ -96,6 +94,11 @@ void printStats (const std::string& filename, const _zebulon_stats stats)
 }	
 
 namespace {
+
+void printVersion ()
+{
+	printf ("%s (built on %s at %s)\n\r", VERSION, BUILD_DATE, BUILD_TIME);
+}
 
 void printHelp (void)
 {
@@ -335,7 +338,8 @@ void delete_file (const std::string& filename)
 
 void Shell::run () const
 {
-	printf ("\n\r%s (built on %s at %s)\n\r", version, BUILD_DATE, BUILD_TIME);
+	printf ("\n\r");
+	printVersion();
 	printf ("type help for help\n\r\n\r");
 
 	char buf [255];
@@ -352,7 +356,7 @@ void Shell::run () const
 
 		if (tokens.size () > 0)
 		{
-			if (tokens [0] == "version") printf ("%s\n\r",version);
+			if (tokens [0] == "version") printVersion ();
 			if (tokens [0] == "help") printHelp ();
 			if (tokens [0] == "exit") exit = 1;
 			if (tokens [0] == "uptime") uptime ();

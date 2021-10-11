@@ -2,9 +2,14 @@
 #define MINOR "0"
 #define PATCH "0"
 
-#define BUILD_NUM "2"
-#define BUILD_DATE "10 October 2021"
-#define BUILD_TIME "19:06:56"
+#define BUILD_NUM "7"
+#define BUILD_DATE "11 October 2021"
+#define BUILD_TIME "11:24:53"
 
 #define VERSION MAJOR "." MINOR "." PATCH "." BUILD_NUM
+
+#define ZEBULON_VERSION "Zebulon V" VERSION
+
+#define FAT_IDENT "__Zebulon_FAT__b2d1c5f4-8e76-4c17-b158-3a0b935b2a37"
+#define FAT_VERSION MAJOR "." MINOR
 
