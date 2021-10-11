@@ -1,11 +1,11 @@
-#include "FAT.h"
-#include "Utils.h"
-#include "Serialise.h"
+#include "../private_include/FAT.h"
+#include "../private_include/Utils.h"
+#include "../private_include/Serialise.h"
 #include <bsp.h>
 #include <string.h>
 #include <string>
 #include <ZebulonAPI.h>
-#include "version.h"
+#include "../private_include/version.h"
 
 using namespace std;
 using namespace mdf;

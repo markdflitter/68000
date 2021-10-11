@@ -1,4 +1,4 @@
-#include "Shell.h"
+#include "../private_include/Shell.h"
 #include <stdio.h>
 #include <vector>
 #include <string>
@@ -7,8 +7,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <ZebulonAPI.h>
-#include "Utils.h"
-#include "version.h"
+#include "../private_include/Utils.h"
+#include "../private_include/version.h"
 #include <timer>
 
 using namespace std;

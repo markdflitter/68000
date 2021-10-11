@@ -1,6 +1,6 @@
-#include "SpaceManager.h"
+#include "../private_include/SpaceManager.h"
 #include <shared_ptr>
-#include "Serialise.h"
+#include "../private_include/Serialise.h"
 #include <stdio.h>
 
 using namespace mdf;

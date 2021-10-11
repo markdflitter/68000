@@ -1,5 +1,5 @@
-#include "OpenFile.h"
-#include "FAT.h"
+#include "../private_include/OpenFile.h"
+#include "../private_include/FAT.h"
 #include <string.h>
 #include <bsp.h>
 #include <stdio.h>

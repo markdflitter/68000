@@ -1,4 +1,4 @@
-#include "FileEntry.h"
+#include "../private_include/FileEntry.h"
 #include <stdio.h>
 
 using namespace std;

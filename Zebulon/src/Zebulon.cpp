@@ -1,11 +1,11 @@
 #include <bsp.h>
 #include <stdio.h>
-#include "VectorTable.h"
-#include "Shell.h"
+#include "../private_include/VectorTable.h"
+#include "../private_include/Shell.h"
 #include <ZebulonAPI.h>
 #include <TrapHelper.h>
 #include <string.h>
-#include "Filer.h"
+#include "../private_include/Filer.h"
 
 const char* banner = 
 "  ____\n\r"

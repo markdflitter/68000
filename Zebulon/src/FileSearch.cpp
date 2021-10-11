@@ -1,4 +1,4 @@
-#include "FileSearch.h"
+#include "../private_include/FileSearch.h"
 
 namespace Zebulon
 {

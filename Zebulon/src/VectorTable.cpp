@@ -1,4 +1,4 @@
-#include "VectorTable.h"
+#include "../private_include/VectorTable.h"
 #include <stdio.h>
 #include <bsp.h>
 
