@@ -9,9 +9,15 @@
 #include <ZebulonAPI.h>
 #include "Utils.h"
 #include "version.h"
+#include <timer>
 
 using namespace std;
 using namespace Zebulon;
+using namespace mdf;
+
+extern char* __begin;
+extern char* __end;
+extern char* start;
 
 namespace {
 
@@ -84,7 +90,7 @@ unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned lon
 	return address;
 }
 
-void printStats (const std::string& filename, const _zebulon_stats stats)
+void printStats (const string& filename, const _zebulon_stats stats)
 {
 	string pad (MAX_FILENAME_LENGTH - filename.length (), ' ');	
 
@@ -119,6 +125,7 @@ void printHelp (void)
 	printf ("filer file write <filename>\t - write file\n\r");
 	printf ("filer file stat <filename>\t - stat file\n\r");
 	printf ("filer file delete <filename>\t - delete file\n\r");
+	printf ("save <filename> <boot slot>\t - save file and make it bootable\n\r");
 }
 
 }
@@ -282,7 +289,7 @@ void ls_filer ()
 	printf (" %d file(s)\n\r", numFiles);
 }
 
-void read_file (const std::string& filename)
+void read_file (const string& filename)
 {
 	printf ("reading file '%s'\n\r", filename.c_str ());
 
@@ -302,7 +309,7 @@ void read_file (const std::string& filename)
 	fclose (f);
 }
 
-void write_file (const std::string& filename, unsigned long bytes)
+void write_file (const string& filename, unsigned long bytes)
 {
 	printf ("writing %d bytes to file '%s'\n\r", bytes, filename.c_str ());
 	
@@ -325,16 +332,52 @@ void write_file (const std::string& filename, unsigned long bytes)
 	fclose (f);
 }
 
-void stat_file (const std::string& filename)
+void stat_file (const string& filename)
 {
 	_zebulon_stats stats = _zebulon_stat_file (filename.c_str  ());
 	printStats (filename, stats);
 }
 
-void delete_file (const std::string& filename)
+void delete_file (const string& filename)
 {
 	if (_zebulon_delete_file (filename.c_str ()))
 		printf ("deleted file %s\n\r", filename.c_str ());
+}
+
+void save (const string& filename, unsigned char bootslot)
+{
+	printf ("saving to file '%s' in boot slot %d\n\r", filename.c_str (), bootslot);
+
+	static unsigned char* loadAddress = (unsigned char*) &__begin;
+	static unsigned char* end = (unsigned char*) &__end;
+	static unsigned char* goAddress = (unsigned char*) &start;
+
+	printf ("  start 0x%x end 0x%x entry 0x%x\n\r", loadAddress, end, goAddress);
+
+	unsigned long length = end - loadAddress;
+
+	if (_zebulon_delete_file (filename.c_str ()))
+		printf ("deleted file %s\n\r", filename.c_str ());
+	
+	FILE* f = fopen (filename.c_str (), "wb");
+	if (f == 0) return ;
+
+	unsigned long bytesLeftToWrite = length;
+	unsigned char* p = loadAddress;
+
+	timer t;	
+	while (bytesLeftToWrite > 0)
+	{
+		unsigned long bytesThisTime = Utils::min (bytesLeftToWrite, 512);
+
+		fwrite (p, 1, bytesThisTime, f);
+		bytesLeftToWrite -= bytesThisTime;
+		p += bytesThisTime;
+		printf (".");
+	}
+	printf (" %dmS\n\r", t.elapsed ());
+
+	fclose (f);
 }
 
 int Shell::run () const
@@ -434,8 +477,13 @@ int Shell::run () const
 					}
 				}
 			}
+			if (tokens [0] == "save" && tokens.size () > 2)
+			{
+				string filename = tokens [1];
+				unsigned char bootslot = atol (tokens [4].c_str ());
+				save (filename, bootslot);
+			}
 		}
-
 	}
 	return result;
 }

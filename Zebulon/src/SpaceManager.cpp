@@ -69,8 +69,8 @@ void SpaceManager::deserialise (const unsigned char*& p)
 	m_free.clear ();
 	Serialise::deserialise (m_free, p);
 
- 	printf ("  loaded %d free chunk(s)\n\r",m_free.size ());
-	printf ("  ");
+ 	printf (" loaded %d free chunk(s)\n\r",m_free.size ());
+	printf (" ");
 	printFreeSpace (getFreeSpace ());
 }
 

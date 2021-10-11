@@ -168,7 +168,7 @@ bool FAT::deserialise (const unsigned char*& p)
 		
 	Serialise::deserialise (m_fileEntries, p);
 
-	printf ("  found %d file(s)\n\r", m_fileEntries.size ());
+	printf (" found %d file(s)\n\r", m_fileEntries.size ());
 	
 	return true;
 }
