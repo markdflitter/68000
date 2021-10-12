@@ -254,10 +254,10 @@ inline void _zebulon_find_close (int find_handle)
 	trap (trap_file_search, trap_params (file_search_close, 0, 0, (void*) find_handle));
 }
 
-inline bool _zebulon_boot_boot (unsigned int slot, const char* filename, unsigned int loadAddress, unsigned int startAddress, unsigned int length, unsigned int startBlock)
+inline bool _zebulon_boot_boot (unsigned int slot, const char* filename, unsigned int loadAddress, unsigned int startAddress, unsigned int length)
 {
 	volatile bool result;
-	trap (trap_boot, trap_params (boot_boot, &result, (void*) slot, (void*) filename, (void*) loadAddress, (void*) startAddress, (void*) length, startBlock));
+	trap (trap_boot, trap_params (boot_boot, &result, (void*) slot, (void*) filename, (void*) loadAddress, (void*) startAddress, (void*) length));
 	return result;
 }
 

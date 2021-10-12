@@ -230,7 +230,7 @@ void Filer::closeFind (file_search_handle handle)
 		m_fileSearches [handle].reset ();
 }
 
-bool Filer::boot (unsigned int slot, const std::string& filename, unsigned int loadAddress, unsigned int startAddress, unsigned int length, unsigned int startBlock)
+bool Filer::boot (unsigned int slot, const std::string& filename, unsigned int loadAddress, unsigned int startAddress, unsigned int length)
 {
 	bool result = false;
 

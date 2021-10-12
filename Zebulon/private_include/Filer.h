@@ -42,7 +42,7 @@ public:
 	bool findNextFile (file_search_handle handle, char filename [FILENAME_BUFFER_SIZE]);
 	void closeFind (file_search_handle handle);
 
-	bool boot (unsigned int slot, const std::string& filename, unsigned int loadAddress, unsigned int startAddress, unsigned int length, unsigned int startBlock);
+	bool boot (unsigned int slot, const std::string& filename, unsigned int loadAddress, unsigned int startAddress, unsigned int length);
 
 	void diag () const;
 	_zebulon_free_space getFreeSpace () const;

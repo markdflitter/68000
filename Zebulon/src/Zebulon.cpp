@@ -225,7 +225,7 @@ void trap7 ()
 
 	switch (tp.opcode)
 	{
-		case Zebulon::boot_boot: *((bool*) tp.pResult) = theFiler ().boot ((unsigned int) tp.a1, string ((char*) tp.a2), (unsigned int) tp.a3, (unsigned int) tp.a4, (unsigned int) tp.a5, (unsigned int) tp.d1); break;
+		case Zebulon::boot_boot: *((bool*) tp.pResult) = theFiler ().boot ((unsigned int) tp.a1, string ((char*) tp.a2), (unsigned int) tp.a3, (unsigned int) tp.a4, (unsigned int) tp.a5); break;
 		default: break;
 	}
 }
