@@ -42,6 +42,8 @@ public:
 	bool findNextFile (file_search_handle handle, char filename [FILENAME_BUFFER_SIZE]);
 	void closeFind (file_search_handle handle);
 
+	bool boot (unsigned int slot, const std::string& filename, unsigned int loadAddress, unsigned int startAddress, unsigned int length, unsigned int startBlock);
+
 	void diag () const;
 	_zebulon_free_space getFreeSpace () const;
 private:
@@ -52,7 +54,7 @@ private:
 	FileSearch::Ptr getFileSearch (file_search_handle handle);
 
 	FAT m_FAT;
-	BootTable m_BootTable;
+	BootTable m_bootTable;
 	std::vector<OpenFile::Ptr> m_openFiles;
 	std::vector<FileSearch::Ptr> m_fileSearches;
 };

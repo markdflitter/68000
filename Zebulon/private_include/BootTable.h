@@ -11,11 +11,14 @@ namespace Zebulon
 class BootTable
 {
 public:
-	void addEntry ();
-	void deleteEntry ();
+	BootTable ();
 
-	void serialise () const;
-	void deserialise ();
+	void clear ();
+
+	bool addEntry (unsigned int slot, const std::string& filename, unsigned int loadAddress, unsigned int startAddress, unsigned int length, unsigned int startBlock);
+
+	void serialise (unsigned char*& p) const;
+	bool deserialise (const unsigned char*& p);
 private:
   std::vector<BootTableEntry::Ptr> m_entries;
 };

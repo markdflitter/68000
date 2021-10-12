@@ -6,14 +6,14 @@
 
 namespace Zebulon
 {
-	enum TRAP {trap_time = 0, trap_serial_IO = 1, trap_ide = 2, trap_filer = 3, trap_c_IO = 4, trap_file = 5, trap_file_search = 6};
+	enum TRAP {trap_time = 0, trap_serial_IO = 1, trap_ide = 2, trap_filer = 3, trap_c_IO = 4, trap_file = 5, trap_file_search = 6, trap_boot = 7};
 	enum serial_IO_operations {serial_IO_write_char = 1, serial_IO_read_char = 2};
 	enum ide_operations {ide_ident = 0, ide_write_block = 1, ide_read_block = 2};
 	enum filer_operations {filer_format = 0, filer_diag = 1, filer_free_space = 2};
 	enum c_IO_operations {c_IO_fopen = 0, c_IO_fclose = 1, c_IO_feof = 2, c_IO_fread = 3, c_IO_fwrite = 4};
 	enum file_operations {file_stat = 0, file_delete = 1};
 	enum file_search_operations {file_search_find_first = 0, file_search_find_next = 1, file_search_close = 2};
-
+	enum boot_operations {boot_boot = 0};
 
 inline unsigned int _zebulon_time ()
 {
@@ -253,6 +253,14 @@ inline void _zebulon_find_close (int find_handle)
 {
 	trap (trap_file_search, trap_params (file_search_close, 0, 0, (void*) find_handle));
 }
+
+inline bool _zebulon_boot_boot (unsigned int slot, const char* filename, unsigned int loadAddress, unsigned int startAddress, unsigned int length, unsigned int startBlock)
+{
+	volatile bool result;
+	trap (trap_boot, trap_params (boot_boot, &result, (void*) slot, (void*) filename, (void*) loadAddress, (void*) startAddress, (void*) length, startBlock));
+	return result;
+}
+
 
 }
 #endif

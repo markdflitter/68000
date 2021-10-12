@@ -48,12 +48,26 @@ void Serialise::serialise (Chunk::Ptr chunk, unsigned char*& p)
 	copyTo (p, (const unsigned char*) chunk.get_raw (), sz);
 }
 
+void Serialise::serialise (BootTableEntry::Ptr bte, unsigned char*& p)
+{
+	if (bte.isNull ()) bte = mdf::make_shared (new BootTableEntry ());
+
+	serialise ((unsigned long) bte->empty, p);
+	serialise (bte->shortName, p);
+	serialise ((unsigned long) 0, p);
+	serialise ((unsigned long) bte->length, p);
+	serialise ((unsigned long) bte->loadAddress, p);
+	serialise ((unsigned long) bte->goAddress, p);
+	serialise ((unsigned long) bte->startBlock, p);
+}
+
 void Serialise::serialise (FileEntry::Ptr file, unsigned char*& p)
 {
 	serialise (file->name (), p);
 	serialise (file->size (), p);
 	serialise (file->chunks (), p);
 }
+
 
 void Serialise::deserialise (unsigned long& l, const unsigned char*& p)
 {
@@ -94,6 +108,36 @@ void Serialise::deserialise (FileEntry::Ptr file, const unsigned char*& p)
 	list<Chunk::Ptr> chunks;
 	deserialise (chunks, p);
 	file->setChunks (chunks);
+}
+
+void Serialise::deserialise (BootTableEntry::Ptr bte, const unsigned char*& p)
+{
+	unsigned long empty;
+	deserialise (empty, p);
+	bte->empty = empty;
+
+	string name;
+	deserialise (name, p, 20);
+	bte->shortName = name;
+	
+	unsigned long ignore;
+	deserialise (ignore, p);
+
+	unsigned long length;
+	deserialise (length, p);
+	bte->length = length;
+
+	unsigned long loadAddress;
+	deserialise (loadAddress, p);
+	bte->loadAddress = loadAddress;
+
+	unsigned long goAddress;
+	deserialise (goAddress, p);
+	bte->goAddress = goAddress;
+
+	unsigned long startBlock;
+	deserialise (startBlock, p);
+	bte->startBlock = startBlock;
 }
 
 }

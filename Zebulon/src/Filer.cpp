@@ -63,7 +63,8 @@ int Filer::format (int diskSize)
 {
 	m_openFiles.clear ();
 	m_fileSearches.clear ();
-  	int result = m_FAT.initialise (diskSize);
+  	m_bootTable.clear ();
+ 	int result = m_FAT.initialise (diskSize);
 
 	do_save ();
 
@@ -229,6 +230,29 @@ void Filer::closeFind (file_search_handle handle)
 		m_fileSearches [handle].reset ();
 }
 
+bool Filer::boot (unsigned int slot, const std::string& filename, unsigned int loadAddress, unsigned int startAddress, unsigned int length, unsigned int startBlock)
+{
+	bool result = false;
+
+	FileEntry::Ptr f = m_FAT.findFile (filename);
+	if (f.isNull ())
+	{
+		printf (">> file not found\n\r");
+		return result;
+	}
+	
+	std::list <Chunk::Ptr>& chunks = f->chunks ();
+	for (std::list <Chunk::Ptr>::iterator i = chunks.begin (); i != chunks.end (); i++)
+	{
+		unsigned int startBlock = (*i)->start;
+		result = m_bootTable.addEntry (slot, filename, loadAddress, startAddress, length, startBlock);
+		if (result) do_save ();	
+		break;
+	}
+
+	return result;
+}
+
 void Filer::diag () const
 {
 	m_FAT.diag ();
@@ -244,27 +268,30 @@ void Filer::do_load ()
 	unsigned char block [512];
 	const unsigned char* p = block;
 	
-	::ide_result result = __ide_read (1, block);	
-	if (result != ::IDE_OK) 
 	{
-		Utils::printIdeError (result);
-		return ;
+		::ide_result result = __ide_read (1, block);	
+		if (result != ::IDE_OK) 
+		{
+			Utils::printIdeError (result);
+			return ;
+		}
 	}
 
 	if (!m_FAT.deserialise (p))
 		return ;
 
-	//p = block;
+	p = block;
 	
-	//result = __ide_read (0, block);	
-	//if (result != OK)
-	//{
-	//	printIdeError (result);
-	//	return ;
-	//}
+	{
+		::ide_result result = __ide_read (0, block);	
+		if (result != ::IDE_OK)
+		{
+			Utils::printIdeError (result);
+			return ;
+		}
+	}
 
-	//Serialise::deserialise (m_bootTable, p);
-	
+	m_bootTable.deserialise (p);
 }
 
 void Filer::do_save () const
@@ -272,13 +299,15 @@ void Filer::do_save () const
 	unsigned char block [1024];
 	unsigned char* p = block;
 
-	//Serialise::serialise (m_bootTable, p);
+	m_bootTable.serialise (p);
 
-	//ide_result result = __ide_write (0, block);
-	//if (result != OK)
-	//	printIdeError (result);
+	{
+		::ide_result result = __ide_write (0, block);
+		if (result != ::IDE_OK)
+			Utils::printIdeError (result);
+	}
 
-	//p = block;
+	p = block;
 	m_FAT.serialise (p);
 	
 	if (p - block > 400)
@@ -288,9 +317,11 @@ void Filer::do_save () const
 			printf (">>> FAT block is full!!!!\n\r");
 	}
 
-	::ide_result result = __ide_write (1, block);	
-	if (result != ::IDE_OK)
-		Utils::printIdeError (result);
+	{
+		::ide_result result = __ide_write (1, block);	
+		if (result != ::IDE_OK)
+			Utils::printIdeError (result);
+	}
 }
 
 OpenFile::Ptr Filer::getOpenFile (file_handle file)

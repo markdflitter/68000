@@ -372,7 +372,7 @@ void save (const string& filename, unsigned char bootslot)
 	static unsigned char* end = (unsigned char*) &__end;
 	static unsigned char* goAddress = (unsigned char*) &start;
 
-	printf ("  start 0x%x end 0x%x entry 0x%x\n\r", loadAddress, end, goAddress);
+	printf (" start 0x%x end 0x%x entry 0x%x\n\r", loadAddress, end, goAddress);
 
 	unsigned long length = end - loadAddress;
 
@@ -398,6 +398,13 @@ void save (const string& filename, unsigned char bootslot)
 	}
 	printf (" %dmS\n\r", t.elapsed ());
 
+	if (_zebulon_boot_boot (bootslot, filename.c_str (), (unsigned int) loadAddress, (unsigned int) goAddress, length, 0))
+	{
+		printf ("created boot table entry\n\r");
+	}
+	else
+		printf (">>> error creating boot table entry\n\r");
+	
 	fclose (f);
 }
 

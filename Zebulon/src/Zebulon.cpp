@@ -7,6 +7,8 @@
 #include <string.h>
 #include "../private_include/Filer.h"
 
+using namespace std;
+
 const char* banner = 
 "  ____\n\r"
 " |    / ____________________________________\n\r"
@@ -215,6 +217,18 @@ void trap6 ()
 	}
 }
 
+// boot operations
+void trap7 () __attribute__ ((interrupt));
+void trap7 ()
+{
+	trap_params tp = untrap ();
+
+	switch (tp.opcode)
+	{
+		case Zebulon::boot_boot: *((bool*) tp.pResult) = theFiler ().boot ((unsigned int) tp.a1, string ((char*) tp.a2), (unsigned int) tp.a3, (unsigned int) tp.a4, (unsigned int) tp.a5, (unsigned int) tp.d1); break;
+		default: break;
+	}
+}
 
 int main ()
 {
@@ -250,6 +264,8 @@ int main ()
 	v.setVector (36, &trap4);
 	v.setVector (37, &trap5);
 	v.setVector (38, &trap6);
+	v.setVector (39, &trap7);
+
 
 
 	// detailed diagnostics
