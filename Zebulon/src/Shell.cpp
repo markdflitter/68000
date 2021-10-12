@@ -386,7 +386,8 @@ void save (const string& filename, unsigned char bootslot)
 	unsigned long bytesLeftToWrite = length;
 	unsigned char* p = loadAddress;
 
-	timer t;	
+	timer t;
+	__putstr ("start\n\r");	
 	while (bytesLeftToWrite > 0)
 	{
 		unsigned long bytesThisTime = Utils::min (bytesLeftToWrite, 512);
@@ -396,6 +397,7 @@ void save (const string& filename, unsigned char bootslot)
 		p += bytesThisTime;
 		printf (".");
 	}
+	__putstr ("end\n\r");
 	printf (" %dmS\n\r", t.elapsed ());
 
 	if (_zebulon_boot_boot (bootslot, filename.c_str (), (unsigned int) loadAddress, (unsigned int) goAddress, length, 0))

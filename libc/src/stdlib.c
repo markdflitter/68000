@@ -18,11 +18,14 @@ void* malloc (size_t size)
 	if (top_of_heap - (char*) &__end > 0x40000)
 		printf (">> heapsize 0x%x - time to consider implementing delete\n\r",top_of_heap - (char*) &__end);
 
+	//printf ("malloc %d 0x%x\n\r", size, alloc);
+
 	return (void*) alloc;
 }
 
 void free (void* ptr)
 {
+	//printf ("free 0x%x\n\r", ptr);
 }
 
 void abort (void)
