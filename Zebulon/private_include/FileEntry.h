@@ -33,6 +33,8 @@ public:
 
 	void diag () const;
 private:
+	void consolidate ();
+
 	std::string m_name;
 	unsigned int m_size;
 	std::list <Chunk::Ptr> m_chunks;

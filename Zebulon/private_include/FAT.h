@@ -13,8 +13,8 @@ class FAT
 public:
 	int initialise (int diskSize);
 
-	void load ();
-	void save ();
+	void serialise (unsigned char*& p) const;
+	bool deserialise (const unsigned char*& p);
 
 	FileEntry::Ptr findFile (const std::string& name);
 
@@ -30,12 +30,6 @@ public:
 	void diag () const;
 	_zebulon_free_space getFreeSpace () const;
 private:
-	void serialise (unsigned char*& p) const;
-	bool deserialise (const unsigned char*& p);
-
-	void do_load ();
-	void do_save () const;
-
 	SpaceManager m_spaceManager;	
 	std::list<FileEntry::Ptr> m_fileEntries;
 };

@@ -345,6 +345,25 @@ void delete_file (const string& filename)
 		printf ("deleted file %s\n\r", filename.c_str ());
 }
 
+bool file_exists (const std::string& filename)
+{
+	char buffer [FILENAME_BUFFER_SIZE];
+
+	int sh = _zebulon_find_first_file (buffer);
+	while (sh > -1)
+	{
+		if (string (buffer) == filename) return true;
+		bool result = _zebulon_find_next_file (sh, buffer);
+		if (!result) 
+		{
+			_zebulon_find_close (sh);
+			break;
+		}
+	}
+
+	return false;
+}
+
 void save (const string& filename, unsigned char bootslot)
 {
 	printf ("saving to file '%s' in boot slot %d\n\r", filename.c_str (), bootslot);
@@ -357,8 +376,9 @@ void save (const string& filename, unsigned char bootslot)
 
 	unsigned long length = end - loadAddress;
 
-	if (_zebulon_delete_file (filename.c_str ()))
-		printf ("deleted file %s\n\r", filename.c_str ());
+	if (file_exists (filename))
+		if (_zebulon_delete_file (filename.c_str ()))
+			printf ("deleted file %s\n\r", filename.c_str ());
 	
 	FILE* f = fopen (filename.c_str (), "wb");
 	if (f == 0) return ;
@@ -481,7 +501,7 @@ int Shell::run () const
 			if (tokens [0] == "save" && tokens.size () > 2)
 			{
 				string filename = tokens [1];
-				unsigned char bootslot = atol (tokens [4].c_str ());
+				unsigned char bootslot = atol (tokens [2].c_str ());
 				save (filename, bootslot);
 			}
 		}

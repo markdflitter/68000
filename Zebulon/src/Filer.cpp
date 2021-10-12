@@ -1,6 +1,8 @@
 #include "../private_include/Filer.h"
 #include <stdio.h>
 #include <string.h>
+#include <bsp.h>
+#include "../private_include/Utils.h"
 
 using namespace mdf;
 
@@ -49,14 +51,44 @@ Filer::~Filer ()
 
 void Filer::load ()
 {
-	m_FAT.load ();
+	do_load ();
+}
+
+void Filer::save () const
+{
+	do_save ();
 }
 
 int Filer::format (int diskSize)
 {
 	m_openFiles.clear ();
 	m_fileSearches.clear ();
-  	return m_FAT.initialise (diskSize);
+  	int result = m_FAT.initialise (diskSize);
+
+	do_save ();
+
+	return result;
+}
+
+bool Filer::createFile (const std::string& name, unsigned long initialSize, bool contiguous)
+{
+	bool result = m_FAT.createFile (name, initialSize, contiguous);
+	if (result) save ();
+	return result;
+}
+
+bool Filer::deleteFile (const std::string& name)
+{
+	bool result = m_FAT.deleteFile (name);
+	if (result) save ();
+	return result;
+}
+
+bool Filer::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
+{
+	bool result = m_FAT.extendFile (fileEntry, numBlocks);
+	if (result) save ();
+	return result;
 }
 
 int Filer::fopen (const std::string& name, const std::string& mode)
@@ -95,7 +127,7 @@ int Filer::fopen (const std::string& name, const std::string& mode)
 		return file_not_found;
 	}
 	
-	m_openFiles.push_back (make_shared(new OpenFile(f, &m_FAT)));
+	m_openFiles.push_back (make_shared(new OpenFile(f, this)));
 
 	result = m_openFiles.size () - 1;
 
@@ -152,11 +184,6 @@ int Filer::statFile (const std::string& name, _zebulon_stats* stats)
 	return m_FAT.statFile (name, stats);
 }
 
-bool Filer::deleteFile (const std::string& name)
-{
-	return m_FAT.deleteFile (name);
-}
-
 Filer::file_search_handle Filer::findFirstFile (char filename [FILENAME_BUFFER_SIZE])
 {
 	FileSearch::Ptr fileSearch = m_FAT.findFirstFile ();
@@ -210,6 +237,60 @@ void Filer::diag () const
 _zebulon_free_space Filer::getFreeSpace () const
 {
 	return m_FAT.getFreeSpace ();
+}
+
+void Filer::do_load ()
+{
+	unsigned char block [512];
+	const unsigned char* p = block;
+	
+	::ide_result result = __ide_read (1, block);	
+	if (result != ::IDE_OK) 
+	{
+		Utils::printIdeError (result);
+		return ;
+	}
+
+	if (!m_FAT.deserialise (p))
+		return ;
+
+	//p = block;
+	
+	//result = __ide_read (0, block);	
+	//if (result != OK)
+	//{
+	//	printIdeError (result);
+	//	return ;
+	//}
+
+	//Serialise::deserialise (m_bootTable, p);
+	
+}
+
+void Filer::do_save () const
+{
+	unsigned char block [1024];
+	unsigned char* p = block;
+
+	//Serialise::serialise (m_bootTable, p);
+
+	//ide_result result = __ide_write (0, block);
+	//if (result != OK)
+	//	printIdeError (result);
+
+	//p = block;
+	m_FAT.serialise (p);
+	
+	if (p - block > 400)
+	{
+		printf (">> FAT size is now %d bytes\n\r", p - block);
+		if ((p - block) > 512)
+			printf (">>> FAT block is full!!!!\n\r");
+	}
+
+	::ide_result result = __ide_write (1, block);	
+	if (result != ::IDE_OK)
+		Utils::printIdeError (result);
 }
 
 OpenFile::Ptr Filer::getOpenFile (file_handle file)

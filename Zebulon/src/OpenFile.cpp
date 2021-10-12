@@ -1,5 +1,5 @@
 #include "../private_include/OpenFile.h"
-#include "../private_include/FAT.h"
+#include "../private_include/Filer.h"
 #include <string.h>
 #include <bsp.h>
 #include <stdio.h>
@@ -9,9 +9,9 @@ using namespace std;
 namespace Zebulon
 {
 
-OpenFile::OpenFile (FileEntry::Ptr fileEntry, FAT* fat)
+OpenFile::OpenFile (FileEntry::Ptr fileEntry, Filer* filer)
 	: m_fileEntry (fileEntry),
-	  m_FAT (fat),
+	  m_Filer (filer),
 	  m_bufferPointer (0),
 	  m_bufferModified (false),
 	  m_fileEntryModified (false)
@@ -24,7 +24,7 @@ OpenFile::~OpenFile ()
 	flush ();
 	if (m_fileEntryModified) 
 	{
-		m_FAT->save ();
+		m_Filer->save ();
 	}
 }
 
@@ -137,7 +137,7 @@ bool OpenFile::readCurBlock ()
 		if (m_filePointer >= m_fileEntry->allocSize ())
 		{
 			//printf ("extending file\n\r");
-			if (!m_FAT->extendFile (m_fileEntry, 1))
+			if (!m_Filer->extendFile (m_fileEntry, 1))
 				return false;
 		
 			m_bufferPointer = 0;

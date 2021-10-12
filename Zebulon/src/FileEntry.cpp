@@ -59,6 +59,8 @@ void FileEntry::setChunks (const list <Chunk::Ptr>& chunks)
 void FileEntry::extend (std::list<Chunk::Ptr>& newAllocation)
 {
 	m_chunks.splice (m_chunks.end (), newAllocation);
+	consolidate ();
+
 }
 
 void FileEntry::diag () const
@@ -66,4 +68,22 @@ void FileEntry::diag () const
 	for (std::list<Chunk::Ptr>::const_iterator i = m_chunks.begin (); i != m_chunks.end (); i++)
 		printf ("  %d -> %d (length %d)\n\r", (*i)->start, (*i)->start + (*i)->length - 1, (*i)->length);
 }
+
+void FileEntry::consolidate ()
+{
+	std::list<Chunk::Ptr>::iterator prev = m_chunks.begin ();
+	std::list<Chunk::Ptr>::iterator i = prev; i++;
+
+	while (i != m_chunks.end ())
+	{	 
+		if (((*prev)->start + (*prev)->length) == (*i)->start)
+		{
+			(*prev)->length += (*i)->length;
+			i = m_chunks.erase (i);
+		}
+		else
+		  prev = i++;
+	}
+}
+
 }

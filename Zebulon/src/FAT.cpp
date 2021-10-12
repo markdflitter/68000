@@ -1,7 +1,5 @@
 #include "../private_include/FAT.h"
-#include "../private_include/Utils.h"
 #include "../private_include/Serialise.h"
-#include <bsp.h>
 #include <string.h>
 #include <string>
 #include <ZebulonAPI.h>
@@ -17,114 +15,7 @@ int FAT::initialise (int diskSize)
 {
 	int result = m_spaceManager.initialise (diskSize);
 	m_fileEntries.clear ();
-	do_save ();
 	return result;
-}
-
-void FAT::load ()
-{
-	do_load ();
-}
-
-void FAT::save ()
-{
-	do_save ();
-}
-
-FileEntry::Ptr FAT::findFile (const string& name)
-{
-	FileEntry::Ptr result;
-
-	if (name.length () > 0)
-	{
-		for (list<FileEntry::Ptr>::iterator i = m_fileEntries.begin (); i != m_fileEntries.end (); i++)
-			if ((*i)->name () == name)
-			{
-				result = (*i);
-				break ;
-			}
-	}
-
-	return result;
-}
-
-bool FAT::createFile (const std::string& name, unsigned long initialSize, bool contiguous)
-{
-	if (name.length () > MAX_FILENAME_LENGTH)
-	{
-		printf (">> filename may not be > %d characters\n\r", MAX_FILENAME_LENGTH);
-		return false;
-	}
-
-	if (!findFile (name).isNull ())
-	{
-		printf (">> file already exists\n\r");
-		return false;
-	}
-
-	list<Chunk::Ptr> allocation = m_spaceManager.allocate (initialSize, contiguous);
-	if ((initialSize > 0) && (allocation.size () == 0))
-	{
-		printf (">>> disk full\n\r");
-		return false;
-	}
-
-	m_fileEntries.push_back (make_shared (new FileEntry (name, allocation)));
-
-	save ();	
-	return true;
-}
-
-bool FAT::deleteFile (const std::string& name)
-{
-	list<FileEntry::Ptr>::iterator i = m_fileEntries.begin ();
-
-	for ( ; i != m_fileEntries.end (); i++)
-		if ((*i)->name () == name)
-		{
-			m_spaceManager.deallocate ((*i)->chunks ());
-			m_fileEntries.erase (i);
-			save ();
-	 		return true;
-		}
-
-	printf (">> file not found\n\r");
-	return false;
-}
-
-bool FAT::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
-{
-	list<Chunk::Ptr> newAllocation = m_spaceManager.allocate (numBlocks);
-
-	if ((numBlocks > 0) && (newAllocation.size () == 0))
-	{
-		printf (">>> disk full\n\r");
-		return false;
-	}
-
-	fileEntry->extend (newAllocation);
-	save ();
-
-	return true;
-}
-
-int FAT::statFile (const std::string& name, _zebulon_stats* stats)
-{
-	FileEntry::Ptr file = findFile (name);
-	if (!file.isNull ())
-	{
-		stats->size = file->size ();
-		stats->sizeOnDisk = file->allocSize ();
-		return 0;
-	}
-
-	printf (">> file not found\n\r");
-	return -1;
-}
-
-FileSearch::Ptr FAT::findFirstFile ()
-{
-	return make_shared(new FileSearch (m_fileEntries));
 }
 
 void FAT::serialise (unsigned char*& p) const
@@ -171,58 +62,97 @@ bool FAT::deserialise (const unsigned char*& p)
 	return true;
 }
 
-
-void FAT::do_load ()
+FileEntry::Ptr FAT::findFile (const string& name)
 {
-	unsigned char block [512];
-	const unsigned char* p = block;
-	
-	::ide_result result = __ide_read (1, block);	
-	if (result != ::IDE_OK) 
+	FileEntry::Ptr result;
+
+	if (name.length () > 0)
 	{
-		Utils::printIdeError (result);
-		return ;
+		for (list<FileEntry::Ptr>::iterator i = m_fileEntries.begin (); i != m_fileEntries.end (); i++)
+			if ((*i)->name () == name)
+			{
+				result = (*i);
+				break ;
+			}
 	}
 
-	if (!deserialise (p))
-		return ;
-
-	//p = block;
-	
-	//result = __ide_read (0, block);	
-	//if (result != OK)
-	//{
-	//	printIdeError (result);
-	//	return ;
-	//}
-
-	//Serialise::deserialise (m_bootTable, p);
+	return result;
 }
 
-void FAT::do_save () const
+bool FAT::createFile (const std::string& name, unsigned long initialSize, bool contiguous)
 {
-	unsigned char block [1024];
-	unsigned char* p = block;
-
-	//Serialise::serialise (m_bootTable, p);
-
-	//ide_result result = __ide_write (0, block);
-	//if (result != OK)
-	//	printIdeError (result);
-
-	//p = block;
-	serialise (p);
-	
-	if (p - block > 400)
+	if (name.length () > MAX_FILENAME_LENGTH)
 	{
-		printf (">> FAT size is now %d bytes\n\r", p - block);
-		if ((p - block) > 512)
-			printf (">>> FAT block is full!!!!\n\r");
+		printf (">> filename may not be > %d characters\n\r", MAX_FILENAME_LENGTH);
+		return false;
 	}
 
-	::ide_result result = __ide_write (1, block);	
-	if (result != ::IDE_OK)
-		Utils::printIdeError (result);
+	if (!findFile (name).isNull ())
+	{
+		printf (">> file already exists\n\r");
+		return false;
+	}
+
+	list<Chunk::Ptr> allocation = m_spaceManager.allocate (initialSize, contiguous);
+	if ((initialSize > 0) && (allocation.size () == 0))
+	{
+		printf (">>> disk full\n\r");
+		return false;
+	}
+
+	m_fileEntries.push_back (make_shared (new FileEntry (name, allocation)));
+
+	return true;
+}
+
+bool FAT::deleteFile (const std::string& name)
+{
+	list<FileEntry::Ptr>::iterator i = m_fileEntries.begin ();
+
+	for ( ; i != m_fileEntries.end (); i++)
+		if ((*i)->name () == name)
+		{
+			m_spaceManager.deallocate ((*i)->chunks ());
+			m_fileEntries.erase (i);
+	 		return true;
+		}
+
+	printf (">> file not found\n\r");
+	return false;
+}
+
+bool FAT::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
+{
+	list<Chunk::Ptr> newAllocation = m_spaceManager.allocate (numBlocks);
+
+	if ((numBlocks > 0) && (newAllocation.size () == 0))
+	{
+		printf (">>> disk full\n\r");
+		return false;
+	}
+
+	fileEntry->extend (newAllocation);
+
+	return true;
+}
+
+int FAT::statFile (const std::string& name, _zebulon_stats* stats)
+{
+	FileEntry::Ptr file = findFile (name);
+	if (!file.isNull ())
+	{
+		stats->size = file->size ();
+		stats->sizeOnDisk = file->allocSize ();
+		return 0;
+	}
+
+	printf (">> file not found\n\r");
+	return -1;
+}
+
+FileSearch::Ptr FAT::findFirstFile ()
+{
+	return make_shared(new FileSearch (m_fileEntries));
 }
 
 void FAT::diag () const

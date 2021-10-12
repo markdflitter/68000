@@ -7,7 +7,7 @@
 namespace Zebulon
 {
 
-class FAT;
+class Filer;
 
 class OpenFile
 {
@@ -15,7 +15,7 @@ public:
 	typedef mdf::shared_ptr <OpenFile> Ptr;
 	typedef mdf::shared_ptr <OpenFile> ConstPtr;
 
-	OpenFile (FileEntry::Ptr file, FAT* fat);
+	OpenFile (FileEntry::Ptr file, Filer* filer);
 	~OpenFile ();
 
 	unsigned long read (unsigned char* data, unsigned long numBytes);	
@@ -37,7 +37,7 @@ private:
 	unsigned char* m_bufferPointer;
 	
 	FileEntry::Ptr m_fileEntry;
-	FAT* m_FAT;
+	Filer* m_Filer;
 
 	unsigned long m_filePointer;
 	unsigned long m_curBlock;

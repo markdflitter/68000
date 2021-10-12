@@ -2,6 +2,7 @@
 #define FILER_H
 
 #include "FAT.h"
+#include "BootTable.h"
 #include "OpenFile.h"
 #include "FileSearch.h"
 #include <vector>
@@ -15,8 +16,15 @@ public:
 	Filer ();
 	~Filer ();
 
-	void load();
+	void load ();
+	void save () const;
+
 	int format (int diskSize);
+
+	bool createFile (const std::string& name, unsigned long initialSize = 0, bool contiguous = false);
+	bool deleteFile (const std::string& name);
+
+	bool extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks = 1);	
 
 	typedef int file_handle;
 	enum {file_not_found = -1};
@@ -28,7 +36,6 @@ public:
 	unsigned long fread (file_handle handle, unsigned char* data, unsigned long numBytes);
 
 	int statFile (const std::string& name, _zebulon_stats* stats);	
-	bool deleteFile (const std::string& name);
 
 	typedef int file_search_handle;	
 	file_search_handle findFirstFile (char filename [FILENAME_BUFFER_SIZE]);
@@ -38,10 +45,14 @@ public:
 	void diag () const;
 	_zebulon_free_space getFreeSpace () const;
 private:
+	void do_load ();
+	void do_save () const;
+
 	OpenFile::Ptr getOpenFile (file_handle file);
 	FileSearch::Ptr getFileSearch (file_search_handle handle);
 
 	FAT m_FAT;
+	BootTable m_BootTable;
 	std::vector<OpenFile::Ptr> m_openFiles;
 	std::vector<FileSearch::Ptr> m_fileSearches;
 };
