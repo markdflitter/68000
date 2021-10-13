@@ -31,8 +31,7 @@ bool BootTable::addEntry (unsigned int slot, const string& filename, unsigned in
 
 	if (!m_entries [slot].isNull () && !m_entries [slot]->empty) 
 	{
-		printf (">> boot slot %d is full, unboot first\n\r", slot);
-		return false;
+		printf (">> boot slot %d is full, replacing %s\n\r", slot, m_entries [slot]->shortName.c_str ());
 	}
 
 	printf ("creating boot table entry %d for %s\n\r",slot, filename.c_str ());

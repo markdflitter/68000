@@ -366,6 +366,12 @@ bool file_exists (const std::string& filename)
 
 void save (const string& filename, unsigned char bootslot)
 {
+	if (bootslot > 9)
+	{
+		printf (">> max boot slot is %d, got %d\n\r", 9, bootslot);
+		return ;
+	}
+
 	printf ("saving to file '%s' in boot slot %d\n\r", filename.c_str (), bootslot);
 
 	static unsigned char* loadAddress = (unsigned char*) &__begin;
