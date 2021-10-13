@@ -297,9 +297,9 @@ void index_filer ()
 
 	for (int i = 0; i < 9; i++)
 	{
-		printf ("%d : ", i);
-		if (!btes[i].empty)
+	if (!btes[i].empty)
 		{
+			printf ("%d : ", i);
 			string pad (20 - strlen(btes[i].name), ' ');	
 			printf ("%s%s len = %d byte(s), load 0x%x, start = 0x%x, firstBlock = %d\n\r", btes[i].name, pad.c_str (), btes[i].length, btes[i].loadAddress, btes[i].startAddress, btes[i].startBlock);
 		}
