@@ -132,7 +132,7 @@ void printHelp (void)
 
 void diag_heap ()
 {
-	heap_diag ();
+	_zebulon_heap_diag ();
 }
 
 void uptime ()

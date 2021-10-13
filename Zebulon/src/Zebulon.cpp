@@ -168,6 +168,7 @@ void trap3 ()
 		}
 		case filer_diag: theFiler().diag (); break;
 		case filer_free_space : *((_zebulon_free_space*) tp.pResult) = theFiler ().getFreeSpace (); break;
+		case filer_heap_diag: heap_diag (); break;
 		default: break;
 	}
 }
