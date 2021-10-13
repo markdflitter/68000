@@ -4,6 +4,9 @@
 
 extern char* __end;
 
+// 65K is yer lot
+#define MAX_HEAP_SIZE 0x10000
+
 void* malloc (size_t size)
 {
 	if (size & 0x1)	size = size + 1;
@@ -15,8 +18,12 @@ void* malloc (size_t size)
 		
 	top_of_heap += size;
 
-	if (top_of_heap - (char*) &__end > 0x40000)
-		printf (">> heapsize 0x%x - time to consider implementing delete\n\r",top_of_heap - (char*) &__end);
+	if (top_of_heap - (char*) &__end > MAX_HEAP_SIZE)
+	{
+		printf (">>> heap full - aborting\n\r");
+		abort ();
+		//printf (">> heapsize 0x%x - time to consider implementing delete\n\r",top_of_heap - (char*) &__end);
+	}
 
 	//printf ("malloc %d 0x%x\n\r", size, alloc);
 
