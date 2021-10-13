@@ -7,12 +7,15 @@ extern char* __end;
 // 65K is yer lot
 #define MAX_HEAP_SIZE 0x10000
 
+static char* base_of_heap = (char*) &__end;
+static char* top_of_heap = (char*) &__end;
+static char* heap_limit = ((char*) &__end) + MAX_HEAP_SIZE;
+
 void* malloc (size_t size)
 {
 	if (size & 0x1)	size = size + 1;
 
-	static char* top_of_heap = (char*) &__end;
-	//printf ("top_of_heap 0x%x\n\r", top_of_heap);
+//printf ("top_of_heap 0x%x\n\r", top_of_heap);
 
 	char* alloc = top_of_heap;
 		
@@ -33,6 +36,12 @@ void* malloc (size_t size)
 void free (void* ptr)
 {
 	//printf ("free 0x%x\n\r", ptr);
+}
+
+
+void heap_diag ()
+{
+	printf ("HEAP: base 0x%x, top 0x%x, limit 0x%x - used %d / %d (%d%%)\n\r", base_of_heap, top_of_heap, heap_limit, (top_of_heap - base_of_heap), MAX_HEAP_SIZE, 100 * (top_of_heap - base_of_heap) / MAX_HEAP_SIZE);
 }
 
 void abort (void)

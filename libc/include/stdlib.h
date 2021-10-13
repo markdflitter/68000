@@ -6,6 +6,8 @@
 extern "C" void* malloc (size_t size);
 extern "C" void free (void* ptr);
 
+extern "C" void heap_diag ();
+
 extern "C" void abort (void);
 
 extern "C" long atol (const char* str);

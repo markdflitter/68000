@@ -6,6 +6,7 @@
 #include <TrapHelper.h>
 #include <string.h>
 #include "../private_include/Filer.h"
+#include <stdlib.h>
 
 using namespace std;
 using namespace Zebulon;
@@ -284,8 +285,9 @@ int main ()
 	}
 	
 	theFiler ().load ();
+
+	heap_diag ();
 	
-	printf ("\n\r");
 	int result = Shell ().run ();
 
 	__disable_interrupts ();

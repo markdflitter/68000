@@ -111,6 +111,8 @@ void printHelp (void)
 	printf ("help\t\t\t\t - print this help\n\r");
 	printf ("exit\t\t\t\t - exit to monitor\n\r");
 	printf ("restart\t\t\t\t - restart the system\n\r");
+	printf ("diag filer\t\t\t\t - print filer diagnostics\n\r");
+	printf ("diag heap\t\t\t\t - print heap diagnostics\n\r");
 	printf ("uptime\t\t\t\t - print time since boot\n\r");
 	printf ("disk ident\t\t\t - ident the disk and print data\n\r");
 	printf ("disk read <block>\t\t - read specified block from disk\n\r");
@@ -128,6 +130,9 @@ void printHelp (void)
 	printf ("save <filename> <boot slot>\t - save file and make it bootable\n\r");
 }
 
+void diag_heap ()
+{
+	heap_diag ();
 }
 
 void uptime ()
@@ -435,6 +440,8 @@ void save (const string& filename, unsigned char bootslot)
 	fclose (f);
 }
 
+}
+
 int Shell::run () const
 {
 	printf ("\n\r");
@@ -463,6 +470,11 @@ int Shell::run () const
 			{
 				exit = 1;
 				result = 1;
+			}
+			if (tokens [0] == "diag" && tokens.size () > 1) 
+			{
+				if (tokens [1] == "heap") diag_heap ();
+				if (tokens [1] == "filer") diag_filer ();
 			}
 			if (tokens [0] == "uptime") uptime ();
 			if (tokens [0] == "disk" && tokens.size () > 1) 
