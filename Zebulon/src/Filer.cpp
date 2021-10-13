@@ -256,6 +256,7 @@ bool Filer::boot (unsigned int slot, const std::string& filename, unsigned int l
 void Filer::diag () const
 {
 	m_FAT.diag ();
+	m_bootTable.diag ();
 }
 
 _zebulon_free_space Filer::getFreeSpace () const

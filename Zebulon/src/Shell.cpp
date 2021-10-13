@@ -375,11 +375,19 @@ void save (const string& filename, unsigned char bootslot)
 	printf (" start 0x%x end 0x%x entry 0x%x\n\r", loadAddress, end, goAddress);
 
 	unsigned long length = end - loadAddress;
-
+	unsigned long blocks = length / 512;
+	if ((length % 512) != 0) blocks++;
+	
 	if (file_exists (filename))
 		if (_zebulon_delete_file (filename.c_str ()))
 			printf ("deleted file %s\n\r", filename.c_str ());
-	
+
+	if (!_zebulon_create_file (filename.c_str (), blocks, true))
+	{
+		printf (">>> failed to create file %s of size %d byte(s), %d block(s)\n\r", filename.c_str (), length, blocks);
+		return;
+	}
+
 	FILE* f = fopen (filename.c_str (), "wb");
 	if (f == 0) return ;
 

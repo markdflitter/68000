@@ -53,5 +53,27 @@ bool BootTable::deserialise (const unsigned char*& p)
 	return true;
 }
 
+void BootTable::diag () const
+{
+	printf ("--- boot table ---\n\r");
+
+	for (size_t index = 0; index < m_entries.size (); ++index)
+	{
+		BootTableEntry::Ptr p = m_entries[index];
+
+		printf ("%d : ", index);
+		if (p->empty)
+			printf ("empty\n\r");
+		else
+		{
+			string pad (20 - (p->shortName.length ()), ' ');	
+			printf ("%s%s len = %d byte(s), load 0x%x, start = 0x%x, firstBlock = %d\n\r", p->shortName.c_str (), pad.c_str (), p->length, p->loadAddress, p->goAddress, p->startBlock);
+		}
+	}
+
+	printf ("\n\r");
+}
+
+
 }
 

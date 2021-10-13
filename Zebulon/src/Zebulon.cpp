@@ -196,7 +196,8 @@ void trap5 ()
 	switch (tp.opcode)
 	{
 		case Zebulon::file_stat: *((int*) tp.pResult) = theFiler ().statFile ((const char*) tp.a1, (Zebulon::_zebulon_stats*) tp.a2); break;
-		case Zebulon::file_delete: *((unsigned int*) tp.pResult) = theFiler ().deleteFile ((const char*) tp.a1); break;
+		case Zebulon::file_create: *((bool*) tp.pResult) = theFiler ().createFile ((const char*) tp.a1, (unsigned long) tp.a2, (bool) tp.a3); break;
+			case Zebulon::file_delete: *((unsigned int*) tp.pResult) = theFiler ().deleteFile ((const char*) tp.a1); break;
 		default: break;
 	}
 }

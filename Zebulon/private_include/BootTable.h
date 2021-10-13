@@ -19,6 +19,8 @@ public:
 
 	void serialise (unsigned char*& p) const;
 	bool deserialise (const unsigned char*& p);
+
+	void diag () const;
 private:
   std::vector<BootTableEntry::Ptr> m_entries;
 };

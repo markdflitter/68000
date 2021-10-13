@@ -11,7 +11,7 @@ namespace Zebulon
 	enum ide_operations {ide_ident = 0, ide_write_block = 1, ide_read_block = 2};
 	enum filer_operations {filer_format = 0, filer_diag = 1, filer_free_space = 2};
 	enum c_IO_operations {c_IO_fopen = 0, c_IO_fclose = 1, c_IO_feof = 2, c_IO_fread = 3, c_IO_fwrite = 4};
-	enum file_operations {file_stat = 0, file_delete = 1};
+	enum file_operations {file_stat = 0, file_create = 1, file_delete = 2};
 	enum file_search_operations {file_search_find_first = 0, file_search_find_next = 1, file_search_close = 2};
 	enum boot_operations {boot_boot = 0};
 
@@ -220,6 +220,14 @@ inline int _zebulon_stat_file (const char* filename, _zebulon_stats* stats)
 
 	trap (trap_file, trap_params (file_stat, &result, filename, stats));	
 
+	return result;
+}
+
+inline bool _zebulon_create_file (const char* filename, unsigned long initialBlocks, bool contiguous)
+{
+	volatile unsigned int result;
+
+	trap (trap_file, trap_params (file_create, &result, filename, (void*) initialBlocks, (void*) contiguous));	
 	return result;
 }
 
