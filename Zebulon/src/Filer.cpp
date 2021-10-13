@@ -80,9 +80,26 @@ bool Filer::createFile (const std::string& name, unsigned long initialSize, bool
 
 bool Filer::deleteFile (const std::string& name)
 {
-	bool result = m_FAT.deleteFile (name);
-	if (result) save ();
-	return result;
+	bool removedBootTableEntry = false; 
+
+	FileEntry::Ptr f = m_FAT.findFile (name);
+	if (f.isNull ())
+	{
+		printf (">> file not found\n\r");
+		return false;
+	}
+	
+	std::list <Chunk::Ptr>& chunks = f->chunks ();
+	for (std::list <Chunk::Ptr>::iterator i = chunks.begin (); i != chunks.end (); i++)
+	{
+		unsigned int startBlock = (*i)->start;
+		removedBootTableEntry = m_bootTable.removeEntry (startBlock);
+		break;
+	}
+
+	bool deletedFile = m_FAT.deleteFile (name);
+	if (removedBootTableEntry || deletedFile) save ();
+	return deletedFile;
 }
 
 bool Filer::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)

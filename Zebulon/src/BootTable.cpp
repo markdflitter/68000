@@ -42,6 +42,22 @@ bool BootTable::addEntry (unsigned int slot, const string& filename, unsigned in
 	return true;
 }
 
+bool BootTable::removeEntry (unsigned int startBlock)
+{
+	for (size_t index = 0; index < m_entries.size (); ++index)
+	{
+		BootTableEntry::Ptr p = m_entries[index];
+		if (!p->empty && (p->startBlock == startBlock))
+		{
+			printf ("removing boot table entry %d for %s\n\r", index, p->shortName.c_str ());
+			p->empty = true;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void BootTable::serialise (unsigned char*& p) const
 {
 	Serialise::serialise (m_entries, p);

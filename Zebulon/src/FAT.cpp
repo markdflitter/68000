@@ -117,7 +117,6 @@ bool FAT::deleteFile (const std::string& name)
 	 		return true;
 		}
 
-	printf (">> file not found\n\r");
 	return false;
 }
 
