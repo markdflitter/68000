@@ -43,6 +43,7 @@ public:
 	void closeFind (file_search_handle handle);
 
 	bool boot (unsigned int slot, const std::string& filename, unsigned int loadAddress, unsigned int startAddress, unsigned int length);
+	void index (_zebulon_boot_table_entry btes[9]);
 
 	void diag () const;
 	_zebulon_free_space getFreeSpace () const;

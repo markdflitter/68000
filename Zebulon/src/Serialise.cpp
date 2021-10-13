@@ -57,7 +57,7 @@ void Serialise::serialise (BootTableEntry::Ptr bte, unsigned char*& p)
 	serialise ((unsigned long) 0, p);
 	serialise ((unsigned long) bte->length, p);
 	serialise ((unsigned long) bte->loadAddress, p);
-	serialise ((unsigned long) bte->goAddress, p);
+	serialise ((unsigned long) bte->startAddress, p);
 	serialise ((unsigned long) bte->startBlock, p);
 }
 
@@ -131,9 +131,9 @@ void Serialise::deserialise (BootTableEntry::Ptr bte, const unsigned char*& p)
 	deserialise (loadAddress, p);
 	bte->loadAddress = loadAddress;
 
-	unsigned long goAddress;
-	deserialise (goAddress, p);
-	bte->goAddress = goAddress;
+	unsigned long startAddress;
+	deserialise (startAddress, p);
+	bte->startAddress = startAddress;
 
 	unsigned long startBlock;
 	deserialise (startBlock, p);

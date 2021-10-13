@@ -3,7 +3,7 @@
 
 #include "BootTableEntry.h"
 #include <vector>
-
+#include <ZebulonAPI.h>
 
 namespace Zebulon
 {
@@ -17,6 +17,8 @@ public:
 
 	bool addEntry (unsigned int slot, const std::string& filename, unsigned int loadAddress, unsigned int startAddress, unsigned int length, unsigned int startBlock);
 	bool removeEntry (unsigned int startBlock);
+
+	void index (_zebulon_boot_table_entry btes[9]) const;
 
 	void serialise (unsigned char*& p) const;
 	bool deserialise (const unsigned char*& p);

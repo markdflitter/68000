@@ -18,9 +18,9 @@ struct BootTableEntry
 	}
 	BootTableEntry (const std::string& name,
 		unsigned int _length, unsigned int _loadAddress, 
-		unsigned int _goAddress, unsigned long _startBlock)
+		unsigned int _startAddress, unsigned long _startBlock)
 		: shortName (name), length (_length), loadAddress (_loadAddress),
-		goAddress (_goAddress), startBlock (_startBlock), empty (false)
+		startAddress (_startAddress), startBlock (_startBlock), empty (false)
 	{
 		shortName.resize (20,' ');
 	}
@@ -29,7 +29,7 @@ struct BootTableEntry
 	std::string shortName;
 	unsigned int length;
 	unsigned int loadAddress;
-	unsigned int goAddress;
+	unsigned int startAddress;
 	unsigned long startBlock;
 };
 

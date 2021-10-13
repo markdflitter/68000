@@ -120,6 +120,7 @@ void printHelp (void)
 	printf ("filer diag\t\t\t - print filing system diagnostics\n\r");
 	printf ("filer space\t\t\t - print filing system free space\n\r");
 	printf ("filer ls\t\t\t - list files\n\r");
+	printf ("filer index\t\t\t - print boot table\n\r");
 	printf ("filer file read <filename>\t - read file\n\r");
 	printf ("filer file write <filename>\t - write file\n\r");
 	printf ("filer file stat <filename>\t - stat file\n\r");
@@ -289,6 +290,22 @@ void ls_filer ()
 	printf (" %d file(s)\n\r", numFiles);
 }
 
+void index_filer ()
+{
+	_zebulon_boot_table_entry btes [9];
+	_zebulon_index (btes);
+
+	for (int i = 0; i < 9; i++)
+	{
+		printf ("%d : ", i);
+		if (!btes[i].empty)
+		{
+			string pad (20 - strlen(btes[i].name), ' ');	
+			printf ("%s%s len = %d byte(s), load 0x%x, start = 0x%x, firstBlock = %d\n\r", btes[i].name, pad.c_str (), btes[i].length, btes[i].loadAddress, btes[i].startAddress, btes[i].startBlock);
+		}
+	}
+}
+
 void read_file (const string& filename)
 {
 	printf ("reading file '%s'\n\r", filename.c_str ());
@@ -376,9 +393,9 @@ void save (const string& filename, unsigned char bootslot)
 
 	static unsigned char* loadAddress = (unsigned char*) &__begin;
 	static unsigned char* end = (unsigned char*) &__end;
-	static unsigned char* goAddress = (unsigned char*) &start;
+	static unsigned char* startAddress = (unsigned char*) &start;
 
-	printf (" start 0x%x end 0x%x entry 0x%x\n\r", loadAddress, end, goAddress);
+	printf (" start 0x%x end 0x%x start 0x%x\n\r", loadAddress, end, startAddress);
 
 	unsigned long length = end - loadAddress;
 	unsigned long blocks = length / 512;
@@ -412,7 +429,7 @@ void save (const string& filename, unsigned char bootslot)
 	}
 	printf (" %dmS\n\r", t.elapsed ());
 
-	if (!_zebulon_boot_boot (bootslot, filename.c_str (), (unsigned int) loadAddress, (unsigned int) goAddress, length))
+	if (!_zebulon_boot_boot (bootslot, filename.c_str (), (unsigned int) loadAddress, (unsigned int) startAddress, length))
 		printf (">>> error creating boot table entry\n\r");
 	
 	fclose (f);
@@ -489,6 +506,10 @@ int Shell::run () const
 				if (tokens [1] == "ls")
 				{
 					ls_filer ();
+				}
+				if (tokens [1] == "index")
+				{
+					index_filer ();
 				}
 				if (tokens.size () > 3)
 				{

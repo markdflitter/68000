@@ -1,6 +1,7 @@
 #include "../private_include/BootTable.h"
 #include <stdio.h>
 #include "../private_include/Serialise.h"
+#include <string.h>
 
 using namespace std;
 using namespace mdf;
@@ -57,6 +58,20 @@ bool BootTable::removeEntry (unsigned int startBlock)
 	return false;
 }
 
+void BootTable::index (_zebulon_boot_table_entry btes[9]) const
+{
+	for (size_t i = 0; i < m_entries.size (); ++i)
+	{
+		BootTableEntry::Ptr p = m_entries[i];
+		btes [i].empty = p->empty;
+		memcpy (btes [i].name, p->shortName.c_str (), 21);
+		btes [i].length = p->length;
+		btes [i].loadAddress = p->loadAddress;
+		btes [i].startAddress = p->startAddress;
+		btes [i].startBlock = p->startBlock;
+	}
+}
+
 void BootTable::serialise (unsigned char*& p) const
 {
 	Serialise::serialise (m_entries, p);
@@ -82,7 +97,7 @@ void BootTable::diag () const
 		else
 		{
 			string pad (20 - (p->shortName.length ()), ' ');	
-			printf ("%s%s len = %d byte(s), load 0x%x, start = 0x%x, firstBlock = %d\n\r", p->shortName.c_str (), pad.c_str (), p->length, p->loadAddress, p->goAddress, p->startBlock);
+			printf ("%s%s len = %d byte(s), load 0x%x, start = 0x%x, firstBlock = %d\n\r", p->shortName.c_str (), pad.c_str (), p->length, p->loadAddress, p->startAddress, p->startBlock);
 		}
 	}
 

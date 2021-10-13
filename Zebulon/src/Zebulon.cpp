@@ -8,6 +8,7 @@
 #include "../private_include/Filer.h"
 
 using namespace std;
+using namespace Zebulon;
 
 const char* banner = 
 "  ____\n\r"
@@ -25,9 +26,9 @@ static unsigned int ticks = 0;
 static double tickIntervalInMs = 0.0;
 
 
-Zebulon::Filer& theFiler ()
+Filer& theFiler ()
 {
-	static Zebulon::Filer f;
+	static Filer f;
 	return f;
 }
 
@@ -59,8 +60,8 @@ void trap1 ()
 
 	switch (tp.opcode)
 	{
-		case Zebulon::serial_IO_write_char : __putch ((char) *((int*) tp.pResult)); break;
-		case Zebulon::serial_IO_read_char  : *((int*) tp.pResult) = __getch (); break;
+		case serial_IO_write_char : __putch ((char) *((int*) tp.pResult)); break;
+		case serial_IO_read_char  : *((int*) tp.pResult) = __getch (); break;
 		default: break;
 	}
 }
@@ -126,10 +127,10 @@ void trap2 ()
 {
 	trap_params tp = untrap ();
 
-	unsigned int result = IDE_OK;
+	unsigned int result = Zebulon::IDE_OK;
 	switch (tp.opcode)
 	{
-		case Zebulon::ide_ident  :
+		case ide_ident  :
 		{
 			::DiskInfo info;
 			result = __ide_ident (info);
@@ -137,8 +138,8 @@ void trap2 ()
 			break;
 		}
 
-		case Zebulon::ide_read_block  : result = __ide_read ((unsigned int) tp.a1, (unsigned char*) tp.a2); break;
-		case Zebulon::ide_write_block : result = __ide_write ((unsigned int) tp.a1, (unsigned char*) tp.a2); break;
+		case ide_read_block  : result = __ide_read ((unsigned int) tp.a1, (unsigned char*) tp.a2); break;
+		case ide_write_block : result = __ide_write ((unsigned int) tp.a1, (unsigned char*) tp.a2); break;
 		default: break;
 	}
 
@@ -153,10 +154,10 @@ void trap3 ()
 	
 	switch (tp.opcode)
 	{
-		case Zebulon::filer_format:
+		case filer_format:
 		{
 			::DiskInfo info;
-			if (__ide_ident (info) == IDE_OK)
+			if (__ide_ident (info) == ::IDE_OK)
 			{
 				int numSectors = info.totalNumOfUserSectors;
 				*((int*) tp.pResult) = theFiler ().format (numSectors);
@@ -164,8 +165,8 @@ void trap3 ()
 			else *((int*) tp.pResult) = -1;
 			break;
 		}
-		case Zebulon::filer_diag: theFiler().diag (); break;
-		case Zebulon::filer_free_space : *((Zebulon::_zebulon_free_space*) tp.pResult) = theFiler ().getFreeSpace (); break;
+		case filer_diag: theFiler().diag (); break;
+		case filer_free_space : *((_zebulon_free_space*) tp.pResult) = theFiler ().getFreeSpace (); break;
 		default: break;
 	}
 }
@@ -178,11 +179,11 @@ void trap4 ()
 
 	switch (tp.opcode)
 	{
-		case Zebulon::c_IO_fopen: * ((int*) tp.pResult) = theFiler ().fopen ((const char*) tp.a1, (const char*) tp.a2); break;
-		case Zebulon::c_IO_fclose: theFiler ().fclose ((int) tp.a1); break;
-		case Zebulon::c_IO_feof: * ((int*) tp.pResult) = theFiler ().feof ((int) tp.a1); break;
-		case Zebulon::c_IO_fwrite: *((unsigned long*) tp.pResult) = theFiler ().fwrite ((int) tp.a1, (const unsigned char*) tp.a2, (unsigned long) tp.a3); break;
-		case Zebulon::c_IO_fread: *((unsigned long*) tp.pResult) = theFiler ().fread ((int) tp.a1, (unsigned char*) tp.a2, (unsigned long) tp.a3); break;
+		case c_IO_fopen: * ((int*) tp.pResult) = theFiler ().fopen ((const char*) tp.a1, (const char*) tp.a2); break;
+		case c_IO_fclose: theFiler ().fclose ((int) tp.a1); break;
+		case c_IO_feof: * ((int*) tp.pResult) = theFiler ().feof ((int) tp.a1); break;
+		case c_IO_fwrite: *((unsigned long*) tp.pResult) = theFiler ().fwrite ((int) tp.a1, (const unsigned char*) tp.a2, (unsigned long) tp.a3); break;
+		case c_IO_fread: *((unsigned long*) tp.pResult) = theFiler ().fread ((int) tp.a1, (unsigned char*) tp.a2, (unsigned long) tp.a3); break;
 		default: break;
 	}
 }
@@ -195,9 +196,9 @@ void trap5 ()
 
 	switch (tp.opcode)
 	{
-		case Zebulon::file_stat: *((int*) tp.pResult) = theFiler ().statFile ((const char*) tp.a1, (Zebulon::_zebulon_stats*) tp.a2); break;
-		case Zebulon::file_create: *((bool*) tp.pResult) = theFiler ().createFile ((const char*) tp.a1, (unsigned long) tp.a2, (bool) tp.a3); break;
-			case Zebulon::file_delete: *((unsigned int*) tp.pResult) = theFiler ().deleteFile ((const char*) tp.a1); break;
+		case file_stat: *((int*) tp.pResult) = theFiler ().statFile ((const char*) tp.a1, (_zebulon_stats*) tp.a2); break;
+		case file_create: *((bool*) tp.pResult) = theFiler ().createFile ((const char*) tp.a1, (unsigned long) tp.a2, (bool) tp.a3); break;
+			case file_delete: *((unsigned int*) tp.pResult) = theFiler ().deleteFile ((const char*) tp.a1); break;
 		default: break;
 	}
 }
@@ -210,9 +211,9 @@ void trap6 ()
 
 	switch (tp.opcode)
 	{
-		case Zebulon::file_search_find_first: *((int*) tp.pResult) = theFiler ().findFirstFile ((char*) tp.a1); break;
-		case Zebulon::file_search_find_next: *((bool*) tp.pResult) = theFiler ().findNextFile ((int) tp.a2, (char*) tp.a1); break;
-		case Zebulon::file_search_close: theFiler ().closeFind((int) tp.a2); break;
+		case file_search_find_first: *((int*) tp.pResult) = theFiler ().findFirstFile ((char*) tp.a1); break;
+		case file_search_find_next: *((bool*) tp.pResult) = theFiler ().findNextFile ((int) tp.a2, (char*) tp.a1); break;
+		case file_search_close: theFiler ().closeFind((int) tp.a2); break;
 
 		default: break;
 	}
@@ -226,7 +227,8 @@ void trap7 ()
 
 	switch (tp.opcode)
 	{
-		case Zebulon::boot_boot: *((bool*) tp.pResult) = theFiler ().boot ((unsigned int) tp.a1, string ((char*) tp.a2), (unsigned int) tp.a3, (unsigned int) tp.a4, (unsigned int) tp.a5); break;
+		case boot_boot: *((bool*) tp.pResult) = theFiler ().boot ((unsigned int) tp.a1, string ((char*) tp.a2), (unsigned int) tp.a3, (unsigned int) tp.a4, (unsigned int) tp.a5); break;
+		case boot_index: theFiler ().index ((_zebulon_boot_table_entry*) tp.a1); break;
 		default: break;
 	}
 }
@@ -273,7 +275,7 @@ int main ()
 	printf ("installed TRAPs\n\r");
 
 	::DiskInfo info;
-	if (__ide_ident (info) == IDE_OK)
+	if (__ide_ident (info) == ::IDE_OK)
 	{
 		double capacity = ((double) info.totalNumOfUserSectors) * 512 / 1000000000;
 		printf ("identified %s (%d Gb)\n\r", info.modelNumber, (unsigned long) capacity);

@@ -13,7 +13,7 @@ namespace Zebulon
 	enum c_IO_operations {c_IO_fopen = 0, c_IO_fclose = 1, c_IO_feof = 2, c_IO_fread = 3, c_IO_fwrite = 4};
 	enum file_operations {file_stat = 0, file_create = 1, file_delete = 2};
 	enum file_search_operations {file_search_find_first = 0, file_search_find_next = 1, file_search_close = 2};
-	enum boot_operations {boot_boot = 0};
+	enum boot_operations {boot_boot = 0, boot_index = 1};
 
 inline unsigned int _zebulon_time ()
 {
@@ -269,6 +269,23 @@ inline bool _zebulon_boot_boot (unsigned int slot, const char* filename, unsigne
 	return result;
 }
 
+struct _zebulon_boot_table_entry
+{
+	bool empty;
+
+ 	char name [21];
+
+	long unsigned int length;	
+	unsigned int loadAddress;
+	unsigned int startAddress;
+
+	long unsigned int startBlock;
+};
+
+inline void _zebulon_index (_zebulon_boot_table_entry btes [9])
+{
+	trap (trap_boot, trap_params (boot_index, 0, (void*) btes));
+}
 
 }
 #endif

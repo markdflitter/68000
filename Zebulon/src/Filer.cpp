@@ -270,6 +270,12 @@ bool Filer::boot (unsigned int slot, const std::string& filename, unsigned int l
 	return result;
 }
 
+void Filer::index (_zebulon_boot_table_entry btes[9])
+{
+	m_bootTable.index (btes);
+}
+
+
 void Filer::diag () const
 {
 	m_FAT.diag ();
