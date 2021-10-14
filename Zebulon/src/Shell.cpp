@@ -234,14 +234,22 @@ void disk_write (unsigned long block, unsigned char pattern)
 void disk_soak ()
 {
 	unsigned long t = clock () / 1000;
+	unsigned int block = 0;
 	t = t - 10;
 	while (true)
 	{
 		if (clock () / 1000 > t + 10)	
 		{
-			disk_read (1);
+			disk_read (block);
 			t = clock () / 1000;
 			printf ("\n\r");
+	
+			diag_heap ();
+
+			printf ("\n\r");
+
+			block = (block + 1);
+			if (block == 100) block = 0;
 		}
 	}
 }
