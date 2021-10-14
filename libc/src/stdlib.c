@@ -2,14 +2,14 @@
 #include "../include/ctype.h"
 #include "../include/stdio.h"
 
-extern char* __end;
+extern char __end;
 
 // 65K is yer lot
 #define MAX_HEAP_SIZE 0x10000
 
 char* initialiseHeap ()
 {
-	return (char*) &__end;
+	return &__end;
 }
 
 static char* base_of_heap = initialiseHeap ();
