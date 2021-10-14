@@ -235,9 +235,29 @@ void trap7 ()
 	}
 }
 
+void test_heap ()
+{
+	heap_diag ();
+
+	{
+		printf ("calling malloc()\n\r");
+		int* p = new int;
+		printf ("called malloc()\n\r");
+	}
+
+	{
+		printf ("calling malloc()\n\r");
+		int* p = new int;
+		printf ("called malloc()\n\r");
+	}
+
+	heap_diag ();
+}
+
+
 int main ()
 {
-	__putstr (banner);	
+__putstr (banner);	
 
 	unsigned char* vectorBaseAddress = (unsigned char*) &__vector_table;
 	{
@@ -271,8 +291,6 @@ int main ()
 	v.setVector (38, &trap6);
 	v.setVector (39, &trap7);
 
-
-
 	// detailed diagnostics
 	printf ("installed TRAPs\n\r");
 
@@ -285,6 +303,9 @@ int main ()
 		printf (" firmware revision\t: %s\n\r",info.firmwareRevision);
 	}
 	
+	//test_heap ();
+	//return 0;
+
 	theFiler ().load ();
 
 	heap_diag ();
