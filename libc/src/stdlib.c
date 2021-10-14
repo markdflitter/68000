@@ -12,9 +12,18 @@ char* initialiseHeap ()
 	return &__end;
 }
 
+unsigned int zero ()
+{
+	return 0;
+}
+
 static char* base_of_heap = initialiseHeap ();
 static char* top_of_heap = base_of_heap;
 static char* heap_limit = base_of_heap + MAX_HEAP_SIZE;
+
+static unsigned int malloc_count = zero ();
+static unsigned int free_count = zero ();
+
 
 void* malloc (size_t size)
 {
@@ -34,19 +43,21 @@ void* malloc (size_t size)
 	}
 
 	//printf ("malloc %d 0x%x\n\r", size, alloc);
-
+	
+	malloc_count++;
 	return (void*) alloc;
 }
 
 void free (void* ptr)
 {
+	free_count++;
 	//printf ("free 0x%x\n\r", ptr);
 }
 
 
 void heap_diag ()
 {
-	printf ("HEAP: base 0x%x, top 0x%x, limit 0x%x - used %d / %d (%d%%)\n\r", base_of_heap, top_of_heap, heap_limit, (top_of_heap - base_of_heap), MAX_HEAP_SIZE, 100 * (top_of_heap - base_of_heap) / MAX_HEAP_SIZE);
+	printf ("HEAP: base 0x%x, top 0x%x, limit 0x%x - used %d / %d (%d%%) [%d - %d = %d]\n\r", base_of_heap, top_of_heap, heap_limit, (top_of_heap - base_of_heap), MAX_HEAP_SIZE, 100 * (top_of_heap - base_of_heap) / MAX_HEAP_SIZE, malloc_count, free_count, malloc_count - free_count);
 }
 
 void abort (void)
