@@ -40,16 +40,14 @@ static unsigned int free_count = zero ();
 
 
 
-void* malloc (size_t size)
+void* malloc (size_t requestedSize)
 {
 	//add 4 bytes for length, min size 8, round up to next power of two
-	size = roundUp (max (size + 4, 8));
-
-//printf ("top_of_heap 0x%x\n\r", top_of_heap);
+	allocSize = roundUp (max (requestedSize + 4, 8));
 
 	char* alloc = top_of_heap;
 		
-	top_of_heap += size;
+	top_of_heap += allocSize;
 
 	if (top_of_heap - (char*) &__end > MAX_HEAP_SIZE)
 	{
@@ -58,7 +56,7 @@ void* malloc (size_t size)
 		//printf (">> heapsize 0x%x - time to consider implementing delete\n\r",top_of_heap - (char*) &__end);
 	}
 
-	//printf ("malloc %d 0x%x\n\r", size, alloc);
+	printf ("malloc %d -> %d 0x%x\n\r", requestedSize, allocSize, alloc);
 	
 	malloc_count++;
 	return (void*) alloc;
