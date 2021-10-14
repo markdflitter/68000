@@ -35,7 +35,7 @@ public:
 
 	void clear ()
 	{
-		delete m_Ts;
+		delete[] m_Ts;
 		m_Ts = 0;
 		reserve (m_capacity);
 		m_size = 0;
@@ -72,7 +72,7 @@ public:
 	void reserve (size_t capacity) const
 	{
 		T* new_Ts = new T [capacity];
-		
+			
 		if (m_Ts)
 		{
 			for (int i = 0; i < m_size; i++)

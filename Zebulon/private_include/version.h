@@ -2,9 +2,9 @@
 #define MINOR "0"
 #define PATCH "0"
 
-#define BUILD_NUM "231"
+#define BUILD_NUM "242"
 #define BUILD_DATE "14 October 2021"
-#define BUILD_TIME "19:00:07"
+#define BUILD_TIME "19:41:37"
 
 #define VERSION MAJOR "." MINOR "." PATCH "." BUILD_NUM
 

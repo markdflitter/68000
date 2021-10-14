@@ -300,7 +300,7 @@ void Filer::do_load ()
 			return ;
 		}
 	}
-
+	
 	if (!m_FAT.deserialise (p))
 		return ;
 

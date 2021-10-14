@@ -27,6 +27,7 @@ size_t roundUp (size_t input)
 {
 	for (size_t level = 1; level < MAX_HEAP_SIZE; level *= 2)
 		if (input <= level) return level;
+	return input;
 }
 
 }
@@ -37,8 +38,6 @@ static char* heap_limit = base_of_heap + MAX_HEAP_SIZE;
 
 static unsigned int malloc_count = zero ();
 static unsigned int free_count = zero ();
-
-
 
 void* malloc (size_t requestedSize)
 {
@@ -58,14 +57,20 @@ void* malloc (size_t requestedSize)
 
 	malloc_count++;
 	printf ("[%d] malloc %d -> %d 0x%x\n\r", malloc_count, requestedSize, allocSize, alloc);
-	
+
+	*((unsigned int*) alloc) = allocSize;
+	alloc = alloc + sizeof (unsigned int);
+
 	return (void*) alloc;
 }
 
 void free (void* ptr)
 {
+	char* dealloc = (char*) ptr;	
+	dealloc = dealloc - sizeof (unsigned int);
+	
 	free_count++;
-	printf ("[%d] free 0x%x\n\r", free_count, ptr);
+	printf ("[%d] free 0x%x, size %d\n\r", free_count, dealloc, *((unsigned int*) dealloc));
 }
 
 
