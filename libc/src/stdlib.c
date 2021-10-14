@@ -7,6 +7,9 @@ extern char __end;
 // 65K is yer lot
 #define MAX_HEAP_SIZE 0x10000
 
+namespace
+{
+
 char* initialiseHeap ()
 {
 	return &__end;
@@ -17,6 +20,17 @@ unsigned int zero ()
 	return 0;
 }
 
+template <class T>
+T max (const T& t1, const T& t2) { return t1 > t2 ? t1 : t2; }
+
+size_t roundUp (size_t input)
+{
+	for (size_t level = 1; level < MAX_HEAP_SIZE; level *= 2)
+		if (input < level) return level;
+}
+
+}
+
 static char* base_of_heap = initialiseHeap ();
 static char* top_of_heap = base_of_heap;
 static char* heap_limit = base_of_heap + MAX_HEAP_SIZE;
@@ -25,9 +39,11 @@ static unsigned int malloc_count = zero ();
 static unsigned int free_count = zero ();
 
 
+
 void* malloc (size_t size)
 {
-	if (size & 0x1)	size = size + 1;
+	//add 4 bytes for length, min size 8, round up to next power of two
+	size = roundUp (max (size + 4, 8));
 
 //printf ("top_of_heap 0x%x\n\r", top_of_heap);
 
