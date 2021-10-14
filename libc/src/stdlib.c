@@ -7,9 +7,14 @@ extern char* __end;
 // 65K is yer lot
 #define MAX_HEAP_SIZE 0x10000
 
-static char* base_of_heap = (char*) &__end;
-static char* top_of_heap = (char*) &__end;
-static char* heap_limit = ((char*) &__end) + MAX_HEAP_SIZE;
+char* initialiseHeap ()
+{
+	return (char*) &__end;
+}
+
+static char* base_of_heap = initialiseHeap ();
+static char* top_of_heap = base_of_heap;
+static char* heap_limit = base_of_heap + MAX_HEAP_SIZE;
 
 void* malloc (size_t size)
 {
