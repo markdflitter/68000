@@ -25,25 +25,20 @@ void call_static_constructors ()
 
 extern "C" int __main (void)
 {
-	int result = 1;
-	while (result)
-	{
-		asm ("moveb #5, 0xE00001");
-		clear_bss();
-		asm ("moveb #6, 0xE00001");
+	asm ("moveb #6, 0xE00001");
+	clear_bss();
+	asm ("moveb #6, 0xE00001");
 
-		__init ();
-		asm ("moveb #7, 0xE00001");
-		__putstr ("bsp initialised\n\r");
+	__init ();
+	asm ("moveb #7, 0xE00001");
+	__putstr ("bsp initialised\n\r");
 
-		__putstr ("calling static constructors\n\r");
-  		call_static_constructors ();
-		asm ("moveb #8, 0xE00001");
+	__putstr ("calling static constructors\n\r");
+  	call_static_constructors ();
+	asm ("moveb #9, 0xE00001");
 	
-		__putstr ("handing off to main()\n\r");
-		result = main ();
-	}
-	return result;
+	__putstr ("handing off to main()\n\r");
+	return main ();
 }
 
 
