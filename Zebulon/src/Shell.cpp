@@ -51,7 +51,7 @@ vector<string> tokenize (const string& command)
 	return result;
 }
 
-unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned long startAddress)
+unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned long startAddress, bool hexAddress)
 {
 	unsigned char* p = buffer;
 	
@@ -61,7 +61,10 @@ unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned lon
 	{
 		size_t rowLen = Utils::min (bufferLen, 16);
 
-		printf ("%d\t : ", address);
+		if (hexAddress)
+			printf ("0x%x\t : ", address);
+		else
+			printf ("%d\t : ", address);
 		address += rowLen;
 
 		for (int c = 0; c < rowLen; c++) 
@@ -111,8 +114,9 @@ void printHelp (void)
 	printf ("help\t\t\t\t - print this help\n\r");
 	printf ("exit\t\t\t\t - exit to monitor\n\r");
 	printf ("restart\t\t\t\t - restart the system\n\r");
-	printf ("diag filer\t\t\t\t - print filer diagnostics\n\r");
-	printf ("diag heap {full}\t\t\t - print (full) heap diagnostics\n\r");
+	printf ("diag filer\t\t\t - print filer diagnostics\n\r");
+	printf ("diag heap {full}\t\t - print (full) heap diagnostics\n\r");
+	printf ("memory dump <start> <bytes>\t - print memory dump\n\r");
 	printf ("uptime\t\t\t\t - print time since boot\n\r");
 	printf ("disk ident\t\t\t - ident the disk and print data\n\r");
 	printf ("disk read <block>\t\t - read specified block from disk\n\r");
@@ -133,6 +137,13 @@ void printHelp (void)
 void diag_heap (bool full)
 {
 	_zebulon_heap_diag (full);
+}
+
+void dump_memory (unsigned int start, unsigned int length)
+{
+	unsigned char* p = (unsigned char*) start;
+	printBuffer (p, length, (unsigned long) p, true);
+	printf ("\n\r");
 }
 
 void uptime ()
@@ -212,7 +223,7 @@ void disk_read (unsigned long block)
 
 	unsigned int result = _zebulon_ide_read_block (block, buffer);
 	if (result == Zebulon::IDE_OK)
-		printBuffer (buffer, 512, 0);
+		printBuffer (buffer, 512, 0, false);
 	else
 		printf (">>> read error 0x%x\n\r", result);
 }
@@ -333,7 +344,7 @@ void read_file (const string& filename)
 		memset (buffer, 0, 512);
 
 		unsigned int bytesRead = fread (buffer, 1, 512, f);
-		address = printBuffer (buffer, bytesRead, address);
+		address = printBuffer (buffer, bytesRead, address, false);
 	}
 
 	fclose (f);
@@ -488,6 +499,15 @@ int Shell::run () const
 					diag_heap (full);
 				}
 				if (tokens [1] == "filer") diag_filer ();
+			}
+			if (tokens [0] == "memory" && tokens.size () > 3)
+			{
+				if (tokens [1] == "dump")
+				{
+					unsigned int address  = atol (tokens [2].c_str ());
+					unsigned int length = atol (tokens [3].c_str ());
+					dump_memory (address, length);
+				}
 			}
 			if (tokens [0] == "uptime") uptime ();
 			if (tokens [0] == "disk" && tokens.size () > 1) 
