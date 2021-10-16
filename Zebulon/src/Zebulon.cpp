@@ -347,8 +347,8 @@ __putstr (banner);
 		printf (" firmware revision\t: %s\n\r",info.firmwareRevision);
 	}
 	
-	test_heap ();
-	return 0;
+	//test_heap ();
+	//return 0;
 
 	theFiler ().load ();
 
