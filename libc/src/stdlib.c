@@ -6,8 +6,8 @@
 
 extern char __end;
 
-// 128K is yer lot
-#define MAX_HEAP_SIZE 0x20000
+// 64K is yer lot
+#define MAX_HEAP_SIZE 0x10000
 #define MIN_ALLOC 8
 
 namespace
