@@ -239,34 +239,62 @@ void test_heap ()
 {
     heap_diag ();
 
+	int * p1;
 	{
-		printf ("calling malloc()\n\r");
-		int* p = new int;
-		printf ("called malloc()\n\r");
+		printf ("1 calling malloc()\n\r");
+		p1 = new int;
+		printf ("1 called malloc()\n\r");
 	}
+    heap_diag ();
+
+	int* p2;
+	{
+		printf ("2 calling malloc()\n\r");
+		p2 = new int [2];
+		printf ("2 called malloc()\n\r");
+	}
+    heap_diag ();
 
 	{
-		printf ("calling malloc()\n\r");
-		int* p = new int;
-		printf ("called malloc()\n\r");
+		printf ("100 calling free()\n\r");
+		free (p2);
+		printf ("100 called free()\n\r");
 	}
+    heap_diag ();
 
+	{
+		printf ("200 calling free()\n\r");
+		free (p1);
+		printf ("200 called free()\n\r");
+	}
+    heap_diag ();
+
+	{
+		printf ("3 calling malloc()\n\r");
+		int* p = new int;
+		printf ("3 called malloc()\n\r");
+	}
 	heap_diag ();
 
 	{
-		printf ("calling malloc()\n\r");
+		printf ("4 calling malloc()\n\r");
+		int* p = new int;
+		printf ("4 called malloc()\n\r");
+	}
+	heap_diag ();
+
+	{
+		printf ("5 calling malloc()\n\r");
 		char* p = new char [131044];
-		printf ("called malloc()\n\r");
+		printf ("5 called malloc()\n\r");
 	}
-
 	heap_diag ();
 
 	{
-		printf ("calling malloc()\n\r");
+		printf ("6 calling malloc()\n\r");
 		char* p = new char [1];
-		printf ("called malloc()\n\r");
+		printf ("6 called malloc()\n\r");
 	}
-
 	heap_diag ();
 }
 

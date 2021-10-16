@@ -155,7 +155,7 @@ void* malloc (size_t requestedSize)
 		alloc = bestMatch;
 		unsigned int length = block_len (bestMatch);
 		printf ("found block of size %d at 0x%x\n\r", length, bestMatch);
-		if (length > allocSize + MIN_ALLOC)
+		if (length >= allocSize + MIN_ALLOC)
 		{
 			printf ("splitting block\n\r");
 
@@ -174,7 +174,7 @@ void* malloc (size_t requestedSize)
 		printf ("[%d] malloc %d -> %d 0x%x\n\r", malloc_count, requestedSize, allocSize, alloc);
 
 		block_len (bestMatch) = allocSize;
-		alloc = alloc + sizeof (unsigned int);
+		alloc += sizeof (unsigned int);
 	}
 	else
 	{
@@ -182,17 +182,24 @@ void* malloc (size_t requestedSize)
 		abort ();
 	}
 
-	dump_memory (base_of_heap, 128);
+	memset (alloc, 0xaa, allocSize - sizeof (unsigned int));
 	return (void*) alloc;
 }
 
-void free (void* ptr)
+void free (void* f)
 {
-	char* dealloc = (char*) ptr;	
-	dealloc = dealloc - sizeof (unsigned int);
-	
+	char* p = (char*) f;
+	p -= sizeof (unsigned int);
+	printf ("p 0x%x\n\r", p);
+
+	char* sentinel = freeptr;
+	printf ("sentinel 0x%x\n\r", sentinel);
+
+	*next_block (p) = *next_block (sentinel);
+	*next_block (sentinel) = p;
+
 	free_count++;
-	printf ("[%d] free 0x%x, size %d\n\r", free_count, dealloc, *((unsigned int*) dealloc));
+	printf ("[%d] free 0x%x, size %d\n\r", free_count, p, block_len (p));
 }
 
 
@@ -220,6 +227,7 @@ void heap_diag (bool detail)
 	unsigned int totalUsed = MAX_HEAP_SIZE - totalFree;
 
 	printf ("HEAP: base 0x%x, limit 0x%x - used %d / %d (%d%%) -> %d free [%d malloc'd - %d freed = %d allocated]\n\r", base_of_heap, heap_limit, totalUsed, MAX_HEAP_SIZE, 100 * totalUsed / MAX_HEAP_SIZE, totalFree, malloc_count, free_count, malloc_count - free_count);
+	dump_memory (base_of_heap, 128);
 }
 
 void abort (void)
