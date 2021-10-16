@@ -25,7 +25,7 @@ inline unsigned int& block_len (void* p)
 
 inline void* next_block (void* p)
 {
-  return ((unsigned char*) p + block_len (p) - sizeof (char*));
+  return ((unsigned char*) p + sizeof (unsigned int));
 }
 
 template <class T1, class T2>
@@ -45,7 +45,7 @@ unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned lon
 		size_t rowLen = min (bufferLen, 16);
 
 		char buf [255];		
-		sprintf (buf, "%x\t : ", address); __putstr (buf);
+		sprintf (buf, "0x%x\t : ", address); __putstr (buf);
 		address += rowLen;
 
 		for (int c = 0; c < rowLen; c++) 
@@ -72,12 +72,10 @@ inline void dump_memory (void* p, unsigned int length)
 void* initialiseHeap ()
 {
 	void* p = &__end;
-	memset ((unsigned char*) p, 0xff, MAX_HEAP_SIZE);
+	memset (p, 0xff, MAX_HEAP_SIZE);
 
 	char buf [255];
-	sprintf (buf, "heap start 0x%x\n\r", p); __putstr (buf);
-	sprintf (buf, "heap size 0x%x (%d)\n\r", MAX_HEAP_SIZE, MAX_HEAP_SIZE); __putstr (buf);
-	sprintf (buf, "heap end 0%x\n\r", (unsigned char*) p); __putstr (buf);
+	sprintf (buf, "HEAP_INIT: start 0x%x end 0x%x size 0x%x (%d) byte(s)\n\r", p, (unsigned char*) p + MAX_HEAP_SIZE, MAX_HEAP_SIZE, MAX_HEAP_SIZE); __putstr (buf);
 	
 	//sentinel
 	const unsigned int sentinelBlockSize = MIN_ALLOC;
@@ -86,10 +84,8 @@ void* initialiseHeap ()
 	
 	//empty block
 	block_len (*(void**) next_block (p)) = MAX_HEAP_SIZE - sentinelBlockSize;
-   	dump_memory (&__end, 64);
-
 	 * (void**) next_block (*(void**) next_block (p)) = 0;
-	dump_memory ((&__end + MAX_HEAP_SIZE - 64), 128);
+   	dump_memory (&__end, 32);
 
 	return p;
 }
