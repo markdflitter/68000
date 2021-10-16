@@ -34,9 +34,9 @@ static T1 min (const T1& t1, const T2& t2)
 	return t1 < t2 ? t1 : t2;
 }
 	
-unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned long startAddress)
+unsigned long printBuffer (char* buffer, size_t bufferLen, unsigned long startAddress)
 {
-	unsigned char* p = buffer;
+	char* p = buffer;
 	
 	unsigned long address = startAddress;
 
@@ -62,20 +62,20 @@ unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned lon
 }
 
 
-inline void dump_memory (void* p, unsigned int length)
+inline void dump_memory (char* p, unsigned int length)
 {
-	printBuffer ((unsigned char*) p, length, (unsigned long) p);
+	printBuffer (p, length, (unsigned long) p);
 	char buf [255]; sprintf (buf, "\n\r"); __putstr (buf);
 }
 
 
-void* initialiseHeap ()
+char* initialiseHeap ()
 {
-	void* p = &__end;
+	char* p = &__end;
 	memset (p, 0xff, MAX_HEAP_SIZE);
 
 	char buf [255];
-	sprintf (buf, "HEAP_INIT: start 0x%x end 0x%x size 0x%x (%d) byte(s)\n\r", p, (unsigned char*) p + MAX_HEAP_SIZE, MAX_HEAP_SIZE, MAX_HEAP_SIZE); __putstr (buf);
+	sprintf (buf, "HEAP_INIT: start 0x%x end 0x%x size 0x%x (%d) byte(s)\n\r", p, p + MAX_HEAP_SIZE, MAX_HEAP_SIZE, MAX_HEAP_SIZE); __putstr (buf);
 	
 	//sentinel
 	const unsigned int sentinelBlockSize = MIN_ALLOC;
@@ -107,9 +107,9 @@ size_t roundUp (size_t input)
 
 }
 
-static void* base_of_heap = initialiseHeap ();
-static void* freeptr = base_of_heap;
-static void* heap_limit = (unsigned char*) base_of_heap + MAX_HEAP_SIZE;
+static char* base_of_heap = initialiseHeap ();
+static char* freeptr = base_of_heap;
+static char* heap_limit = base_of_heap + MAX_HEAP_SIZE;
 
 static unsigned int malloc_count = zero ();
 static unsigned int free_count = zero ();
@@ -220,15 +220,15 @@ void heap_diag (bool detail)
 {
 	unsigned int totalFree = 0;
 
-	void* ptr = freeptr;
-	while (ptr != 0)
+	char* p = freeptr;
+	while (p != 0)
 	{
-		unsigned int length = block_len (ptr);
+		unsigned int length = block_len (p);
 		totalFree += length;
 
-		printf ("free block 0x%x -> 0x%x, length %d byte(s)\n\r", ptr, (unsigned char*) ptr + length, length);
+		printf ("free block 0x%x -> 0x%x, length %d byte(s)\n\r", p, p + length, length);
 
-		ptr = *next_block (ptr);
+		p = (char*) *next_block (p);
 	}
 
 	unsigned int totalUsed = MAX_HEAP_SIZE - totalFree;
