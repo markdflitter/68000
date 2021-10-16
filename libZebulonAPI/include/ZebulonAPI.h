@@ -121,9 +121,9 @@ inline void _zebulon_filer_diag ()
 	trap (trap_filer, trap_params (filer_diag));
 }
 
-inline void _zebulon_heap_diag ()
+inline void _zebulon_heap_diag (bool detail)
 {
-	trap (trap_filer, trap_params (filer_heap_diag));
+	trap (trap_filer, trap_params (filer_heap_diag, 0, (void*) detail));
 }
 
 struct _zebulon_free_space

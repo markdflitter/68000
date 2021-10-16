@@ -33,7 +33,7 @@ extern "C" int __main (void)
 	asm ("moveb #7, 0xE00001");
 	__putstr ("bsp initialised\n\r");
 
-	__putstr ("calling static constructors\n\r");
+	__putstr ("calling static constructors\n\r\n\r");
   	call_static_constructors ();
 	asm ("moveb #9, 0xE00001");
 	

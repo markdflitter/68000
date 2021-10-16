@@ -112,7 +112,7 @@ void printHelp (void)
 	printf ("exit\t\t\t\t - exit to monitor\n\r");
 	printf ("restart\t\t\t\t - restart the system\n\r");
 	printf ("diag filer\t\t\t\t - print filer diagnostics\n\r");
-	printf ("diag heap\t\t\t\t - print heap diagnostics\n\r");
+	printf ("diag heap {full}\t\t\t - print (full) heap diagnostics\n\r");
 	printf ("uptime\t\t\t\t - print time since boot\n\r");
 	printf ("disk ident\t\t\t - ident the disk and print data\n\r");
 	printf ("disk read <block>\t\t - read specified block from disk\n\r");
@@ -130,9 +130,9 @@ void printHelp (void)
 	printf ("save <filename> <boot slot>\t - save file and make it bootable\n\r");
 }
 
-void diag_heap ()
+void diag_heap (bool full)
 {
-	_zebulon_heap_diag ();
+	_zebulon_heap_diag (full);
 }
 
 void uptime ()
@@ -244,7 +244,7 @@ void disk_soak ()
 			t = clock () / 1000;
 			printf ("\n\r");
 	
-			diag_heap ();
+			diag_heap (false);
 
 			printf ("\n\r");
 
@@ -481,7 +481,12 @@ int Shell::run () const
 			}
 			if (tokens [0] == "diag" && tokens.size () > 1) 
 			{
-				if (tokens [1] == "heap") diag_heap ();
+				if (tokens [1] == "heap") 
+				{
+					bool full = false;
+					if (tokens.size () > 2 && tokens [2] == "full") full = true;
+					diag_heap (full);
+				}
 				if (tokens [1] == "filer") diag_filer ();
 			}
 			if (tokens [0] == "uptime") uptime ();

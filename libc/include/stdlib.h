@@ -6,7 +6,7 @@
 extern "C" void* malloc (size_t size);
 extern "C" void free (void* ptr);
 
-extern "C" void heap_diag (bool detail = true);
+extern "C" void heap_diag (bool detail);
 
 extern "C" void abort (void);
 

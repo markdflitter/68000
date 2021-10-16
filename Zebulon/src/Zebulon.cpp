@@ -168,7 +168,7 @@ void trap3 ()
 		}
 		case filer_diag: theFiler().diag (); break;
 		case filer_free_space : *((_zebulon_free_space*) tp.pResult) = theFiler ().getFreeSpace (); break;
-		case filer_heap_diag: heap_diag (); break;
+		case filer_heap_diag: heap_diag ((bool) tp.a1); break;
 		default: break;
 	}
 }
@@ -237,7 +237,7 @@ void trap7 ()
 
 void test_heap ()
 {
-    heap_diag ();
+    heap_diag (true);
 
 	int * p1;
 	{
@@ -245,7 +245,7 @@ void test_heap ()
 		p1 = new int;
 		printf ("1 called malloc()\n\r");
 	}
-    heap_diag ();
+    heap_diag (true);
 
 	int* p2;
 	{
@@ -253,51 +253,50 @@ void test_heap ()
 		p2 = new int [2];
 		printf ("2 called malloc()\n\r");
 	}
-    heap_diag ();
+    heap_diag (true);
 
 	{
 		printf ("100 calling free()\n\r");
 		free (p2);
 		printf ("100 called free()\n\r");
 	}
-    heap_diag ();
+    heap_diag (true);
 
 	{
 		printf ("200 calling free()\n\r");
 		free (p1);
 		printf ("200 called free()\n\r");
 	}
-    heap_diag ();
+    heap_diag (true);
 
 	{
 		printf ("3 calling malloc()\n\r");
 		int* p = new int;
 		printf ("3 called malloc()\n\r");
 	}
-	heap_diag ();
+	heap_diag (true);
 
 	{
 		printf ("4 calling malloc()\n\r");
 		int* p = new int;
 		printf ("4 called malloc()\n\r");
 	}
-	heap_diag ();
+	heap_diag (true);
 
 	{
 		printf ("5 calling malloc()\n\r");
 		char* p = new char [131044];
 		printf ("5 called malloc()\n\r");
 	}
-	heap_diag ();
+	heap_diag (true);
 
 	{
 		printf ("6 calling malloc()\n\r");
 		char* p = new char [1];
 		printf ("6 called malloc()\n\r");
 	}
-	heap_diag ();
+	heap_diag (true);
 }
-
 
 int main ()
 {
@@ -352,7 +351,7 @@ __putstr (banner);
 
 	theFiler ().load ();
 
-	heap_diag ();
+	heap_diag (false);
 	
 	int result = Shell ().run ();
 

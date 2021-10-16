@@ -86,7 +86,7 @@ char* initialiseHeap ()
 	//empty block
 	block_len (*next_block (p)) = MAX_HEAP_SIZE - sentinelBlockSize;
 	 *next_block (*next_block (p)) = 0;
-   	dump_memory (&__end, 32);
+   	dump_memory (&__end, 16);
 
 	return p;
 }
@@ -206,27 +206,41 @@ void heap_diag (bool detail)
 {
 	unsigned int totalFree = 0;
 
-	char* p = freeptr;
-	while (p != 0)
 	{
-		unsigned int length = block_len (p);
-		totalFree += length;
-
-		if (p == freeptr)
-			printf ("sntl");
-		else
-			printf ("free");
-		printf (" block 0x%x -> 0x%x, length %d byte(s)\n\r", p, p + length, length);
-		
-		dump_memory (p, 16);
-		
-		p = (char*) *next_block (p);
+		char* p = freeptr;
+		while (p != 0)
+		{
+			unsigned int length = block_len (p);
+			totalFree += length;
+			p = (char*) *next_block (p);
+		}
 	}
 
 	unsigned int totalUsed = MAX_HEAP_SIZE - totalFree;
 
-	printf ("HEAP: base 0x%x, limit 0x%x - used %d / %d (%d%%) -> %d free [%d malloc'd - %d freed = %d allocated]\n\r", base_of_heap, heap_limit, totalUsed, MAX_HEAP_SIZE, 100 * totalUsed / MAX_HEAP_SIZE, totalFree, malloc_count, free_count, malloc_count - free_count);
-	dump_memory (base_of_heap, 128);
+	printf ("HEAP: base 0x%x limit 0x%x used %d / %d (%d%%) -> %d free [%d allocated]\n\r", base_of_heap, heap_limit, totalUsed, MAX_HEAP_SIZE, 100 * totalUsed / MAX_HEAP_SIZE, totalFree, malloc_count - free_count);
+
+	if (detail)
+	{
+		printf (" %d malloc'd %d freed\n\r\n\r",malloc_count, free_count);
+
+		char* p = freeptr;
+		int c = 0;
+		while (p != 0)
+		{	
+			unsigned int length = block_len (p);
+
+			printf ("[%d]\t", c++);
+			if (p == freeptr)
+				printf ("sntl");
+			else
+				printf ("free");
+			printf (" block 0x%x -> 0x%x, length %d byte(s)\n\r", p, p + length, length);
+		
+			dump_memory (p, 16);
+			p = (char*) *next_block (p);
+		}
+	}
 }
 
 void abort (void)
