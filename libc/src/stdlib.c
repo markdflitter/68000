@@ -203,7 +203,7 @@ void free (void* f)
 {
 	char* p = (char*) f;
 	p -= sizeof (unsigned int);
-	//printf ("p 0x%x\n\r", p);
+	//printf ("free p 0x%x\n\r", p);
 
 	char* sentinel = freeptr;
 	//printf ("sentinel 0x%x\n\r", sentinel);

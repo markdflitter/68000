@@ -257,14 +257,14 @@ void test_heap ()
 
 	{
 		printf ("100 calling free()\n\r");
-		free (p2);
+		delete p2;
 		printf ("100 called free()\n\r");
 	}
     heap_diag (true);
 
 	{
 		printf ("200 calling free()\n\r");
-		free (p1);
+		delete p1;
 		printf ("200 called free()\n\r");
 	}
     heap_diag (true);
@@ -285,14 +285,14 @@ void test_heap ()
 
 	{
 		printf ("5 calling malloc()\n\r");
-		char* p = new char [131044];
+		char* p = new char [65500];
 		printf ("5 called malloc()\n\r");
 	}
 	heap_diag (true);
 
 	{
 		printf ("6 calling malloc()\n\r");
-		char* p = new char [1];
+		char* p = new char [5];
 		printf ("6 called malloc()\n\r");
 	}
 	heap_diag (true);
