@@ -206,7 +206,12 @@ void heap_diag (bool detail)
 		unsigned int length = block_len (p);
 		totalFree += length;
 
-		printf ("free block 0x%x -> 0x%x, length %d byte(s)\n\r", p, p + length, length);
+		if (p == freeptr)
+			printf ("sntl");
+		else
+			printf ("free");
+		printf (" block 0x%x -> 0x%x, length %d byte(s)\n\r", p, p + length, length);
+		
 		dump_memory (p, 16);
 		
 		p = (char*) *next_block (p);
