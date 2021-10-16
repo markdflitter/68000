@@ -65,7 +65,8 @@ unsigned long printBuffer (char* buffer, size_t bufferLen, unsigned long startAd
 inline void dump_memory (char* p, unsigned int length)
 {
 	printBuffer (p, length, (unsigned long) p);
-	char buf [255]; sprintf (buf, "\n\r"); __putstr (buf);
+	char buf [255];
+	sprintf (buf, "\n\r"); __putstr (buf);
 }
 
 
@@ -116,23 +117,22 @@ static unsigned int free_count = zero ();
 
 void* malloc (size_t requestedSize)
 {
-	return 0;
-}
-
-/*
 	printf ("malloc %d\n\r", requestedSize);
 
 	//add 4 bytes for length, min size 8, round up to next power of two
 	size_t allocSize = roundUp (max (requestedSize + 4, 8UL));
 	printf ("allocSize %d\n\r", allocSize);
 
-	char* ptr = freeptr;
-	char* prev = 0;
+	char* prev = freeptr;
+	char* p = (char*) *next_block (prev);
+	printf ("p 0x%x\n\r", p);
+
 	char* bestMatchPrev = 0;
 	char* bestMatch = 0;
-	while (ptr != 0)
+
+	while (p != 0)
 	{
-		unsigned int length = *((unsigned int*) ptr);
+		unsigned int length = block_len (p);
 		if (length >= allocSize)
 		{
 			printf ("found match\n\r");
@@ -140,11 +140,11 @@ void* malloc (size_t requestedSize)
 			{
 				printf ("found best match\n\r");
 				bestMatchPrev = prev;
-				bestMatch = ptr;
+				bestMatch = p;
 			}
 		}
-		prev = ptr;
-		ptr = (char*) *(ptr + length - sizeof (char*));	
+		prev = p;
+		p = (char*) *next_block (p);
 	}
 
 	char* alloc = 0;
@@ -153,47 +153,27 @@ void* malloc (size_t requestedSize)
 	{
 		printf ("processing best match\n\r");
 		alloc = bestMatch;
-		unsigned int length = *((unsigned int*) bestMatch);
+		unsigned int length = block_len (bestMatch);
 		printf ("found block of size %d at 0x%x\n\r", length, bestMatch);
-		if (length > allocSize)
+		if (length > allocSize + MIN_ALLOC)
 		{
 			printf ("splitting block\n\r");
 
-			if (bestMatchPrev)
-			{
-				printf ("mid match\n\r");
-				*((char**) (bestMatchPrev + *((unsigned int*) bestMatchPrev) - sizeof (char*))) = 
-					((char*) (bestMatch + allocSize));
-				
-				*((unsigned int*) (bestMatch + allocSize)) = length - allocSize;
-			}
-			else
-			{
-				printf ("front match\n\r");
-				freeptr = (char*) (bestMatch + allocSize);
-				*((unsigned int*) freeptr) = length - allocSize;
-			}
+			*next_block (bestMatchPrev) = bestMatch + allocSize;
+			block_len (*next_block (bestMatchPrev)) = length - allocSize;
+			*next_block (*next_block (bestMatchPrev)) = *next_block (bestMatch); 
 		}
 		else
 		{
 			printf ("block is just fine\n\r");			
 			
-			if (bestMatchPrev)
-			{
-				*(bestMatchPrev + *((unsigned int*) bestMatchPrev) - sizeof (char*)) = 
-					*(bestMatch + *((unsigned int*) bestMatch) - sizeof (char*)); 
-			}
-			else
-			{
-				freeptr = (char*) 
-					*(bestMatch + *((unsigned int*) bestMatch) - sizeof (char*)); 
-			}
+			*next_block (bestMatchPrev) = *next_block (bestMatch);
 		}
 	
 		malloc_count++;
 		printf ("[%d] malloc %d -> %d 0x%x\n\r", malloc_count, requestedSize, allocSize, alloc);
 
-		*((unsigned int*) alloc) = allocSize;
+		block_len (bestMatch) = allocSize;
 		alloc = alloc + sizeof (unsigned int);
 	}
 	else
@@ -202,9 +182,9 @@ void* malloc (size_t requestedSize)
 		abort ();
 	}
 
+	dump_memory (base_of_heap, 128);
 	return (void*) alloc;
 }
-*/
 
 void free (void* ptr)
 {
@@ -227,7 +207,8 @@ void heap_diag (bool detail)
 		totalFree += length;
 
 		printf ("free block 0x%x -> 0x%x, length %d byte(s)\n\r", p, p + length, length);
-
+		dump_memory (p, 16);
+		
 		p = (char*) *next_block (p);
 	}
 
@@ -289,4 +270,5 @@ long atol (const char* str)
 
 	return negate ? -result : result;
 }
+
 
