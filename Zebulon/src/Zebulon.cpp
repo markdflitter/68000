@@ -252,6 +252,22 @@ void test_heap ()
 	}
 
 	heap_diag ();
+
+	{
+		printf ("calling malloc()\n\r");
+		char* p = new char [131044];
+		printf ("called malloc()\n\r");
+	}
+
+	heap_diag ();
+
+	{
+		printf ("calling malloc()\n\r");
+		char* p = new char [1];
+		printf ("called malloc()\n\r");
+	}
+
+	heap_diag ();
 }
 
 

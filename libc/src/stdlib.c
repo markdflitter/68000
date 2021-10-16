@@ -219,7 +219,7 @@ void heap_diag (bool detail)
 
 	unsigned int totalUsed = MAX_HEAP_SIZE - totalFree;
 
-	printf ("HEAP: base 0x%x, limit 0x%x - used %d / %d (%d%%) [%d malloc'd - %d freed = %d allocated]\n\r", base_of_heap, heap_limit, totalUsed, MAX_HEAP_SIZE, 100 * totalUsed / MAX_HEAP_SIZE, malloc_count, free_count, malloc_count - free_count);
+	printf ("HEAP: base 0x%x, limit 0x%x - used %d / %d (%d%%) -> %d free [%d malloc'd - %d freed = %d allocated]\n\r", base_of_heap, heap_limit, totalUsed, MAX_HEAP_SIZE, 100 * totalUsed / MAX_HEAP_SIZE, totalFree, malloc_count, free_count, malloc_count - free_count);
 }
 
 void abort (void)
