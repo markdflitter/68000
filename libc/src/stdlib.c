@@ -23,9 +23,9 @@ inline unsigned int& block_len (void* p)
 	return *(unsigned int*) p;
 }
 
-inline void* next_block (void* p)
+inline void** next_block (void* p)
 {
-  return ((unsigned char*) p + sizeof (unsigned int));
+  return (void**) ((unsigned char*) p + sizeof (unsigned int));
 }
 
 template <class T1, class T2>
@@ -80,11 +80,11 @@ void* initialiseHeap ()
 	//sentinel
 	const unsigned int sentinelBlockSize = MIN_ALLOC;
 	block_len (p) = sentinelBlockSize;
-	*(void**) next_block (p) = increment (p, sentinelBlockSize);
+	*next_block (p) = increment (p, sentinelBlockSize);
 	
 	//empty block
-	block_len (*(void**) next_block (p)) = MAX_HEAP_SIZE - sentinelBlockSize;
-	 * (void**) next_block (*(void**) next_block (p)) = 0;
+	block_len (*next_block (p)) = MAX_HEAP_SIZE - sentinelBlockSize;
+	 *next_block (*next_block (p)) = 0;
    	dump_memory (&__end, 32);
 
 	return p;
@@ -220,7 +220,6 @@ void heap_diag (bool detail)
 {
 	unsigned int totalFree = 0;
 
-
 	void* ptr = freeptr;
 	while (ptr != 0)
 	{
@@ -229,7 +228,7 @@ void heap_diag (bool detail)
 
 		printf ("free block 0x%x -> 0x%x, length %d byte(s)\n\r", ptr, (unsigned char*) ptr + length, length);
 
-		ptr = *(void**) next_block (ptr);
+		ptr = *next_block (ptr);
 	}
 
 	unsigned int totalUsed = MAX_HEAP_SIZE - totalFree;
