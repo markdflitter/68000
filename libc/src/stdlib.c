@@ -54,6 +54,20 @@ unsigned long printBuffer (char* buffer, size_t bufferLen, unsigned long startAd
 			sprintf (buf, "%x",*p++); __putstr (buf);
 		}
 			
+		memset (buf, ' ', 3 * (16 - rowLen) + 4);
+		buf [3 * (16 - rowLen) + 4] = '\0';
+		__putstr (buf);
+
+		p -= rowLen;
+		for (int c = 0; c < rowLen; c++)
+		{
+			if (isprint (*p))
+				{sprintf (buf, "%c",*p); __putstr (buf);}
+			else
+				{sprintf (buf, "."); __putstr (buf);}
+			p++;
+		}
+
 		bufferLen -= rowLen;
 		sprintf (buf, "\n\r"); __putstr (buf);
 	}
@@ -274,12 +288,10 @@ int atoi (const char* str)
 	return negate ? -result : result;
 }
 
-
-long atol (const char* str)
+long readdec (const char* c)
 {
 	bool negate = false;
 
-	const char* c = str;
 	while (*c != '\0' && !isdigit (*c))
 		if (*c++ == '-') negate = !negate;
 
@@ -295,6 +307,47 @@ long atol (const char* str)
 	}
 
 	return negate ? -result : result;
+}
+
+long readhex (const char* c)
+{
+	long result = 0;
+	while (*c != '\0')
+	{
+		if (isdigit (*c))
+		{
+			result *= 16;
+			result += (*c - '0');
+		}
+		else if (*c >= 'a' && *c <= 'f')
+		{
+			result *= 16;
+			result += (*c - 'a' + 10);
+		}
+		else if (*c >= 'A' && *c <= 'F')
+		{
+			result *= 16;
+			result += (*c - 'A' + 10);
+		}
+		c++;
+	}
+
+	return result;
+}
+
+
+long atol (const char* str)
+{
+	const char* c = str;
+
+	// skip whitespace
+	while (*c != '\0' && (*c == ' ' || *c == '\t')) c++;
+    if (*c == '\0') return 0;
+
+	if (*c == '0' && *(c + 1) == 'x')
+		return readhex (c + 2);
+	else
+		return readdec (c);
 }
 
 
