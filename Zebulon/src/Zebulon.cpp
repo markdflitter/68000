@@ -237,7 +237,7 @@ void trap7 ()
 
 void test_heap ()
 {
-	heap_diag ();
+    heap_diag ();
 
 	{
 		printf ("calling malloc()\n\r");
@@ -303,8 +303,8 @@ __putstr (banner);
 		printf (" firmware revision\t: %s\n\r",info.firmwareRevision);
 	}
 	
-	//test_heap ();
-	//return 0;
+	test_heap ();
+	return 0;
 
 	theFiler ().load ();
 
