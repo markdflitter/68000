@@ -8,6 +8,10 @@ using namespace std;
 namespace Zebulon
 {
 
+#define BACKSPACE 127
+#define ESCAPE 27
+#define MAX_HISTORY 20
+
 CommandReader::CommandReader () : m_pos (0)
 {
 	addHistoryItem ("uptime");
@@ -16,10 +20,6 @@ CommandReader::CommandReader () : m_pos (0)
 	addHistoryItem ("history show");
 	addHistoryItem ("help");
 }
-
-#define BACKSPACE 127
-#define ESCAPE 27
-
 string CommandReader::read ()
 {
 	char buf[255];
@@ -113,6 +113,9 @@ string CommandReader::addHistoryItem (const std::string& item)
 			break;
 		}
 	}
+
+	while (m_history.size () >= MAX_HISTORY)
+		m_history.pop_front ();
 
 	m_history.push_back (item);
 	m_pos = m_history.size ();
