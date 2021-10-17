@@ -34,7 +34,19 @@ string CommandReader::read ()
 		}
 		else if (c == 27)
 		{
- 			char c1 = getchar ();
+ 			while (p > buf)
+			{
+				putchar (127);
+				--p;
+			}
+
+			char c1 = getchar ();
+			while (c1 == 27)
+			{
+				m_pos = m_history.size ();
+				c1 = getchar ();
+			}
+
 			if (c1 == '[')
 			{
  				char c2 = getchar ();
@@ -44,12 +56,6 @@ string CommandReader::read ()
 					string s = getHistoryItem (m_pos);
 					if (s.length () > 0) 
 					{
-						while (p > buf)
-						{
-							putchar (127);
-							--p;
-						}
-
 						memcpy (p, s.c_str (), s.length());
 						p += s.length ();
 					
@@ -63,12 +69,6 @@ string CommandReader::read ()
  					string s = getHistoryItem (m_pos);
 					if (s.length () > 0) 
 					{
-						while (p > buf)
-						{
-							putchar (127);
-							--p;
-						}
-
 						memcpy (p, s.c_str (), s.length());
 						p += s.length ();
 					
@@ -76,6 +76,11 @@ string CommandReader::read ()
 							putchar (*p2);
 					}
 				}
+			}
+			else
+			{
+	 			putchar (c1);
+				*p++ = c1;
 			}
 		}
 		else
