@@ -11,6 +11,7 @@
 #include "../private_include/version.h"
 #include <timer>
 #include <algorithm>
+#include "../private_include/CommandReader.h"
 
 using namespace std;
 using namespace Zebulon;
@@ -113,6 +114,8 @@ void printHelp (void)
 	printf ("help\t\t\t\t - print this help\n\r");
 	printf ("exit\t\t\t\t - exit to monitor\n\r");
 	printf ("restart\t\t\t\t - restart the system\n\r");
+	printf ("history show\t\t\t - show command history\n\r");
+	printf ("history clear\t\t\t - clear command history\n\r");
 	printf ("diag filer\t\t\t - print filer diagnostics\n\r");
 	printf ("diag heap {full}\t\t - print (full) heap diagnostics\n\r");
 	printf ("memory dump <start> <bytes>\t - print memory dump\n\r");
@@ -468,14 +471,14 @@ int Shell::run () const
 	char buf [255];
 	int exit = 0;
 	int result = 0;
+
+	CommandReader commandReader;
+
 	while (!exit)
 	{
 		printf ("$ ");
-		char* p = gets (buf);
-
-		*p = '\0';
+		string command = commandReader.read ();
 		printf ("\n\r");
-		string command (buf);
 		vector<string> tokens = tokenize (command);
 
 		if (tokens.size () > 0)
@@ -506,6 +509,11 @@ int Shell::run () const
 					unsigned int length = atol (tokens [3].c_str ());
 					dump_memory (address, length);
 				}
+			}
+			if (tokens [0] == "history" && tokens.size () > 1)
+			{
+				if (tokens [1] == "show") commandReader.showHistory ();
+				if (tokens [1] == "clear") commandReader.clearHistory ();
 			}
 			if (tokens [0] == "uptime") uptime ();
 			if (tokens [0] == "disk" && tokens.size () > 1) 
