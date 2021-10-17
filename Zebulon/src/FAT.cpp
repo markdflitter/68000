@@ -4,6 +4,7 @@
 #include <string>
 #include <ZebulonAPI.h>
 #include "../private_include/version.h"
+#include "../private_include/Utils.h"
 
 using namespace std;
 using namespace mdf;
@@ -162,11 +163,7 @@ void FAT::diag () const
 	int n = 0;
 	for (list<FileEntry::Ptr>::const_iterator i = m_fileEntries.begin (); i != m_fileEntries.end (); i++)
 	{
-		string name = (*i)->name ();
-		
-		string pad (MAX_FILENAME_LENGTH - name.length (), ' ');	
-
-		printf ("%d\t: %s%s %d byte(s)\n\r", n, (*i)->name ().c_str(), pad.c_str (), (*i)->size ());
+		printf ("%d\t: %s %d byte(s)\n\r", n, Utils::padFilename ((*i)->name ()).c_str(), (*i)->size ());
 		(*i)->diag ();
 		n++;
 	}

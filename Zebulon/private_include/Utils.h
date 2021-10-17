@@ -3,6 +3,7 @@
 
 #include <bsp.h>
 #include <stdio.h>
+#include <string>
 
 namespace Zebulon
 {
@@ -28,6 +29,17 @@ public:
 			printf (">>>  uncorrectable data error\n\r");
 		if (error == ::IDE_BBK)
 			printf (">>>  bad block\n\r");
+	}
+
+	static std::string pad (const std::string& str, char c, size_t length)
+	{
+		std::string padding (length - str.length (), c);	
+		return str + padding;
+	}
+
+	static std::string padFilename (const std::string& filename)
+	{
+		return pad (filename, ' ', MAX_FILENAME_LENGTH);
 	}
 };
 

@@ -73,7 +73,6 @@ unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned lon
 			if (c != 0) printf (" ");
 			printf ("%x",*p++);
 		}
-
 			
 		string pad (3 * (16 - rowLen) + 4, ' ');	
 		printf ("%s", pad.c_str ());
@@ -96,8 +95,7 @@ unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned lon
 
 void printStats (const string& filename, const _zebulon_stats& stats)
 {
-	string pad (MAX_FILENAME_LENGTH - filename.length (), ' ');	
-	printf ("%s%s : %d byte(s), allocated %d\n\r", filename.c_str (), pad.c_str (), stats.size, stats.sizeOnDisk);
+	printf ("%s : %d byte(s), allocated %d\n\r", Utils::padFilename (filename).c_str (), stats.size, stats.sizeOnDisk);
 }
 
 }	
@@ -325,8 +323,7 @@ void index_filer ()
 	if (!btes[i].empty)
 		{
 			printf ("%d : ", i);
-			string pad (20 - strlen(btes[i].name), ' ');	
-			printf ("%s%s len = %d byte(s), load 0x%x, start = 0x%x, firstBlock = %d\n\r", btes[i].name, pad.c_str (), btes[i].length, btes[i].loadAddress, btes[i].startAddress, btes[i].startBlock);
+			printf ("%s len = %d byte(s), load 0x%x, start = 0x%x, firstBlock = %d\n\r", Utils::pad (btes[i].name, ' ', 20).c_str (), btes[i].length, btes[i].loadAddress, btes[i].startAddress, btes[i].startBlock);
 		}
 	}
 }

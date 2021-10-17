@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "../private_include/Serialise.h"
 #include <string.h>
+#include "../private_include/Utils.h"
 
 using namespace std;
 using namespace mdf;
@@ -96,8 +97,7 @@ void BootTable::diag () const
 			printf ("empty\n\r");
 		else
 		{
-			string pad (20 - (p->shortName.length ()), ' ');	
-			printf ("%s%s len = %d byte(s), load 0x%x, start = 0x%x, firstBlock = %d\n\r", p->shortName.c_str (), pad.c_str (), p->length, p->loadAddress, p->startAddress, p->startBlock);
+			printf ("%s len = %d byte(s), load 0x%x, start = 0x%x, firstBlock = %d\n\r", Utils::pad (p->shortName, 20, ' ').c_str (), p->length, p->loadAddress, p->startAddress, p->startBlock);
 		}
 	}
 
