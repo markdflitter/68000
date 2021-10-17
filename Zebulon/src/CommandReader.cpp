@@ -12,6 +12,7 @@ namespace Zebulon
 #define BACKSPACE 127
 #define ESCAPE 27
 #define MAX_HISTORY 20
+#define FILENAME ".history.txt"
 
 CommandReader::CommandReader () : m_pos (0)
 {
@@ -20,7 +21,14 @@ CommandReader::CommandReader () : m_pos (0)
 	addHistoryItem ("diag heap");
 	addHistoryItem ("diag filer");
 	addHistoryItem ("history show");
+	addHistoryItem ("exit");
+	addHistoryItem ("restart");
 	addHistoryItem ("help");
+		
+}
+
+void CommandReader::load ()
+{
 }
 
 string CommandReader::read ()
@@ -69,6 +77,28 @@ void CommandReader::clearHistory ()
 {
 	m_history.clear ();
 }
+
+void CommandReader::save () const
+{
+	return ;
+
+//	if (Utils::file_exists (FILENAME))
+//		if (!_zebulon_delete_file (FILENAME))
+//			printf (">>> failed to deleted history file %s\n\r", FILENAME);
+
+	FILE* f = fopen (FILENAME, "wb");
+	if (f == 0) return ;
+
+	for (list<string>::const_iterator i = m_history.begin (); i != m_history.end (); i++)
+	{
+		char buffer [255];
+		sprintf (buffer, "%s\n\r", (*i).c_str ());
+		fwrite (buffer, 1, (*i).length () + 2, f);
+	}
+
+	fclose (f);
+}
+
 
 void CommandReader::loadHistoryItem (size_t item)
 {
@@ -122,6 +152,8 @@ string CommandReader::addHistoryItem (const std::string& item)
 
 	m_history.push_back (item);
 	m_pos = m_history.size ();
+
+	save ();
 
 	return item;
 }

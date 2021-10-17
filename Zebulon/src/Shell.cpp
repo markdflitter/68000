@@ -358,25 +358,6 @@ void delete_file (const string& filename)
 		printf ("deleted file %s\n\r", filename.c_str ());
 }
 
-bool file_exists (const std::string& filename)
-{
-	char buffer [FILENAME_BUFFER_SIZE];
-
-	int sh = _zebulon_find_first_file (buffer);
-	while (sh > -1)
-	{
-		if (string (buffer) == filename) return true;
-		bool result = _zebulon_find_next_file (sh, buffer);
-		if (!result) 
-		{
-			_zebulon_find_close (sh);
-			break;
-		}
-	}
-
-	return false;
-}
-
 void save (const string& filename, unsigned char bootslot)
 {
 	if (bootslot > 9)
@@ -397,7 +378,7 @@ void save (const string& filename, unsigned char bootslot)
 	unsigned long blocks = length / 512;
 	if ((length % 512) != 0) blocks++;
 	
-	if (file_exists (filename))
+	if (Utils::file_exists (filename))
 		if (_zebulon_delete_file (filename.c_str ()))
 			printf ("deleted file %s\n\r", filename.c_str ());
 

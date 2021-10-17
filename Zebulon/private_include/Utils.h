@@ -73,6 +73,25 @@ public:
 
 		return result;
 	}
+
+	static bool file_exists (const std::string& filename)
+	{
+		char buffer [FILENAME_BUFFER_SIZE];
+
+		int sh = _zebulon_find_first_file (buffer);
+		while (sh > -1)
+		{
+			if (std::string (buffer) == filename) return true;
+			bool result = _zebulon_find_next_file (sh, buffer);
+			if (!result) 
+			{
+				_zebulon_find_close (sh);
+				break;
+			}
+		}	
+
+		return false;
+	}
 };
 
 }

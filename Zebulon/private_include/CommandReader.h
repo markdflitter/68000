@@ -12,6 +12,7 @@ class CommandReader
 {
 public:
 	CommandReader();
+	void load ();
 
 	std::string read ();
 
@@ -20,6 +21,8 @@ public:
 
 	void loadHistoryItem (size_t item);
 private:
+	void save () const;
+
 	void delChar ();
 	std::string getHistoryItem (size_t index) const;
  	std::string addHistoryItem (const std::string& item);
