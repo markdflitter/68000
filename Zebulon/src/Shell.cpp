@@ -23,36 +23,6 @@ extern char* start;
 
 namespace {
 
-vector<string> tokenize (const string& command)
-{
-	vector<string> result;
-
-	const char* str = command.c_str ();
-	char buf [255];
-	char* cur = buf;
-	while (*str != '\0')
-	{
-		if (*str != ' ')
-			*cur++ = *str;
-		else
-		{
-			*cur = '\0';
-			result.push_back (string (buf));
-			cur = buf;
-		}
-		str++;
-	}
-
-	if (cur != buf)
-	{
-		*cur = '\0';
-		result.push_back (string (buf));
-		cur = buf;
-	}
-
-	return result;
-}
-
 unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned long startAddress, bool hexAddress)
 {
 	unsigned char* p = buffer;
@@ -116,6 +86,7 @@ void printHelp (void)
 	printf ("restart\t\t\t\t - restart the system\n\r");
 	printf ("history show\t\t\t - show command history\n\r");
 	printf ("history clear\t\t\t - clear command history\n\r");
+	printf ("history <n>\t\t\t - fetch history item\n\r");
 	printf ("diag filer\t\t\t - print filer diagnostics\n\r");
 	printf ("diag heap {full}\t\t - print (full) heap diagnostics\n\r");
 	printf ("memory dump <start> <bytes>\t - print memory dump\n\r");
@@ -474,12 +445,13 @@ int Shell::run () const
 
 	CommandReader commandReader;
 
+	printf ("$ ");
+	
 	while (!exit)
 	{
-		printf ("$ ");
 		string command = commandReader.read ();
 		printf ("\n\r");
-		vector<string> tokens = tokenize (command);
+		vector<string> tokens = Utils::tokenize (command);
 
 		if (tokens.size () > 0)
 		{
@@ -513,7 +485,13 @@ int Shell::run () const
 			if (tokens [0] == "history" && tokens.size () > 1)
 			{
 				if (tokens [1] == "show") commandReader.showHistory ();
-				if (tokens [1] == "clear") commandReader.clearHistory ();
+				else if (tokens [1] == "clear") commandReader.clearHistory ();
+				else {
+					printf ("$ ");
+					unsigned int item  = atol (tokens [1].c_str ());
+					commandReader.loadHistoryItem (item);
+					continue ;
+				}
 			}
 			if (tokens [0] == "uptime") uptime ();
 			if (tokens [0] == "disk" && tokens.size () > 1) 
@@ -594,6 +572,8 @@ int Shell::run () const
 				save (filename, bootslot);
 			}
 		}
+
+		printf ("$ ");	
 	}
 	return result;
 }

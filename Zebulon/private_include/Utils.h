@@ -4,6 +4,8 @@
 #include <bsp.h>
 #include <stdio.h>
 #include <string>
+#include <vector>
+#include <ZebulonAPI.h>
 
 namespace Zebulon
 {
@@ -40,6 +42,36 @@ public:
 	static std::string padFilename (const std::string& filename)
 	{
 		return pad (filename, ' ', MAX_FILENAME_LENGTH);
+	}
+
+	static std::vector<std::string> tokenize (const std::string& command)
+	{
+		std::vector<std::string> result;
+
+		const char* str = command.c_str ();
+		char buf [255];
+		char* cur = buf;
+		while (*str != '\0')
+		{
+			if (*str != ' ')
+				*cur++ = *str;
+			else
+			{
+				*cur = '\0';
+				result.push_back (std::string (buf));
+				cur = buf;
+			}
+			str++;
+		}
+
+		if (cur != buf)
+		{
+			*cur = '\0';
+			result.push_back (std::string (buf));
+			cur = buf;
+		}
+
+		return result;
 	}
 };
 

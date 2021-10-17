@@ -18,11 +18,14 @@ public:
 	void showHistory () const;
 	void clearHistory ();
 
-	std::string getHistoryItem (size_t index) const;
+	void loadHistoryItem (size_t item);
 private:
-	void delChar (char* buf, char*& p);
+	void delChar ();
+	std::string getHistoryItem (size_t index) const;
  	std::string addHistoryItem (const std::string& item);
 
+	char m_buf [255];
+	char* m_p;
 	std::list <std::string> m_history;
 	size_t m_pos;
 };

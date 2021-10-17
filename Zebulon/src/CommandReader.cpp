@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <algorithm>
+#include "../private_include/Utils.h"
 
 using namespace std;
 
@@ -14,54 +15,44 @@ namespace Zebulon
 
 CommandReader::CommandReader () : m_pos (0)
 {
+	m_p = m_buf;
 	addHistoryItem ("uptime");
 	addHistoryItem ("diag heap");
 	addHistoryItem ("diag filer");
 	addHistoryItem ("history show");
 	addHistoryItem ("help");
 }
+
 string CommandReader::read ()
 {
-	char buf[255];
-	char* p = buf;
-
 	for (;;)
 	{
  		char c = getchar ();
-		if (c == '\r') break;		
- 		else if (c == BACKSPACE) { delChar (buf, p); continue ; }
-		else if (c == ESCAPE)
-		{
- 			while (p > buf) delChar (buf, p);
+		if (c == '\r') {*m_p = '\0'; break; }
+ 		else if (c == BACKSPACE) { delChar (); continue ; }
+		else if (c == ESCAPE) {
+ 			while (m_p > m_buf) delChar ();
 
 			while ((c = getchar ()) == ESCAPE) m_pos = m_history.size ();
 
-			if (c == '[')
-			{
- 				switch (getchar ())
-				{
+			if (c == '[') {
+ 				switch (getchar ()) {
 					case 'A' : if (m_pos > 0) m_pos--; break;
 					case 'B' : if (m_pos < m_history.size() - 1) m_pos++; break;
 					default: continue;
 				}
 			
-				string s = getHistoryItem (m_pos);
-				memcpy (p, s.c_str (), s.length());
-				p += s.length ();
-					
-				for (char* p2 = buf; p2 < p; p2++) putchar (*p2);
+				loadHistoryItem (m_pos);
 
 				continue ;
 			}
 		}
 
  		putchar (c);
-		*p++ = c;
+		*m_p++ = c;
 	}
- 
-	*p = '\0';
-
-	return addHistoryItem (buf);
+	m_p = m_buf;
+	return addHistoryItem (m_buf);
 }
 
 void CommandReader::showHistory () const
@@ -79,6 +70,16 @@ void CommandReader::clearHistory ()
 	m_history.clear ();
 }
 
+void CommandReader::loadHistoryItem (size_t item)
+{
+	string s = getHistoryItem (item);
+	memcpy (m_buf, s.c_str (), s.length() + 1);
+		
+	printf ("%s", m_buf);	
+
+	m_p = m_buf + s.length ();
+}
+
 string CommandReader::getHistoryItem (size_t index) const
 {
 	size_t count = 0;
@@ -91,19 +92,21 @@ string CommandReader::getHistoryItem (size_t index) const
 	return "";
 }
 
-void CommandReader::delChar (char* buf, char*& p)
+void CommandReader::delChar ()
 {
-	if (p > buf)
+	if (m_p > m_buf)
 	{
-		p--;
+		m_p--;
 		putchar (127);
 	}
 }
-
 	
 string CommandReader::addHistoryItem (const std::string& item)
 {
 	if (item.length () == 0) return item;
+	vector<string> tokens = Utils::tokenize (item);
+	if (tokens.size () > 1 && tokens [0] == "history" && tokens [1] != "show" && tokens [1] != "clear")
+		return item;
 
 	for (list<string>::iterator i = m_history.begin (); i != m_history.end (); i++)
 	{
