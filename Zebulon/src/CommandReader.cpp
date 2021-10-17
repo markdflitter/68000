@@ -17,85 +17,51 @@ CommandReader::CommandReader () : m_pos (0)
 	addHistoryItem ("help");
 }
 
+#define BACKSPACE 127
+#define ESCAPE 27
+
 string CommandReader::read ()
 {
 	char buf[255];
-
 	char* p = buf;
+
 	for (;;)
 	{
  		char c = getchar ();
-		if (c == '\r')
-			break;		
- 		else if (c == 127) //backspace
+		if (c == '\r') break;		
+ 		else if (c == BACKSPACE) { delChar (buf, p); continue ; }
+		else if (c == ESCAPE)
 		{
-			if (p > buf) p--;
-			putchar (c);
-		}
-		else if (c == 27)
-		{
- 			while (p > buf)
-			{
-				putchar (127);
-				--p;
-			}
+ 			while (p > buf) delChar (buf, p);
 
-			char c1 = getchar ();
-			while (c1 == 27)
-			{
-				m_pos = m_history.size ();
-				c1 = getchar ();
-			}
+			while ((c = getchar ()) == ESCAPE) m_pos = m_history.size ();
 
-			if (c1 == '[')
+			if (c == '[')
 			{
- 				char c2 = getchar ();
-				if (c2 == 'A')
+ 				switch (getchar ())
 				{
- 					if (m_pos > 0) m_pos--;
-					string s = getHistoryItem (m_pos);
-					if (s.length () > 0) 
-					{
-						memcpy (p, s.c_str (), s.length());
-						p += s.length ();
-					
-						for (char* p2 = buf; p2 < p; p2++)
-							putchar (*p2);
-					}
+					case 'A' : if (m_pos > 0) m_pos--; break;
+					case 'B' : if (m_pos < m_history.size() - 1) m_pos++; break;
+					default: continue;
 				}
-				else if (c2 == 'B')
-				{
-					if (m_pos < m_history.size() - 1) m_pos++;
- 					string s = getHistoryItem (m_pos);
-					if (s.length () > 0) 
-					{
-						memcpy (p, s.c_str (), s.length());
-						p += s.length ();
+			
+				string s = getHistoryItem (m_pos);
+				memcpy (p, s.c_str (), s.length());
+				p += s.length ();
 					
-						for (char* p2 = buf; p2 < p; p2++)
-							putchar (*p2);
-					}
-				}
-			}
-			else
-			{
-	 			putchar (c1);
-				*p++ = c1;
+				for (char* p2 = buf; p2 < p; p2++) putchar (*p2);
+
+				continue ;
 			}
 		}
-		else
-		{
- 			putchar (c);
-			*p++ = c;
-		}
+
+ 		putchar (c);
+		*p++ = c;
 	}
  
 	*p = '\0';
 
-	string result (buf);
-	addHistoryItem (result);
-
-	return result;
+	return addHistoryItem (buf);
 }
 
 void CommandReader::showHistory () const
@@ -125,9 +91,19 @@ string CommandReader::getHistoryItem (size_t index) const
 	return "";
 }
 
-void CommandReader::addHistoryItem (const std::string& item)
+void CommandReader::delChar (char* buf, char*& p)
 {
-	if (item.length () == 0) return ;
+	if (p > buf)
+	{
+		p--;
+		putchar (127);
+	}
+}
+
+	
+string CommandReader::addHistoryItem (const std::string& item)
+{
+	if (item.length () == 0) return item;
 
 	for (list<string>::iterator i = m_history.begin (); i != m_history.end (); i++)
 	{
@@ -140,6 +116,8 @@ void CommandReader::addHistoryItem (const std::string& item)
 
 	m_history.push_back (item);
 	m_pos = m_history.size ();
+
+	return item;
 }
 
 }
