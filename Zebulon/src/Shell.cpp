@@ -10,6 +10,7 @@
 #include "../private_include/Utils.h"
 #include "../private_include/version.h"
 #include <timer>
+#include <algorithm>
 
 using namespace std;
 using namespace Zebulon;
@@ -59,7 +60,7 @@ unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned lon
 
 	while (bufferLen > 0)
 	{
-		size_t rowLen = Utils::min (bufferLen, 16);
+		size_t rowLen = min (bufferLen, 16);
 
 		if (hexAddress)
 			printf ("0x%x\t : ", address);
@@ -364,7 +365,7 @@ void write_file (const string& filename, unsigned long bytes)
 
 	while (bytesLeftToWrite > 0)
 	{
-		unsigned long bytesThisTime = Utils::min (bytesLeftToWrite, len);
+		unsigned long bytesThisTime = min (bytesLeftToWrite, len);
 
 		fwrite ((unsigned char*) data, 1, bytesThisTime, f);
 		bytesLeftToWrite -= bytesThisTime;
@@ -444,7 +445,7 @@ void save (const string& filename, unsigned char bootslot)
 	timer t;
 	while (bytesLeftToWrite > 0)
 	{
-		unsigned long bytesThisTime = Utils::min (bytesLeftToWrite, 512);
+		unsigned long bytesThisTime = min (bytesLeftToWrite, 512);
 
 		fwrite (p, 1, bytesThisTime, f);
 		bytesLeftToWrite -= bytesThisTime;

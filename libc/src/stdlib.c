@@ -33,7 +33,13 @@ static T1 min (const T1& t1, const T2& t2)
 {
 	return t1 < t2 ? t1 : t2;
 }
-	
+
+template <class T>
+T max (const T& t1, const T& t2)
+{ 
+	return t1 > t2 ? t1 : t2; 
+}
+
 unsigned long printBuffer (char* buffer, size_t bufferLen, unsigned long startAddress)
 {
 	char* p = buffer;
@@ -109,9 +115,6 @@ unsigned int zero ()
 {
 	return 0;
 }
-
-template <class T>
-T max (const T& t1, const T& t2) { return t1 > t2 ? t1 : t2; }
 
 size_t roundUp (size_t input)
 {
