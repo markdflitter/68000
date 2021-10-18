@@ -334,12 +334,19 @@ void write_file (const string& filename, unsigned long bytes)
 	char data [] = "Marley was dead: to begin with. There is no doubt whatever about that. The register of his burial was signed by the clergyman, the clerk, the undertaker, and the chief mourner. Scrooge signed it. And Scrooge's name was good upon 'Change, for anything he chose to put his hand to. Old Marley was as dead as a door-nail. Mind! I don't mean to say that I know, of my own knowledge, what there is particularly dead about a door-nail. I might have been inclined, myself, to regard a coffin-nail as the deadest piece of ironmongery in the trade. But the wisdom of our ancestors is in the simile; ";
 	size_t len = strlen (data);
 
+	unsigned long blocks = bytesLeftToWrite / 512;
+	if (bytesLeftToWrite % 512 > 0) blocks++;
+
+	unsigned long block = 0;
 	while (bytesLeftToWrite > 0)
 	{
 		unsigned long bytesThisTime = min (bytesLeftToWrite, len);
 
 		fwrite ((unsigned char*) data, 1, bytesThisTime, f);
 		bytesLeftToWrite -= bytesThisTime;
+
+		block++;
+		if (blocks > 1) printf (" block %d / %d\n\r", block, blocks);
 	}
 
 	fclose (f);
