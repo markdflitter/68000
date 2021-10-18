@@ -1,4 +1,4 @@
-#include "Serialise.h"
+#include "../private_include/Serialise.h"
 #include <string.h>
 
 using namespace std;
@@ -26,6 +26,9 @@ void copyTo (unsigned char*& dest, const unsigned char* src, size_t numBytes)
 
 }
 
+namespace Zebulon
+{
+
 void Serialise::serialise (unsigned long l, unsigned char*& p)
 {
 	size_t sz = sizeof (l);
@@ -45,37 +48,20 @@ void Serialise::serialise (Chunk::Ptr chunk, unsigned char*& p)
 	copyTo (p, (const unsigned char*) chunk.get_raw (), sz);
 }
 
-void Serialise::serialise (FileHeader::Ptr file, unsigned char*& p)
-{
-	serialise (file->name (), p);
-	serialise ((unsigned long) file->index (), p);
-	serialise ((unsigned long) file->bootable (), p);
-	serialise (file->size (), p);
-	serialise ((unsigned long) file->loadAddress (), p);
-	serialise ((unsigned long) file->goAddress (), p);
-	serialise (file->chunks (), p);
-}
-
 void Serialise::serialise (BootTableEntry::Ptr bte, unsigned char*& p)
 {
 	if (bte.isNull ()) bte = mdf::make_shared (new BootTableEntry ());
 
 	serialise ((unsigned long) bte->empty, p);
 	serialise (bte->shortName, p);
-	serialise ((unsigned long) bte->index, p);
+	serialise ((unsigned long) 0, p);
 	serialise ((unsigned long) bte->length, p);
 	serialise ((unsigned long) bte->loadAddress, p);
-	serialise ((unsigned long) bte->goAddress, p);
+	serialise ((unsigned long) bte->startAddress, p);
 	serialise ((unsigned long) bte->startBlock, p);
 }
 
-void Serialise::serialise (Chunk::ConstPtr chunk, unsigned char*& p)
-{
-	size_t sz = sizeof (*chunk);
-	copyTo (p, (const unsigned char*) chunk.get_raw (), sz);
-}
-
-void Serialise::serialise (FileHeader::ConstPtr file, unsigned char*& p)
+void Serialise::serialise (FileEntry::Ptr file, unsigned char*& p)
 {
 	serialise (file->name (), p);
 	serialise (file->size (), p);
@@ -109,31 +95,15 @@ void Serialise::deserialise (Chunk::Ptr chunk, const unsigned char*& p)
 	copyFrom ((unsigned char*) chunk.get_raw (), p, sz);
 }
 
-void Serialise::deserialise (FileHeader::Ptr file, const unsigned char*& p)
+void Serialise::deserialise (FileEntry::Ptr file, const unsigned char*& p)
 {
 	string name;	
 	deserialise (name, p, 255);
 	file->setName (name);
 
-	unsigned long index;
-	deserialise (index, p);
-	file->setIndex ((unsigned int) index);
-
-	unsigned long bootable;
-	deserialise (bootable, p);
-	file->setBootable ((bool) bootable);
-	
-	file_address_t size;	
+	unsigned long size;	
 	deserialise (size, p);
 	file->setSize (size);
-
-	unsigned long loadAddress;
-	deserialise (loadAddress, p);
-	file->setLoadAddress (loadAddress);
-
-	unsigned long goAddress;
-	deserialise (goAddress, p);
-	file->setGoAddress (goAddress);
 
 	list<Chunk::Ptr> chunks;
 	deserialise (chunks, p);
@@ -150,10 +120,9 @@ void Serialise::deserialise (BootTableEntry::Ptr bte, const unsigned char*& p)
 	deserialise (name, p, 20);
 	bte->shortName = name;
 	
-	unsigned long index;
-	deserialise (index, p);
-	bte->index = index;
-	
+	unsigned long ignore;
+	deserialise (ignore, p);
+
 	unsigned long length;
 	deserialise (length, p);
 	bte->length = length;
@@ -162,11 +131,13 @@ void Serialise::deserialise (BootTableEntry::Ptr bte, const unsigned char*& p)
 	deserialise (loadAddress, p);
 	bte->loadAddress = loadAddress;
 
-	unsigned long goAddress;
-	deserialise (goAddress, p);
-	bte->goAddress = goAddress;
+	unsigned long startAddress;
+	deserialise (startAddress, p);
+	bte->startAddress = startAddress;
 
 	unsigned long startBlock;
 	deserialise (startBlock, p);
 	bte->startBlock = startBlock;
+}
+
 }

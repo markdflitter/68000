@@ -1,0 +1,24 @@
+#ifndef ALGORITHM_INCLUDED
+#define ALGORITHM_INCLUDED
+
+namespace std
+{
+
+template <class T1, class T2>
+static T1 max (const T1& t1, const T2& t2)
+{
+	return t1 >= t2 ? t1 : t2;
+}
+	
+
+template <class T1, class T2>
+static T1 min (const T1& t1, const T2& t2)
+{
+	return t1 < t2 ? t1 : t2;
+}
+	
+}
+
+
+#endif
+

@@ -1,16 +1,20 @@
-#include "OpenFile.h"
-#include "FAT.h"
+#include "../private_include/OpenFile.h"
+#include "../private_include/Filer.h"
 #include <string.h>
 #include <bsp.h>
 #include <stdio.h>
 
 using namespace std;
 
-OpenFile::OpenFile (FileHeader::Ptr fileHeader)
-	: m_fileHeader (fileHeader),
+namespace Zebulon
+{
+
+OpenFile::OpenFile (FileEntry::Ptr fileEntry, Filer* filer)
+	: m_fileEntry (fileEntry),
+	  m_Filer (filer),
 	  m_bufferPointer (0),
 	  m_bufferModified (false),
-	  m_fileHeaderModified (false)
+	  m_fileEntryModified (false)
 {
 	setFilePointer (0);
 }
@@ -18,60 +22,72 @@ OpenFile::OpenFile (FileHeader::Ptr fileHeader)
 OpenFile::~OpenFile ()
 {
 	flush ();
-	if (m_fileHeaderModified) 
+	if (m_fileEntryModified) 
 	{
-		m_fileHeader->fat ()->save ();
+		m_Filer->save ();
 	}
 }
 
-void OpenFile::read (unsigned char* data, file_address_t numBytes)	
+unsigned long OpenFile::read (unsigned char* data, unsigned long numBytes)	
 {
+	//limit to file length
+	unsigned long bytesLeftInFile = m_fileEntry->size () - m_filePointer;
+	if (bytesLeftInFile < numBytes) numBytes = bytesLeftInFile;
+	
+	unsigned long bytesLeftToRead = numBytes;
+
 	//printf ("read %d bytes from %d\n\r", numBytes, m_filePointer);
 	unsigned char* p = data;
-	while (numBytes > 0)
+	while (bytesLeftToRead > 0)
 	{
-		if (!readCurBlock ()) return ;
+		if (!readCurBlock ()) return numBytes - bytesLeftToRead;
 
-		file_address_t bytesToCopy = numBytes;
-	
-		file_address_t bytesLeftInCurrentBuffer = ide_block_size - (m_bufferPointer - m_buffer);
+		unsigned long bytesToCopy = bytesLeftToRead;
+
+		unsigned long bytesLeftInCurrentBuffer = ide_block_size - (m_bufferPointer - m_buffer);
 		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
 
 		p = copyFromBuffer (p, bytesToCopy);
-		numBytes -= bytesToCopy;
+		bytesLeftToRead -= bytesToCopy;
 	}
+
+	return numBytes;
 }
 	
-void OpenFile::write (const unsigned char* data, file_address_t numBytes)	
+unsigned long OpenFile::write (const unsigned char* data, unsigned long numBytes)	
 {
 	//printf ("writing %d bytes to %d\n\r", numBytes, m_filePointer);
-	const unsigned char* p = data;
-	while (numBytes > 0)
-	{
-		if (!readCurBlock ()) return ;
+	unsigned long bytesLeftToRead = numBytes;
 
-		file_address_t bytesToCopy = numBytes;
+	const unsigned char* p = data;
+	while (bytesLeftToRead > 0)
+	{
+		if (!readCurBlock ()) return numBytes - bytesLeftToRead;
+
+		unsigned long bytesToCopy = bytesLeftToRead;
 	
-		file_address_t bytesLeftInCurrentBuffer = ide_block_size - (m_bufferPointer - m_buffer);
+		unsigned long bytesLeftInCurrentBuffer = ide_block_size - (m_bufferPointer - m_buffer);
 		if (bytesToCopy > bytesLeftInCurrentBuffer) bytesToCopy = bytesLeftInCurrentBuffer;
 
 		p = copyToBuffer (p, bytesToCopy);
-		if (m_filePointer > m_fileHeader->size ())
+		if (m_filePointer > m_fileEntry->size ())
 		{
 			//printf ("setting size to %d\n\r", m_filePointer);	
-   			m_fileHeader->setSize (m_filePointer);
-			m_fileHeaderModified = true;
+   			m_fileEntry->setSize (m_filePointer);
+			m_fileEntryModified = true;
 		}
-		numBytes -= bytesToCopy;
+		bytesLeftToRead -= bytesToCopy;
 	}
+
+	return numBytes;
 }
 
 bool OpenFile::EOF () const
 {
-	return m_filePointer >= m_fileHeader->size ();
+	return m_filePointer >= m_fileEntry->size ();
 }
 
-unsigned char* OpenFile::copyFromBuffer (unsigned char* data, file_address_t bytesToCopy)
+unsigned char* OpenFile::copyFromBuffer (unsigned char* data, unsigned long bytesToCopy)
 {
 	//printf ("copying %d bytes from buffer\n\r", bytesToCopy);
 
@@ -83,7 +99,7 @@ unsigned char* OpenFile::copyFromBuffer (unsigned char* data, file_address_t byt
 	return data;
 }
 
-const unsigned char* OpenFile::copyToBuffer (const unsigned char* data, file_address_t bytesToCopy)
+const unsigned char* OpenFile::copyToBuffer (const unsigned char* data, unsigned long bytesToCopy)
 {
 	//printf ("copying %d bytes to buffer\n\r", bytesToCopy);
 
@@ -117,11 +133,11 @@ bool OpenFile::readCurBlock ()
 {
 	if (!m_bufferLoaded)
 	{
-		//printf ("%d %d\n\r", m_fileHeader->size (), m_fileHeader->allocSize ());
-		if (m_filePointer >= m_fileHeader->allocSize ())
+		//printf ("%d %d\n\r", m_fileEntry->size (), m_fileEntry->allocSize ());
+		if (m_filePointer >= m_fileEntry->allocSize ())
 		{
 			//printf ("extending file\n\r");
-			if (!m_fileHeader->fat ()->extend (m_fileHeader, 1))
+			if (!m_Filer->extendFile (m_fileEntry, 1))
 				return false;
 		
 			m_bufferPointer = 0;
@@ -138,17 +154,17 @@ bool OpenFile::readCurBlock ()
 	return true;
 }
 
-block_address_t OpenFile::findBlock (file_address_t filePointer) const
+unsigned long OpenFile::findBlock (unsigned long filePointer) const
 {
-	block_address_t result = 0;
+	unsigned long result = 0;
 
 	//printf ("find block for file pointer %d\n\r", filePointer);
 	unsigned long blockIndex = (filePointer / ide_block_size) + 1;
 	//printf ("block Index is %d\n\r", blockIndex);
 
-	list<Chunk::Ptr>::const_iterator i = m_fileHeader->chunks ().begin ();
+	list<Chunk::Ptr>::const_iterator i = m_fileEntry->chunks ().begin ();
 
-	while (i != m_fileHeader->chunks ().end ())
+	while (i != m_fileEntry->chunks ().end ())
 	{
 		//printf ("check block from %d to %d\n\r", (*i)->start, (*i)->start + (*i)->length - 1);
 
@@ -167,7 +183,7 @@ block_address_t OpenFile::findBlock (file_address_t filePointer) const
 		}
 	}
 	
-	if (i != m_fileHeader->chunks ().end ())
+	if (i != m_fileEntry->chunks ().end ())
 	{
 		//printf ("found block %d in chunk %d -> %d\n\r", result, (*i)->start, (*i)->start + (*i)->length - 1);
 	}
@@ -179,11 +195,11 @@ block_address_t OpenFile::findBlock (file_address_t filePointer) const
 	return result;
 }
 
-void OpenFile::setFilePointer (file_address_t filePointer)
+void OpenFile::setFilePointer (unsigned long filePointer)
 {
 	//printf ("setting file pointer to %d, was %d\n\r", filePointer, m_filePointer);
 
-	block_address_t newBlock = findBlock (filePointer);
+	unsigned long newBlock = findBlock (filePointer);
 	//printf ("new block is %d, was %d\n\r", newBlock, m_curBlock);
 
 	if (m_bufferPointer == 0 || (newBlock != m_curBlock))
@@ -201,10 +217,12 @@ void OpenFile::setFilePointer (file_address_t filePointer)
 
 		m_bufferLoaded = false;
 		
-		m_bufferPointer = m_buffer + (filePointer % ide_block_size);
+		m_bufferPointer = m_buffer + (filePointer % 512);
 		//printf ("set buffer pointer to %d\n\r", m_bufferPointer - m_buffer);
 	}
 
 	m_curBlock = newBlock;
 	m_filePointer = filePointer;
+}
+
 }

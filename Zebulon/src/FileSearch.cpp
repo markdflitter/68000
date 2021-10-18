@@ -1,15 +1,17 @@
-#include "FileSearch.h"
-#include <stdio.h>
+#include "../private_include/FileSearch.h"
 
-FileSearch::FileSearch (const std::list<FileHeader::Ptr>& snapshot) :
+namespace Zebulon
+{
+
+FileSearch::FileSearch (const std::list<FileEntry::Ptr>& snapshot) :
   m_snapshot (snapshot), m_it (m_snapshot.begin ())
 {
 }
 
 	
-FileHeader::Ptr FileSearch::next ()
+FileEntry::Ptr FileSearch::next ()
 {
-	FileHeader::Ptr result;
+	FileEntry::Ptr result;
 	if (m_it != m_snapshot.end ())
 	{
 		result = (*m_it);
@@ -19,3 +21,4 @@ FileHeader::Ptr FileSearch::next ()
 	return result;
 }
 
+}

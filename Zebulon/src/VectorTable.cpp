@@ -1,4 +1,4 @@
-#include "VectorTable.h"
+#include "../private_include/VectorTable.h"
 #include <stdio.h>
 #include <bsp.h>
 
@@ -11,10 +11,6 @@ void unhandled ()
 VectorTable::VectorTable (unsigned char* baseAddress)
 	: m_table ((Table*) baseAddress)
 {
-	char buf [200];
-	sprintfn (buf, 200, "initialised vector table at 0x%x\n\r", baseAddress);
-	__putstr (buf);
-
 	for (int i = 0; i < 255; i++)
 		setVector (i, &unhandled);
 

@@ -1,16 +1,36 @@
-#include "SpaceManager.h"
-#include "Serialise.h"
+#include "../private_include/SpaceManager.h"
+#include <shared_ptr>
+#include "../private_include/Serialise.h"
 #include <stdio.h>
 
 using namespace mdf;
 
-void SpaceManager::format (block_address_t size)
+
+namespace
 {
-	m_free.clear ();
-	m_free.push_back (make_shared (new Chunk (0, size)));
+
+void printFreeSpace (Zebulon::_zebulon_free_space fs)
+{
+	printf ("total free: %d out of %d (%d%%)\n\r", fs.freeSpace, fs.totalSpace, ((unsigned int) (100 * double(fs.freeSpace) / fs.totalSpace)));
 }
 
-std::list<Chunk::Ptr> SpaceManager::allocate (block_address_t size, bool contiguous)
+}
+
+
+namespace Zebulon
+{
+
+int SpaceManager::initialise (int initialSize)
+{
+	m_totalSpace = initialSize;
+
+	m_free.clear ();
+	m_free.push_back (make_shared (new Chunk (2, initialSize - 2)));
+
+	return initialSize;
+}
+
+std::list<Chunk::Ptr> SpaceManager::allocate (unsigned long size, bool contiguous)
 {
 	std::list<Chunk::Ptr> allocation;
 
@@ -38,13 +58,50 @@ void SpaceManager::deallocate (std::list<Chunk::Ptr>& chunks)
 
 void SpaceManager::serialise (unsigned char*& p) const
 {
+	Serialise::serialise (m_totalSpace, p);
 	Serialise::serialise (m_free, p);
 }
 
 void SpaceManager::deserialise (const unsigned char*& p)
 {
+	Serialise::deserialise (m_totalSpace, p);
+
 	m_free.clear ();
 	Serialise::deserialise (m_free, p);
 
- 	printf ("> loaded %d free chunks\n\r",m_free.size ());
+ 	printf (" loaded %d free chunk(s)\n\r",m_free.size ());
+	printf (" ");
+	printFreeSpace (getFreeSpace ());
 }
+
+void SpaceManager::diag () const
+{
+	printf ("--- Space Table ---\n\r");
+	int n  = 0;
+	unsigned int free = 0;
+	for (std::list<Chunk::Ptr>::const_iterator i = m_free.begin (); i != m_free.end (); i++)
+	{
+		printf (" %d : free chunk from %d -> %d (length %d)\n\r", n, (*i)->start, (*i)->start + (*i)->length, (*i)->length);
+		n++;	
+		free += (*i)->length;
+	}
+
+	printFreeSpace (getFreeSpace ());
+	printf ("\n\r");
+}
+
+
+_zebulon_free_space SpaceManager::getFreeSpace () const
+{
+	_zebulon_free_space fs;
+	fs.freeSpace = 0;
+	fs.totalSpace = m_totalSpace;
+
+	for (std::list<Chunk::Ptr>::const_iterator i = m_free.begin (); i != m_free.end (); i++)
+		fs.freeSpace += (*i)->length;
+
+	return fs;	
+}
+
+}
+

@@ -3,11 +3,13 @@
 
 #include <string>
 #include "Chunk.h"
-#include "FileHeader.h"
-#include "BootTableEntry.h"
 #include <list>
 #include <vector>
-#include <stdio.h>
+#include "FileEntry.h"
+#include "BootTableEntry.h"
+
+namespace Zebulon
+{
 
 class Serialise
 {
@@ -15,9 +17,7 @@ public:
 	static void serialise (unsigned long l, unsigned char*& p);
 	static void serialise (const std::string& s, unsigned char*& p);
 	static void serialise (Chunk::Ptr chunk, unsigned char*& p);
-	static void serialise (FileHeader::Ptr file, unsigned char*& p);
-	static void serialise (Chunk::ConstPtr chunk, unsigned char*& p);
-	static void serialise (FileHeader::ConstPtr file, unsigned char*& p);
+	static void serialise (FileEntry::Ptr file, unsigned char*& p);
 	static void serialise (BootTableEntry::Ptr bte, unsigned char*& p);
 	template <class T> static void serialise (const std::list<T>& list, unsigned char*& p)
 	{
@@ -56,7 +56,7 @@ public:
 	static void deserialise (unsigned long& l, const unsigned char*& p);
 	static void deserialise (std::string& s, const unsigned char*& p, size_t maxLength);
 	static void deserialise (Chunk::Ptr chunk, const unsigned char*& p);
-	static void deserialise (FileHeader::Ptr file, const unsigned char*& p);
+	static void deserialise (FileEntry::Ptr file, const unsigned char*& p);
 	static void deserialise (BootTableEntry::Ptr bte, const unsigned char*& p);
 	template <class T> static void deserialise (std::list <T>& list, const unsigned char*& p)
 	{
@@ -109,7 +109,8 @@ public:
 			v [i] = t;
 		}
 	}
-};	
+};
 
+}	
 #endif
 

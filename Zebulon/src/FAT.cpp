@@ -1,118 +1,90 @@
-#include "FAT.h"
-#include <bsp.h>
-#include <stdio.h>
-#include "Serialise.h"
+#include "../private_include/FAT.h"
+#include "../private_include/Serialise.h"
 #include <string.h>
-#include <stdlib.h>
-#include <timer>
-#include <print.h>
+#include <string>
+#include <ZebulonAPI.h>
+#include "../private_include/version.h"
+#include "../private_include/Utils.h"
 
-using namespace mdf;
 using namespace std;
-using namespace Zebulon;
+using namespace mdf;
 
-unsigned int FAT::m_lastIndex = 0;
-
-extern char* __begin;
-extern char* __end;
-extern char* start;
-
-const unsigned long int read_only = 0x80000000;
-
-namespace
+namespace Zebulon
 {
 
-bool mode_is (const std::string& mode, char what)
+int FAT::initialise (int diskSize)
 {
-	const char* p = mode.c_str ();
+	int result = m_spaceManager.initialise (diskSize);
+	m_fileEntries.clear ();
+	return result;
+}
 
-	char ch;
-	while ((ch = *p++) != '\0')
+void FAT::serialise (unsigned char*& p) const
+{
+	Serialise::serialise (FAT_IDENT, p);
+	Serialise::serialise (FAT_VERSION, p);
+	//Serialise::serialise ((unsigned long) m_lastIndex, p);
+
+	m_spaceManager.serialise (p);
+
+	Serialise::serialise (m_fileEntries, p);	
+}
+
+bool FAT::deserialise (const unsigned char*& p)
+{
+	m_fileEntries.clear ();
+
+	string readIdent;
+	Serialise::deserialise (readIdent, p, strlen (FAT_IDENT));
+	if (string (FAT_IDENT) != readIdent)
 	{
-		if (ch == what) return true;
-	}
-	
-	return false;
-}
-
-void printIdeError (ide_result error)
-{
-	if (error == AMNF)
-		printf (">>>  address mark not found\n\r");
-	if (error == TK0NF)
-		printf (">>>  track 0 not found\n\r");
-	if (error == ABRT)
-		printf (">>>  aborted command");
-	if (error == MCR)
-		printf (">>>  media change requested\n\r");
-	if (error == IDNF)
-		printf (">>>  ID not found\n\r");
-	if (error == MC)
-		printf (">>>  media change\n\r");
-	if (error == UNC)
-		printf (">>>  uncorrectable data error\n\r");
-	if (error == BBK)
-		printf (">>>  bad block\n\r");
-}
-
-}
-
-FAT::FAT ()
-{
-	m_bootTable.reserve (10);
-	load ();
-}
-
-size_t FAT::blockSize () const
-{
-	return ide_block_size;
-}
-
-bool FAT::readBlock (block_address_t block, unsigned char* data)
-{
-	ide_result result = __ide_read (block, data);
-	if (result != OK) printIdeError (result);
-
-	return result == OK;
-}
-
-void FAT::format (block_address_t size)
-{
-	printf ("formatting %d\n\r", size);
-	m_lastIndex = 0;
-	m_fileHeaders.clear ();
-	m_spaceManager.format (size);
-	m_spaceManager.allocate (1);		// boot table
-	m_spaceManager.allocate (1);		// FAT table
-	m_bootTable.clear ();
-	save ();
-}
-
-void FAT::dumpBlock (block_address_t block)
-{
-	unsigned char data [blockSize ()];
-	
-	if (readBlock (block, data))
-		mdf::printBuffer (data, blockSize ());
-}
-
-bool FAT::fileExists (const std::string& filename)
-{
-	FileHeader::Ptr header = findFile (filename);
-	return !header.isNull ();
-}
-
-bool FAT::create (const string& name, block_address_t initialSize, bool contiguous)
-{
-	if (name [0] == '#')
-	{
-		printf (">> filename may not start with #\n\r");
+		printf (">>> FAT - ident mismatch.  Expected %s, got %s\n\r", FAT_IDENT, readIdent.c_str ());
 		return false;
 	}
 
-	if (name.length () > 255)
+	string readVersion;
+	Serialise::deserialise (readVersion, p, strlen (FAT_VERSION));
+	if (string (FAT_VERSION) != readVersion)
 	{
-		printf (">> filename may not be > 255 characters\n\r");
+		printf (">>> FAT - version mismatch.  Expected %s, got %s\n\r", FAT_VERSION, readVersion.c_str());
+		return false;
+	}
+
+	//unsigned long lastIndex;
+	//Serialise::deserialise (lastIndex, p);
+	//m_lastIndex = lastIndex;
+	
+	m_spaceManager.deserialise (p);
+		
+	Serialise::deserialise (m_fileEntries, p);
+
+	printf (" found %d file(s)\n\r", m_fileEntries.size ());
+	
+	return true;
+}
+
+FileEntry::Ptr FAT::findFile (const string& name)
+{
+	FileEntry::Ptr result;
+
+	if (name.length () > 0)
+	{
+		for (list<FileEntry::Ptr>::iterator i = m_fileEntries.begin (); i != m_fileEntries.end (); i++)
+			if ((*i)->name () == name)
+			{
+				result = (*i);
+				break ;
+			}
+	}
+
+	return result;
+}
+
+bool FAT::createFile (const std::string& name, unsigned long initialSize, bool contiguous)
+{
+	if (name.length () > MAX_FILENAME_LENGTH)
+	{
+		printf (">> filename may not be > %d characters\n\r", MAX_FILENAME_LENGTH);
 		return false;
 	}
 
@@ -122,7 +94,6 @@ bool FAT::create (const string& name, block_address_t initialSize, bool contiguo
 		return false;
 	}
 
-	printf ("create %d\n\r", initialSize);
 	list<Chunk::Ptr> allocation = m_spaceManager.allocate (initialSize, contiguous);
 	if ((initialSize > 0) && (allocation.size () == 0))
 	{
@@ -130,480 +101,27 @@ bool FAT::create (const string& name, block_address_t initialSize, bool contiguo
 		return false;
 	}
 
-	m_fileHeaders.push_back (make_shared (new FileHeader (this, name, m_lastIndex++, allocation)));
-
-	save ();	
-	return true;
-}
-
-void FAT::setMetaData (const std::string& name, unsigned int loadAddress, unsigned int goAddress)
-{
-	FileHeader::Ptr file = findFile (name);
-	if (file.isNull ())
-	{
-		printf (">> file not found\n\r");
-		return ;
-	}
-
-	if (file->bootable ())
-	{
-		printf (">> cannot set meta data for bootable file, unboot first\n\r");
-		return ;
-	}
-
-	file->setLoadAddress (loadAddress);
-	file->setGoAddress (goAddress);
-
-	save ();
-}
-
-bool FAT::stat (const std::string& name, struct Zebulon::_zebulon_stat* zs)
-{
-	FileHeader::Ptr p = findFile (name);
-	bool result = !p.isNull ();
-	if (result)
-	{
-		memcpy (zs->name, p->name ().c_str (), p->name ().length ());
-		zs->size = p->size ();
-	}
-
-	return result;
-}
-
-file_search_handle FAT::findFirstFile (struct Zebulon::_zebulon_stat* s)
-{
-	FileSearch::Ptr fileSearch = make_shared(new FileSearch (m_fileHeaders));
-
-	FileHeader::Ptr fileHeader = fileSearch->next ();
-
-	if (!fileHeader.isNull ())
-	{
-		s->index = fileHeader->index ();
-
-		memcpy (s->name, fileHeader->name ().c_str (), fileHeader->name ().length ());
-		s->name [fileHeader->name ().length ()] = '\0';
-
-		s->size = fileHeader->size ();
-		s->sizeOnDisk = fileHeader->allocSize ();
-
-		s->bootable = fileHeader->bootable ();
-		s->loadAddress = fileHeader->loadAddress ();
-		s->goAddress = fileHeader->goAddress ();
-
-		m_fileSearches.push_back (fileSearch);
-
-		return m_fileSearches.size () - 1;
-	}
-	else
-		return -1;
-}
-
-bool FAT::findNextFile (file_search_handle handle, struct Zebulon::_zebulon_stat* s)
-{
-	FileSearch::Ptr fs = getFileSearch (handle);
-	if (fs.isNull ())
-	{
-		printf (">> search %d not found\n\r", handle);
-		return false;
-	}
-
-	FileHeader::Ptr fileHeader = fs->next ();
-	if (!fileHeader.isNull ())
-	{
-		s->index = fileHeader->index ();
-
-		memcpy (s->name, fileHeader->name ().c_str (), fileHeader->name ().length ());
-		s->name [fileHeader->name ().length ()] = '\0';
-
-		s->size = fileHeader->size ();
-		s->sizeOnDisk = fileHeader->allocSize ();
-
-		s->bootable = fileHeader->bootable ();
-		s->loadAddress = fileHeader->loadAddress ();
-		s->goAddress = fileHeader->goAddress ();
-
-		return true;
-	}
-	else
-		return false;
-}
-
-void FAT::closeFind (file_search_handle handle)
-{
-	getFileSearch (handle);
-	m_fileSearches [handle].reset ();
-}
-
-void FAT::rm (const string& name)
-{
-	FileHeader::Ptr p = findFile (name);
-	if (p.isNull ()) return ;
-	
-	string realName = p->name ();
-
-	list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin ();
-
-	for ( ; i != m_fileHeaders.end (); i++)
-		if ((*i)->name () == realName)
-		{
-			if (!(*i)->bootable ())
-			{
-				m_spaceManager.deallocate ((*i)->chunks ());
-				m_fileHeaders.erase (i);
-				save ();
-			}
-			else
-			{
-				printf (">> cannot delete bootable file, unboot first\n\r");
-			}
-
-	 		return ;
-		}
-
-	printf (">> file not found\n\r");
-}
-
-file_handle FAT::open (const string& name, const string& mode)
-{
-	file_handle result = file_not_found;
-
-	if (!fileExists (name))
-	{
-		//printf ("file doesn't exist\n\r");
-		if (mode_is (mode, 'w'))
-		{
-			//printf ("create file\n\r");
-	    	create (name);
-		}
-		else
-		{
-			printf (">> file not found\n\r");
-			return result;
-		}			
-	}
-	else
-	{
-		//printf ("file exists\n\r");
-		if (mode_is (mode, 'w'))
-		{
-			//printf ("delete and create file\n\r");
-			rm (name);
-	    	create (name);
-		}
-	}
-
-	FileHeader::Ptr f = findFile (name);
-	if (f.isNull ())
-	{
-		printf (">> file not found\n\r");
-		return file_not_found;
-	}
-	
-	m_openFiles.push_back (make_shared(new OpenFile(f)));
-
-	result = m_openFiles.size () - 1;
-
-	if (mode_is (mode, 'r'))
-		result |= read_only;
-	
-	return result;
-}
-
-void FAT::close (file_handle file)
-{
-	getOpenFile (file & ~read_only);
-	m_openFiles [file & ~read_only].reset ();
-}
-
-file_address_t FAT::read (file_handle file, unsigned char* data, file_address_t numBytes) const
-{
-	OpenFile::Ptr of = getOpenFile (file & ~read_only);
-	if (!of.isNull ())
-		of->read (data, numBytes);
-	return 0;
-}
-
-file_address_t FAT::write (file_handle file, const unsigned char* data, file_address_t numBytes)
-{
-	if (file & read_only)
-	{
-		printf (">> file %d opened as read only\n\r", file);
-		return 0;
-	}
-
-	OpenFile::Ptr of = getOpenFile (file & ~read_only);
-	if (!of.isNull ())
-		of->write (data, numBytes);
-	return 0;
-}
-
-bool FAT::EOF (file_handle file) const
-{
-	OpenFile::Ptr of = getOpenFile (file & ~read_only);
-	if (!of.isNull ())
-		return of->EOF ();
+	m_fileEntries.push_back (make_shared (new FileEntry (name, allocation)));
 
 	return true;
 }
 
-void FAT::save (const std::string& name, unsigned int bootNumber)
+bool FAT::deleteFile (const std::string& name)
 {
-	static unsigned char* loadAddress = (unsigned char*) &__begin;
-	static unsigned char* end = (unsigned char*) &__end;
-	static unsigned char* goAddress = (unsigned char*) &start;
+	list<FileEntry::Ptr>::iterator i = m_fileEntries.begin ();
 
-	printf ("saving code: start 0x%x end 0x%x entry 0x%x\n\r", loadAddress, end, goAddress);
-
-	file_address_t length = end - loadAddress;
-	block_address_t numBlocks = (length / blockSize ()) + 1;
-
-	file_handle f = open (name, "wb");
-	if (f == file_not_found) return ;
-
-	setMetaData (name, (unsigned int) loadAddress, (unsigned int) goAddress);
-
-	file_address_t bytesLeftToWrite = length;
-
-	unsigned char* p = loadAddress;
-
-	timer t;
-	while (bytesLeftToWrite > 0)
-	{
-		unsigned char buffer [512];
-		if (bytesLeftToWrite >= 512)
+	for ( ; i != m_fileEntries.end (); i++)
+		if ((*i)->name () == name)
 		{
-			memcpy (buffer, p, 512);
-			write (f, buffer, 512);
-			bytesLeftToWrite -= 512;
-			p += 512;
-		}
-		else
-		{
-			memcpy (buffer, p, bytesLeftToWrite);
-			write (f, buffer, bytesLeftToWrite);
-			bytesLeftToWrite -= bytesLeftToWrite;
+			m_spaceManager.deallocate ((*i)->chunks ());
+			m_fileEntries.erase (i);
+	 		return true;
 		}
 
-		printf (".");
-	}
-
-	printf (" %dmS\n\r", t.elapsed ());
-
-	close (f);
-
-	unboot (bootNumber);
-	boot (name, bootNumber);
+	return false;
 }
 
-void FAT::boot (const std::string& name, unsigned int index)
-{
-	if (index > 9)
-	{
-		printf (">> max boot slot is %d, got %d\n\r", 9, index);
-		return ;
-	}
-
-	if (!m_bootTable [index].isNull () && !m_bootTable [index]->empty) 
-	{
-		printf (">> boot slot %d is full, unboot first\n\r", index);
-		return ;
-	}
-	
-	FileHeader::Ptr fileHeader = findFile (name);
-	if (fileHeader.isNull ())
-	{
-		printf (">> file not found\n\r");
-		return ;
-	}
-	
-	if (fileHeader->chunks ().size () == 0)
-	{
-		printf (">> file empty\n\r");
-		return ;
-	}
-	
-	if (fileHeader->bootable ())
-	{
-		printf (">> already bootable, unboot first\n\r");
-		return ;
-	}
-
-	block_address_t startBlock = (*(fileHeader->chunks ().begin ()))->start;
-	
-	printf ("creating boot table entry\n\r");
-	m_bootTable [index] = make_shared (
-		new BootTableEntry (name, fileHeader->index (),
-			fileHeader->size (), fileHeader->loadAddress (), fileHeader->goAddress (), startBlock));
-
-	fileHeader->setBootable (true);	
-	save ();
-}
-
-void FAT::unboot (unsigned int index)
-{
-	if (index > 9)
-	{
-		printf (">> max boot slot is %d\n\r", 9);
-		return ;
-	}
-
-	if ((index < m_bootTable.size ()) && !m_bootTable[index].isNull () && !m_bootTable[index]->empty)
-	{
-		BootTableEntry::Ptr p = m_bootTable [index];
-		unsigned int fileIndex = p->index;
-
-		for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
-			if ((*i)->index () == fileIndex)
-			{
-				printf ("marking file '%s' as unbootable\n\r", (*i)->name ().c_str ());
-				(*i)->setBootable (false);
-			}
-		m_bootTable[index].reset ();
-		save ();
-	}
-}
-
-void FAT::index (_zebulon_boot_table_entry* zbte) const
-{
-	for (size_t i = 0; i < m_bootTable.size (); i++)
-	{
-		BootTableEntry::Ptr bte = m_bootTable [i];
-		if (bte.isNull ())
-		{
-			zbte [i].empty = true;
-		}
-		else
-		{
-			zbte [i].empty = bte->empty;
-			zbte [i].index = i;
-			memcpy (zbte [i].name, bte->shortName.c_str (), 20);
-			zbte [i].file_index = bte->index;
-			zbte [i].size = bte->length;
-			zbte [i].loadAddress = bte->loadAddress;
-			zbte [i].goAddress = bte->goAddress;
-			zbte [i].startBlock = bte->startBlock;
-		}
-	}
-}
-
-FileHeader::Ptr FAT::findFile (const string& name)
-{
-	FileHeader::Ptr result;
-
-	if (name.length () > 0)
-	{
-		if (name [0] == '#')
-		{
-			if (name.length () > 1)
-			{
-				size_t index = atoi (string (name.c_str () + 1).c_str ());
-				for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
-					if ((*i)->index () == index)
-					{
-						result = (*i);
-						break ;
-					}
-			}
-		}
-		else
-		{
-			for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin (); i != m_fileHeaders.end (); i++)
-				if ((*i)->name () == name)
-				{
-					result = (*i);
-					break ;
-				}
-		}
-	}
-
-	return result;
-}
-
-FileSearch::Ptr FAT::getFileSearch (file_search_handle handle)
-{
-	if ((handle >= m_fileSearches.size ()) || (m_fileSearches [handle].isNull ()))
-	{
-		printf (">> search %d not found\n\r", handle);
-		return FileSearch::Ptr ();
-	}
-
-	return m_fileSearches [handle];
-}
-
-OpenFile::ConstPtr FAT::getOpenFile (file_handle file) const
-{
-	if ((file >= m_openFiles.size ()) || (m_openFiles [file].isNull ()))
-	{
-		printf (">> file %d not open\n\r", file);
-		return OpenFile::ConstPtr ();
-	}
-
-	return m_openFiles [file];
-}
-
-OpenFile::Ptr FAT::getOpenFile (file_handle file)
-{
-	if ((file >= m_openFiles.size ()) || (m_openFiles [file].isNull ()))
-	{
-		printf (">> file %d not open\n\r", file);
-		return OpenFile::Ptr ();
-	}
-
-	return m_openFiles [file];
-}
-
-
-const char* FatIdent = "__Zebulon_FAT__1__";
-const char* FatVersion = "1.8";
-
-void FAT::serialise (unsigned char*& p) const
-{
-	Serialise::serialise (FatIdent, p);
-	Serialise::serialise (FatVersion, p);
-	Serialise::serialise ((unsigned long) m_lastIndex, p);
-
-	m_spaceManager.serialise (p);
-
-	Serialise::serialise (m_fileHeaders, p);	
-}
-
-bool FAT::deserialise (const unsigned char*& p)
-{
-	m_openFiles.clear ();
-	m_fileHeaders.clear ();
-
-	string readIdent;
-	Serialise::deserialise (readIdent, p, strlen (FatIdent));
-	if (string (FatIdent) != readIdent)
-	{
-		printf (">>> FAT - ident mismatch.  Expected %s, got %s\n\r", FatIdent, readIdent.c_str ());
-		return false;
-	}
-
-	string readVersion;
-	Serialise::deserialise (readVersion, p, strlen (FatVersion));
-	if (string (FatVersion) != readVersion)
-	{
-		printf (">>> FAT - version mismatch.  Expected %s, got %s\n\r", FatVersion, readVersion.c_str());
-		return false;
-	}
-
-	unsigned long lastIndex;
-	Serialise::deserialise (lastIndex, p);
-	m_lastIndex = lastIndex;
-	
-	m_spaceManager.deserialise (p);
-		
-	Serialise::deserialise (m_fileHeaders, p);
-	for (list<FileHeader::Ptr>::iterator i = m_fileHeaders.begin(); i != m_fileHeaders.end (); i++)
-		(*i)->setFat (this);
-
-	printf ("> found %d files\n\r", m_fileHeaders.size ());
-	
-	return true;
-}
-
-bool FAT::extend (FileHeader::Ptr fileHeader, block_address_t numBlocks)
+bool FAT::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
 {
 	list<Chunk::Ptr> newAllocation = m_spaceManager.allocate (numBlocks);
 
@@ -613,60 +131,50 @@ bool FAT::extend (FileHeader::Ptr fileHeader, block_address_t numBlocks)
 		return false;
 	}
 
-	fileHeader->extend (newAllocation);
-	save ();
+	fileEntry->extend (newAllocation);
+
 	return true;
 }
-	
-void FAT::save () const
+
+int FAT::statFile (const std::string& name, _zebulon_stats* stats)
 {
-	unsigned char block [1024];
-	unsigned char* p = block;
-
-	Serialise::serialise (m_bootTable, p);
-
-	ide_result result = __ide_write (0, block);
-	if (result != OK)
-		printIdeError (result);
-
-	p = block;
-	serialise (p);
-	
-	if (p - block > 400)
+	FileEntry::Ptr file = findFile (name);
+	if (!file.isNull ())
 	{
-		printf (">> FAT size is now %d bytes\n\r", p - block);
-		if ((p - block) > ide_block_size)
-			printf (">>> FAT block is full!!!!\n\r");
+		stats->size = file->size ();
+		stats->sizeOnDisk = file->allocSize ();
+		return 0;
 	}
 
-	result = __ide_write (1, block);	
-	if (result != OK)
-		printIdeError (result);
+	printf (">> file not found\n\r");
+	return -1;
 }
 
-void FAT::load ()
+FileSearch::Ptr FAT::findFirstFile ()
 {
-	unsigned char block [ide_block_size];
-	const unsigned char* p = block;
-	
-	ide_result result = __ide_read (1, block);	
-	if (result != OK) 
-	{
-		printIdeError (result);
-		return ;
-	}
-
-	if (!deserialise (p))
-		return ;
-
-	p = block;
-	
-	result = __ide_read (0, block);	
-	if (result != OK)
-	{
-		printIdeError (result);
-		return ;
-	}
-
-	Serialise::deserialise (m_bootTable, p);
+	return make_shared(new FileSearch (m_fileEntries));
 }
+
+void FAT::diag () const
+{
+	m_spaceManager.diag ();
+
+	printf ("--- files ---\n\r");
+	int n = 0;
+	for (list<FileEntry::Ptr>::const_iterator i = m_fileEntries.begin (); i != m_fileEntries.end (); i++)
+	{
+		printf ("%d\t: %s %d byte(s)\n\r", n, Utils::padFilename ((*i)->name ()).c_str(), (*i)->size ());
+		(*i)->diag ();
+		n++;
+	}
+
+	printf ("\n\r");	
+}
+
+_zebulon_free_space FAT::getFreeSpace () const
+{
+	return m_spaceManager.getFreeSpace ();
+}
+
+}
+
