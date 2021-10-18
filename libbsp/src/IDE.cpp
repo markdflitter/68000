@@ -1,5 +1,5 @@
 #include "../private_include/IDE.h"
-//#include <stdio.h>
+#include <stdio.h>
 
 const unsigned char READ_SECTORS_WITH_RETRY = 0x20;
 const unsigned char WRITE_SECTORS_WITH_RETRY = 0x30;
@@ -317,19 +317,28 @@ IDE::Result  IDE::write (unsigned long LBA, unsigned char data [512])
 {
 	writeRegister (DRIVE_SELECT_REGISTER, MASTER);
 	wait (DRDY);
+	//printf ("DRDY\n\r");
 
 	setLBA (LBA);
+
+	waitNot (BUSY);
+	//printf ("not BUSY1\n\r");
 
 	sendCommand (WRITE_SECTORS_WITH_RETRY);
 
 	waitNot (BUSY);
+	//printf ("not BUSY2\n\r");
 
 	if (hasError ())
 	{
 		return error ();
 	}
 
+	//printf ("wait DRQ\n\r");
+
 	wait (DRQ);
+
+	//printf ("DRQ\n\r");
 
 	for (int i = 0; i < 512; i = i + 2)
 	{
@@ -337,6 +346,14 @@ IDE::Result  IDE::write (unsigned long LBA, unsigned char data [512])
 		__memcpy (&w, &(data [i]), 2);
 
 		writeData (w);
+	}
+
+	waitNot (BUSY);
+	//printf ("not BUSY3\n\r");
+
+	if (hasError ())
+	{
+		return error ();
 	}
 
 	return OK;
