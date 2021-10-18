@@ -73,4 +73,6 @@ extern "C" ide_result __ide_ident (DiskInfo& result);
 extern "C" ide_result __ide_write (unsigned long LBA, unsigned char data [512]);
 extern "C" ide_result __ide_read (unsigned long LBA, unsigned char data [512]);
 
+extern "C" void __set_display (unsigned int num);
+
 #endif
