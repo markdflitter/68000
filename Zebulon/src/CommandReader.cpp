@@ -18,7 +18,7 @@ string getStr (char*& p)
 		count++;
 		p++;
 	}
-	
+
 	char buffer [255];
 	memcpy (buffer, p - count, count);
 	buffer [count] = '\0';
@@ -58,6 +58,13 @@ void CommandReader::loadHistory ()
 	char* p = buffer;
 
 	unsigned int bytesRead = fread (buffer, 1, 512, f);
+	if (!feof (f))
+	{
+		printf (">>> history file is more than 1 block, clearing\n\r");
+		saveHistory ();
+		return ;
+	}
+
 	string readIdent = getStr (p);
 	if (readIdent != HISTORY_IDENT)
 	{
