@@ -3,8 +3,31 @@
 #include <string.h>
 #include <algorithm>
 #include "../private_include/Utils.h"
+#include "../private_include/version.h"
 
 using namespace std;
+
+namespace 
+{
+
+string getStr (char*& p)
+{
+	int count = 0;
+	while (*p != '\n')
+	{
+		count++;
+		p++;
+	}
+	
+	char buffer [255];
+	memcpy (buffer, p - count, count);
+	buffer [count] = '\0';
+
+	p += 2;
+	return string (buffer);
+}
+
+}
 
 namespace Zebulon
 {
@@ -17,18 +40,48 @@ namespace Zebulon
 CommandReader::CommandReader () : m_pos (0)
 {
 	m_p = m_buf;
-	addHistoryItem ("uptime");
-	addHistoryItem ("diag heap");
-	addHistoryItem ("diag filer");
-	addHistoryItem ("history show");
-	addHistoryItem ("exit");
-	addHistoryItem ("restart");
-	addHistoryItem ("help");
-		
 }
 
-void CommandReader::load ()
+void CommandReader::loadHistory ()
 {
+	clearHistory ();
+	FILE* f = fopen (FILENAME, "rb");
+	if (f == 0) 
+	{
+		printf (">>> failed to open history file\n\r");
+		return ;
+	}
+
+	//first buffer special case
+	char buffer [512];
+	memset (buffer, 0, 512);
+	char* p = buffer;
+
+	unsigned int bytesRead = fread (buffer, 1, 512, f);
+	string readIdent = getStr (p);
+	if (readIdent != HISTORY_IDENT)
+	{
+		printf (">>> HISTORY - ident mismatch.  Expected %s, got %s\n\r", HISTORY_IDENT, readIdent.c_str ());
+		return ;
+	}
+
+	string readVersion = getStr (p);
+	if (readVersion != HISTORY_VERSION)
+	{
+		printf (">>> HISTORY - version mismatch.  Expected %s, got %s\n\r", HISTORY_VERSION, readVersion.c_str ());
+		return ;
+	}
+
+	for (; p < buffer + bytesRead; )
+	{
+		string item = getStr (p);
+		m_history.push_back (item);
+		m_pos = m_history.size ();
+	}
+
+	printf ("loaded command history: %d item(s)\n\r", m_history.size ());
+
+	fclose (f);
 }
 
 string CommandReader::read ()
@@ -76,18 +129,24 @@ void CommandReader::showHistory () const
 void CommandReader::clearHistory ()
 {
 	m_history.clear ();
+	m_pos = m_history.size ();
 }
 
-void CommandReader::save () const
+void CommandReader::saveHistory () const
 {
-	return ;
-
-//	if (Utils::file_exists (FILENAME))
-//		if (!_zebulon_delete_file (FILENAME))
-//			printf (">>> failed to deleted history file %s\n\r", FILENAME);
-
 	FILE* f = fopen (FILENAME, "wb");
-	if (f == 0) return ;
+	if (f == 0) 
+	{
+		printf (">>> failed to open history file\n\r");
+		return ;
+	}
+
+	{
+		char buffer [255];
+		string identversion = string (HISTORY_IDENT) + string ("\n\r") + string (HISTORY_VERSION) + string ("\n\r");
+		sprintf (buffer, "%s\n\r", identversion.c_str ());
+		fwrite (buffer, 1, identversion.length (), f);
+	}
 
 	for (list<string>::const_iterator i = m_history.begin (); i != m_history.end (); i++)
 	{
@@ -153,7 +212,7 @@ string CommandReader::addHistoryItem (const std::string& item)
 	m_history.push_back (item);
 	m_pos = m_history.size ();
 
-	save ();
+	saveHistory ();
 
 	return item;
 }

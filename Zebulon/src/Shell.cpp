@@ -425,6 +425,7 @@ int Shell::run () const
 	int result = 0;
 
 	CommandReader commandReader;
+	commandReader.loadHistory ();
 
 	printf ("$ ");
 	

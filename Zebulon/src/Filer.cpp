@@ -113,7 +113,8 @@ int Filer::fopen (const std::string& name, const std::string& mode)
 {
 	file_handle result = file_not_found;
 
-	if (m_FAT.findFile (name).isNull ())
+	FileEntry::Ptr f = m_FAT.findFile (name);
+	if (f.isNull ())
 	{
 		//printf ("file doesn't exist\n\r");
 		if (mode_is (mode, 'w'))
@@ -132,13 +133,15 @@ int Filer::fopen (const std::string& name, const std::string& mode)
 		//printf ("file exists\n\r");
 		if (mode_is (mode, 'w'))
 		{
+			//printf ("truncate file\n\r");
+			f->setSize (0);
 			//printf ("delete and create file\n\r");
-			m_FAT.deleteFile (name);
-	    	m_FAT.createFile (name);
+			//m_FAT.deleteFile (name);
+	    	//m_FAT.createFile (name);
 		}
 	}
 
-	FileEntry::Ptr f = m_FAT.findFile (name);
+	f = m_FAT.findFile (name);
 	if (f.isNull ())
 	{
 		printf (">> file not found\n\r");
