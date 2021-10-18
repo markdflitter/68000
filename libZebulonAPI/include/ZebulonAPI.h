@@ -6,7 +6,7 @@
 
 namespace Zebulon
 {
-	enum TRAP {trap_time = 0, trap_serial_IO = 1, trap_ide = 2, trap_filer = 3, trap_c_IO = 4, trap_file = 5, trap_file_search = 6, trap_boot = 7};
+	enum TRAP {trap_time = 0, trap_serial_IO = 1, trap_ide = 2, trap_filer = 3, trap_c_IO = 4, trap_file = 5, trap_file_search = 6, trap_boot = 7, trap_display = 8};
 	enum serial_IO_operations {serial_IO_write_char = 1, serial_IO_read_char = 2};
 	enum ide_operations {ide_ident = 0, ide_write_block = 1, ide_read_block = 2};
 	enum filer_operations {filer_format = 0, filer_diag = 1, filer_free_space = 2, filer_heap_diag = 3};
@@ -14,6 +14,8 @@ namespace Zebulon
 	enum file_operations {file_stat = 0, file_create = 1, file_delete = 2};
 	enum file_search_operations {file_search_find_first = 0, file_search_find_next = 1, file_search_close = 2};
 	enum boot_operations {boot_boot = 0, boot_index = 1};
+	enum display_operations {display_set = 0};
+
 
 inline unsigned int _zebulon_time ()
 {
@@ -291,6 +293,12 @@ inline void _zebulon_index (_zebulon_boot_table_entry btes [9])
 {
 	trap (trap_boot, trap_params (boot_index, 0, (void*) btes));
 }
+
+inline void _zebulon_set_display (unsigned int num)
+{
+	trap (trap_display, trap_params (display_set, 0, (void*) num));
+}
+
 
 }
 #endif

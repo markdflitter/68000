@@ -84,6 +84,7 @@ void printHelp (void)
 	printf ("help\t\t\t\t - print this help\n\r");
 	printf ("exit\t\t\t\t - exit to monitor\n\r");
 	printf ("restart\t\t\t\t - restart the system\n\r");
+	printf ("display <num>\t\t\t - display a number\n\r");
 	printf ("history show\t\t\t - show command history\n\r");
 	printf ("history clear\t\t\t - clear command history\n\r");
 	printf ("history <n>\t\t\t - fetch history item\n\r");
@@ -452,6 +453,11 @@ int Shell::run () const
 			{
 				exit = 1;
 				result = 1;
+			}
+			if (tokens [0] == "display" && tokens.size () > 1) 
+			{
+				unsigned int num = atol (tokens [1].c_str ());
+				_zebulon_set_display (num);
 			}
 			if (tokens [0] == "diag" && tokens.size () > 1) 
 			{

@@ -235,6 +235,20 @@ void trap7 ()
 	}
 }
 
+// display operations
+void trap8 () __attribute__ ((interrupt));
+void trap8 ()
+{
+	trap_params tp = untrap ();
+
+	switch (tp.opcode)
+	{
+		case display_set: __set_display ((unsigned int) tp.a1);
+		default: break;
+	}
+}
+
+
 void test_heap ()
 {
     heap_diag (true);
@@ -333,6 +347,8 @@ __putstr (banner);
 	v.setVector (37, &trap5);
 	v.setVector (38, &trap6);
 	v.setVector (39, &trap7);
+	v.setVector (40, &trap8);
+
 
 	// detailed diagnostics
 	printf ("installed TRAPs\n\r");

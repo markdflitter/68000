@@ -1,6 +1,7 @@
 #include "../include/bsp.h"
 #include "../private_include/DUART.h"
 #include "../private_include/IDE.h"
+#include "../private_include/Display.h"
 
 DUART& the_duart ()
 {
@@ -78,3 +79,15 @@ ide_result __ide_read (unsigned long LBA, unsigned char data [512])
 {
 	return (ide_result) the_ide ().read (LBA, data);
 }
+
+Display& the_display ()
+{
+ 	static Display d;
+	return d;
+}
+
+void __set_display (unsigned int num)
+{
+	the_display ().setNumber (num);
+}
+
