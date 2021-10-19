@@ -53,11 +53,11 @@ void CommandReader::loadHistory ()
 	}
 
 	//first buffer special case
-	char buffer [512];
-	memset (buffer, 0, 512);
+	char buffer [block_size];
+	memset (buffer, 0, block_size);
 	char* p = buffer;
 
-	unsigned int bytesRead = fread (buffer, 1, 512, f);
+	unsigned int bytesRead = fread (buffer, 1, block_size, f);
 	if (!feof (f))
 	{
 		printf (">>> history file is more than 1 block, clearing\n\r");

@@ -1,5 +1,6 @@
 #include "../private_include/FileEntry.h"
 #include <stdio.h>
+#include <bsp.h>
 
 using namespace std;
 
@@ -36,7 +37,7 @@ unsigned long FileEntry::allocSize () const
 	unsigned long result = 0;
 
 	for (list<Chunk::Ptr>::const_iterator i = m_chunks.begin (); i != m_chunks.end (); i++)
-		result = result + (*i)->length * 512;
+		result = result + (*i)->length * ide_block_size;
 	
 	return result;
 }

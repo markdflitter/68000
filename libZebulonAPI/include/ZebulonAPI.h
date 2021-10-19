@@ -37,6 +37,8 @@ inline int _zebulon_getch ()
 	return result;
 }
 
+const unsigned int block_size = 512;
+
 enum ide_result {IDE_OK = 0x0, IDE_AMNF = 0x1, IDE_TK0NF = 0x2, IDE_ABRT = 0x4, IDE_MCR = 0x8,
 				IDE_IDNF = 0x10, IDE_MC = 0x20, IDE_UNC = 0x40, IDE_BBK = 0x80};
 
@@ -96,14 +98,14 @@ inline unsigned int _zebulon_ide_ident (DiskInfo& info)
 	return result;
 }
 
-inline unsigned int _zebulon_ide_read_block (unsigned long block, unsigned char data [512])
+inline unsigned int _zebulon_ide_read_block (unsigned long block, unsigned char data [block_size])
 {
 	volatile unsigned int result;
 	trap (trap_ide, trap_params (ide_read_block, &result, (const void*) block, data));
 	return result;
 }
 
-inline unsigned int _zebulon_ide_write_block (unsigned long block, unsigned char data [512])
+inline unsigned int _zebulon_ide_write_block (unsigned long block, unsigned char data [block_size])
 {
 	volatile unsigned int result;
 	trap (trap_ide, trap_params (ide_write_block, &result, (const void*) block, data));

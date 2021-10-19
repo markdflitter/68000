@@ -356,7 +356,7 @@ __putstr (banner);
 	::DiskInfo info;
 	if (__ide_ident (info) == ::IDE_OK)
 	{
-		double capacity = ((double) info.totalNumOfUserSectors) * 512 / 1000000000;
+		double capacity = ((double) info.totalNumOfUserSectors) * ide_block_size / 1000000000;
 		printf ("identified %s (%d Gb)\n\r", info.modelNumber, (unsigned long) capacity);
 		printf (" serial number\t\t: %s\n\r",info.serialNumber);
 		printf (" firmware revision\t: %s\n\r",info.firmwareRevision);

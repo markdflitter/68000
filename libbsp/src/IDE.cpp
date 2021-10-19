@@ -312,7 +312,7 @@ void IDE::setLBA (unsigned long LBA)
 }
 
 
-IDE::Result  IDE::write (unsigned long LBA, unsigned char data [512])
+IDE::Result  IDE::write (unsigned long LBA, unsigned char data [ide_block_size])
 {
 	writeRegister (DRIVE_SELECT_REGISTER, MASTER);
 	wait (DRDY);
@@ -339,7 +339,7 @@ IDE::Result  IDE::write (unsigned long LBA, unsigned char data [512])
 
 	//printf ("DRQ\n\r");
 
-	for (int i = 0; i < 512; i = i + 2)
+	for (int i = 0; i < ide_block_size; i = i + 2)
 	{
 		unsigned short w;
 		__memcpy (&w, &(data [i]), 2);
@@ -358,7 +358,7 @@ IDE::Result  IDE::write (unsigned long LBA, unsigned char data [512])
 	return OK;
 }
 
-IDE::Result IDE::read (unsigned long LBA, unsigned char data [512])
+IDE::Result IDE::read (unsigned long LBA, unsigned char data [ide_block_size])
 {
 	writeRegister (DRIVE_SELECT_REGISTER, MASTER);
 	wait (DRDY);
@@ -376,7 +376,7 @@ IDE::Result IDE::read (unsigned long LBA, unsigned char data [512])
 
 	wait (DRQ);
 
-	for (int i = 0; i < 512; i = i + 2)
+	for (int i = 0; i < ide_block_size; i = i + 2)
 	{
 		unsigned short w = readData ();
 		__memcpy (&(data [i]),&w, 2);

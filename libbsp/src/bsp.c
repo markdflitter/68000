@@ -95,12 +95,12 @@ ide_result __ide_ident (DiskInfo& diskInfo)
 	return (ide_result) the_ide ().ident (diskInfo);
 }
 
-ide_result __ide_write (unsigned long LBA, unsigned char data [512])
+ide_result __ide_write (unsigned long LBA, unsigned char data [ide_block_size])
 {
 	return (ide_result) the_ide ().write (LBA, data);
 }
 
-ide_result __ide_read (unsigned long LBA, unsigned char data [512])
+ide_result __ide_read (unsigned long LBA, unsigned char data [ide_block_size])
 {
 	return (ide_result) the_ide ().read (LBA, data);
 }

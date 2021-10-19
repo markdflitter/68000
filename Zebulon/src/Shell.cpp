@@ -192,12 +192,12 @@ void disk_read (unsigned long block)
 {
 	printf ("reading block %d\n\r", block);
 
-	unsigned char buffer [512];
-	memset (buffer, '\0', 512);
+	unsigned char buffer [block_size];
+	memset (buffer, '\0', block_size);
 
 	unsigned int result = _zebulon_ide_read_block (block, buffer);
 	if (result == Zebulon::IDE_OK)
-		printBuffer (buffer, 512, 0, false);
+		printBuffer (buffer, block_size, 0, false);
 	else
 		printf (">>> read error 0x%x\n\r", result);
 }
@@ -206,8 +206,8 @@ void disk_write (unsigned long block, unsigned char pattern)
 {
 	printf ("writing block %d\n\r", block);
 
-	unsigned char buffer [512];
-	memset (buffer, pattern, 512);
+	unsigned char buffer [block_size];
+	memset (buffer, pattern, block_size);
 
 	unsigned int result = _zebulon_ide_write_block (block, buffer);
 	if (result == Zebulon::IDE_OK)
@@ -313,10 +313,10 @@ void read_file (const string& filename)
 	unsigned long address = 0;	
 	while (!feof (f))
 	{
-		unsigned char buffer [512];
-		memset (buffer, 0, 512);
+		unsigned char buffer [block_size];
+		memset (buffer, 0, block_size);
 
-		unsigned int bytesRead = fread (buffer, 1, 512, f);
+		unsigned int bytesRead = fread (buffer, 1, block_size, f);
 		address = printBuffer (buffer, bytesRead, address, false);
 	}
 
@@ -383,8 +383,8 @@ void save (const string& filename, unsigned char bootslot)
 	printf (" start 0x%x end 0x%x start 0x%x\n\r", loadAddress, end, startAddress);
 
 	unsigned long length = end - loadAddress;
-	unsigned long blocks = length / 512;
-	if ((length % 512) != 0) blocks++;
+	unsigned long blocks = length / block_size;
+	if ((length % block_size) != 0) blocks++;
 	
 	if (Utils::file_exists (filename))
 		if (_zebulon_delete_file (filename.c_str ()))
@@ -405,7 +405,7 @@ void save (const string& filename, unsigned char bootslot)
 	timer t;
 	while (bytesLeftToWrite > 0)
 	{
-		unsigned long bytesThisTime = min (bytesLeftToWrite, 512);
+		unsigned long bytesThisTime = min (bytesLeftToWrite, block_size);
 
 		fwrite (p, 1, bytesThisTime, f);
 		bytesLeftToWrite -= bytesThisTime;

@@ -15,8 +15,8 @@ public:
 
 	Result ident (DiskInfo& result);
 
-	Result write (unsigned long LBA, unsigned char data [512]);
-	Result read (unsigned long LBA, unsigned char data [512]);
+	Result write (unsigned long LBA, unsigned char data [ide_block_size]);
+	Result read (unsigned long LBA, unsigned char data [ide_block_size]);
 private:
 	MC68230 m_controller;
 

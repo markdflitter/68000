@@ -3,6 +3,7 @@
 
 #include <shared_ptr>
 #include "FileEntry.h"
+#include <bsp.h>
 
 namespace Zebulon
 {
@@ -33,7 +34,7 @@ private:
 	unsigned char* copyFromBuffer (unsigned char* data, unsigned long bytesToCopy);
 	const unsigned char* copyToBuffer (const unsigned char* data, unsigned long bytesToCopy);
 	
-	unsigned char m_buffer [512];
+	unsigned char m_buffer [ide_block_size];
 	unsigned char* m_bufferPointer;
 	
 	FileEntry::Ptr m_fileEntry;

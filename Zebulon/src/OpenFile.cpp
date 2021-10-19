@@ -217,7 +217,7 @@ void OpenFile::setFilePointer (unsigned long filePointer)
 
 		m_bufferLoaded = false;
 		
-		m_bufferPointer = m_buffer + (filePointer % 512);
+		m_bufferPointer = m_buffer + (filePointer % ide_block_size);
 		//printf ("set buffer pointer to %d\n\r", m_bufferPointer - m_buffer);
 	}
 

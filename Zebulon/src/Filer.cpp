@@ -292,7 +292,7 @@ _zebulon_free_space Filer::getFreeSpace () const
 
 void Filer::do_load ()
 {
-	unsigned char block [512];
+	unsigned char block [ide_block_size];
 	const unsigned char* p = block;
 	
 	{
@@ -340,7 +340,7 @@ void Filer::do_save () const
 	if (p - block > 400)
 	{
 		printf (">> FAT size is now %d bytes\n\r", p - block);
-		if ((p - block) > 512)
+		if ((p - block) > ide_block_size)
 			printf (">>> FAT block is full!!!!\n\r");
 	}
 
