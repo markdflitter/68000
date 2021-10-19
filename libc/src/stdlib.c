@@ -4,7 +4,7 @@
 #include <bsp.h>
 #include <string.h>
 
-extern char __end;
+extern char __end[];
 
 // 64K is yer lot
 #define MAX_HEAP_SIZE 0x10000
@@ -92,7 +92,7 @@ inline void dump_memory (char* p, unsigned int length)
 
 char* initialiseHeap ()
 {
-	char* p = &__end;
+	char* p = &__end[0];
 	memset (p, 0xff, MAX_HEAP_SIZE);
 
 	char buf [255];
@@ -106,7 +106,7 @@ char* initialiseHeap ()
 	//empty block
 	block_len (*next_block (p)) = MAX_HEAP_SIZE - sentinelBlockSize;
 	 *next_block (*next_block (p)) = 0;
-   	dump_memory (&__end, 16);
+   	dump_memory (&__end[0], 16);
 
 	return p;
 }
