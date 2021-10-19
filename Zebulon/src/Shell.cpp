@@ -17,9 +17,9 @@ using namespace std;
 using namespace Zebulon;
 using namespace mdf;
 
-extern char* __begin;
-extern char* __end;
-extern char* start;
+extern char __begin[];
+extern char __end[];
+extern char start[];
 
 namespace {
 
@@ -376,9 +376,9 @@ void save (const string& filename, unsigned char bootslot)
 
 	printf ("saving to file '%s' in boot slot %d\n\r", filename.c_str (), bootslot);
 
-	static unsigned char* loadAddress = (unsigned char*) &__begin;
-	static unsigned char* end = (unsigned char*) &__end;
-	static unsigned char* startAddress = (unsigned char*) &start;
+	static unsigned char* loadAddress = (unsigned char*) &__begin[0];
+	static unsigned char* end = (unsigned char*) &__end[0];
+	static unsigned char* startAddress = (unsigned char*) &start[0];
 
 	printf (" start 0x%x end 0x%x start 0x%x\n\r", loadAddress, end, startAddress);
 

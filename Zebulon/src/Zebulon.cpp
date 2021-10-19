@@ -21,7 +21,7 @@ const char* banner =
 " /     |___ |___/  \\___/  |___ \\___/  |   \\|\n\r"
 "/____| _____________________________________\n\r\n\r";
 
-extern char __vector_table;
+extern char __vector_table[];
 
 static unsigned int ticks = 0;
 static double tickIntervalInMs = 0.0;
@@ -316,7 +316,7 @@ int main ()
 {
 __putstr (banner);	
 
-	unsigned char* vectorBaseAddress = (unsigned char*) &__vector_table;
+	unsigned char* vectorBaseAddress = (unsigned char*) &__vector_table[0];
 	{
 		char buf [200];
 		sprintfn (buf, 200, "initialising vector table at 0x%x\n\r", vectorBaseAddress);

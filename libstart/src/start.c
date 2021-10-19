@@ -5,12 +5,12 @@ extern int main (void);
 
 typedef void (*f) (void);
 
-extern char __bss_begin;
-extern char __bss_end;
+extern char __bss_begin[];
+extern char __bss_end[];
 
 void clear_bss ()
 {
-	for (char* p = &__bss_begin; p != &__bss_end; p++)
+	for (char* p = &__bss_begin[0]; p != &__bss_end[0]; p++)
 		*p = 0;
 }
 
