@@ -7,6 +7,7 @@ INSTALLED_INCLUDE_DIRECTORY := $(INSTALL_DIRECTORY)/include
 
 SRC_DIRECTORY := src
 SRC_INCLUDE_DIRECTORY := include
+SRC_PRIVATE_INCLUDE_DIRECTORY := private_include
 BUILD_DIRECTORY := bld
 OBJECT_DIRECTORY := $(BUILD_DIRECTORY)/obj
 
@@ -23,18 +24,18 @@ ASFLAGS := -m68010
 AR := m68k-elf-ar
 ARFLAGS := -rcs
 OBJCOPY := m68k-elf-objcopy 
-OBJCOPY_FLAGS := -O srec --srec-len=64
+OBJCOPY_FLAGS := -O srec --srec-len=255
 
 STTY := stty
 TTY := /dev/ttyS1
 BAUD := 115200
 CAT := cat
 
-LINK_LINE := -lc -lgcc
+LINK_LINE := -lgcc -lc -lmdf -lcpp -lbsp -lc -lbsp -lgcc -Wl,--whole-archive -litanium -lcrt -lstart -Wl,--no-whole-archive
 
 #top level build targets
 TOP_LEVEL_TARGET := Zebulon
-DEPENDENCIES := libbsp libZebulon libc libitanium libcpp libmdf libstart libcrt
+DEPENDENCIES := libbsp libZebulonAPI libc libitanium libcpp libmdf libstart libcrt
 
 #find the source files and which object files they produce
 SRC_FILES := $(wildcard $(SRC_DIRECTORY)/*.c $(SRC_DIRECTORY)/*.cpp $(SRC_DIRECTORY)/*.s)
@@ -60,6 +61,9 @@ else
 endif
 BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(BUILD_TARGET))
 
+VERSION_FILE := $(SRC_PRIVATE_INCLUDE_DIRECTORY)/version.h
+NEXT_VERSION = $(shell expr $$(awk '/\#define BUILD_NUM/' $(VERSION_FILE) | tr -cd "[0-9]") + 1)
+
 .DEFAULT_GOAL := all
 
 #top level rules
@@ -74,12 +78,9 @@ copy:
 	make -C $(TOP_LEVEL_TARGET) _copy
 
 all: $(TOP_LEVEL_TARGET)
-
-$(TOP_LEVEL_TARGET): build_dependencies
 	make -C $(TOP_LEVEL_TARGET) _all
 
-HelloWorld: build_dependencies
-	make -C HelloWorld _all
+$(TOP_LEVEL_TARGET): build_dependencies
 
 build_dependencies:
 	$(foreach file, $(DEPENDENCIES), make -C $(file) _all && make -C $(file) _install;)
@@ -119,6 +120,9 @@ $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.s
 
 .PRECIOUS: %.out
 %.out : $(LINK_FILES) $(SRC_FILES)
+	sed -i "s/#define BUILD_NUM .*/#define BUILD_NUM \"$(NEXT_VERSION)\"/" $(VERSION_FILE)	
+	sed -i "s/#define BUILD_DATE.*/#define BUILD_DATE \"$$(date +'%d %B %Y')\"/" $(VERSION_FILE)
+	sed -i "s/#define BUILD_TIME.*/#define BUILD_TIME \"$$(date +'%H:%M:%S')\"/" $(VERSION_FILE)
 	$(CC) $(SRC_FILES) -o $@ $(CFLAGS) $(LINK_LINE) -Wl,--script=$(LINK_FILES)
 
 _install: $(INSTALLED_HEADER_FILES) $(INSTALLED_TARGET)

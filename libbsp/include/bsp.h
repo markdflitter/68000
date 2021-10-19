@@ -3,6 +3,11 @@
 
 #include <size_t.h>
 
+extern "C" void __init ();
+
+extern "C" void* __memset (void* ptr, int value, size_t num);
+extern "C" void* __memcpy (void* destination, const void* source, size_t num);
+
 extern "C" void __putch (char c);
 extern "C" void __putstr (const char* s);
 extern "C" char __getch ();

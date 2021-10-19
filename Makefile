@@ -24,7 +24,7 @@ ASFLAGS := -m68010
 AR := m68k-elf-ar
 ARFLAGS := -rcs
 OBJCOPY := m68k-elf-objcopy 
-OBJCOPY_FLAGS := -O srec --srec-len=64
+OBJCOPY_FLAGS := -O srec --srec-len=255
 
 STTY := stty
 TTY := /dev/ttyS1

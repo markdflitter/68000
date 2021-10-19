@@ -24,7 +24,7 @@ ASFLAGS := -m68010
 AR := m68k-elf-ar
 ARFLAGS := -rcs
 OBJCOPY := m68k-elf-objcopy 
-OBJCOPY_FLAGS := -O srec --srec-len=64
+OBJCOPY_FLAGS := -O srec --srec-len=255
 
 STTY := stty
 TTY := /dev/ttyS1
@@ -78,9 +78,9 @@ copy:
 	make -C $(TOP_LEVEL_TARGET) _copy
 
 all: $(TOP_LEVEL_TARGET)
+	make -C $(TOP_LEVEL_TARGET) _all
 
 $(TOP_LEVEL_TARGET): build_dependencies
-	make -C $(TOP_LEVEL_TARGET) _all
 
 build_dependencies:
 	$(foreach file, $(DEPENDENCIES), make -C $(file) _all && make -C $(file) _install;)
