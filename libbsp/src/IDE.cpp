@@ -1,5 +1,4 @@
 #include "../private_include/IDE.h"
-#include <stdio.h>
 
 const unsigned char READ_SECTORS_WITH_RETRY = 0x20;
 const unsigned char WRITE_SECTORS_WITH_RETRY = 0x30;

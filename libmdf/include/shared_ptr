@@ -1,5 +1,5 @@
-#ifndef SHAREDPTR_H
-#define SHAREDPTR_H
+#ifndef SHAREDPTR
+#define SHAREDPTR
 
 namespace mdf
 {

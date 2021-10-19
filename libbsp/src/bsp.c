@@ -3,7 +3,7 @@
 #include "../private_include/IDE.h"
 #include "../private_include/Display.h"
 
-void* __memset (void* ptr, int value, size_t num)
+void* __memset (void* ptr, int value, unsigned int num)
 {
 	unsigned char* p = (unsigned char*) ptr;
 
@@ -13,7 +13,7 @@ void* __memset (void* ptr, int value, size_t num)
 	return p;
 }
 
-void* __memcpy (void* destination, const void* source, size_t num)
+void* __memcpy (void* destination, const void* source, unsigned int num)
 {
 	unsigned char* d = (unsigned char*) destination;
 	const unsigned char* s = (unsigned char*) source;

@@ -1,5 +1,5 @@
-#ifndef ALGORITHM_INCLUDED
-#define ALGORITHM_INCLUDED
+#ifndef ALGORITHM
+#define ALGORITHM
 
 namespace std
 {

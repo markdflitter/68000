@@ -1,9 +1,8 @@
-#ifndef COMMANDREADER_INCLUDED
-#define COMMANDREADER_INCLUDED
+#ifndef COMMANDREADER_H
+#define COMMANDREADER_H
 
 #include <string>
 #include <list>
-
 
 namespace Zebulon
 {

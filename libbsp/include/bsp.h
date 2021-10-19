@@ -1,12 +1,10 @@
 #ifndef BSP_H
 #define BSP_H
 
-#include <size_t.h>
-
 extern "C" void __init ();
 
-extern "C" void* __memset (void* ptr, int value, size_t num);
-extern "C" void* __memcpy (void* destination, const void* source, size_t num);
+extern "C" void* __memset (void* ptr, int value, unsigned int num);
+extern "C" void* __memcpy (void* destination, const void* source, unsigned int num);
 
 extern "C" void __putch (char c);
 extern "C" void __putstr (const char* s);
@@ -65,7 +63,7 @@ struct DiskInfo {
 	unsigned char multiwordDmaModesActive;
 };
 
-const size_t ide_block_size = 512;
+const unsigned int ide_block_size = 512;
 
 enum ide_result {IDE_OK = 0x0, IDE_AMNF = 0x1, IDE_TK0NF = 0x2, IDE_ABRT = 0x4, IDE_MCR = 0x8,
 				IDE_IDNF = 0x10, IDE_MC = 0x20, IDE_UNC = 0x40, IDE_BBK = 0x80};

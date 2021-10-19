@@ -1,4 +1,4 @@
-#include "../include/timer"
+#include "../include/timer.h"
 
 namespace mdf
 {

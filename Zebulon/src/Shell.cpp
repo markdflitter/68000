@@ -9,7 +9,7 @@
 #include <ZebulonAPI.h>
 #include "../private_include/Utils.h"
 #include "../private_include/version.h"
-#include <timer>
+#include <timer.h>
 #include <algorithm>
 #include "../private_include/CommandReader.h"
 

@@ -1,9 +1,9 @@
 #include "../include/stdlib.h"
 #include "../include/ctype.h"
 #include "../include/stdio.h"
-#include <bsp.h>
-#include <string.h>
+#include "../include/string.h"
 
+#include <bsp.h>
 extern char __end[];
 
 // 64K is yer lot

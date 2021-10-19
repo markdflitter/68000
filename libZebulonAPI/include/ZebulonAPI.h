@@ -2,7 +2,6 @@
 #define ZEBULONAPI_H
 
 #include "TrapHelper.h"
-#include <stdio.h>
 
 namespace Zebulon
 {
