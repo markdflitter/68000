@@ -20,6 +20,8 @@ void BootTable::clear ()
 {
 	m_entries.clear ();
 	m_entries.reserve (9);
+	for (int i = 0; i < 9; i++)
+		m_entries [i] = make_shared (new BootTableEntry ());
 }
 
 

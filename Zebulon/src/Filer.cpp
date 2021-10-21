@@ -66,6 +66,12 @@ int Filer::format (int diskSize)
   	m_bootTable.clear ();
  	int result = m_FAT.initialise (diskSize);
 
+ 	if (!createFile (".BootTable", 1, true))
+		printf (">>> failed to create boot table\n\r");
+
+ 	if (!createFile (".FAT", 1, true))
+		printf (">>> failed to create FAT\n\r");
+
 	do_save ();
 
 	return result;

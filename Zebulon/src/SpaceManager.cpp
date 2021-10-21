@@ -25,7 +25,7 @@ int SpaceManager::initialise (int initialSize)
 	m_totalSpace = initialSize;
 
 	m_free.clear ();
-	m_free.push_back (make_shared (new Chunk (2, initialSize - 2)));
+	m_free.push_back (make_shared (new Chunk (0, initialSize - 2)));
 
 	return initialSize;
 }

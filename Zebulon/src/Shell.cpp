@@ -99,7 +99,7 @@ void printHelp (void)
 	printf ("filer format\t\t\t - format the filing system\n\r");
 	printf ("filer diag\t\t\t - print filing system diagnostics\n\r");
 	printf ("filer space\t\t\t - print filing system free space\n\r");
-	printf ("filer ls\t\t\t - list files\n\r");
+	printf ("filer ls {all}\t\t - list {all} files\n\r");
 	printf ("filer index\t\t\t - print boot table\n\r");
 	printf ("filer file read <filename>\t - read file\n\r");
 	printf ("filer file write <filename>\t - write file\n\r");
@@ -241,13 +241,12 @@ void disk_soak ()
 
 void format_filer ()
 {
-	printf ("formatting...");
+	printf ("formatting...\n\r");
 
 	int result = _zebulon_filer_format ();
 	if (result >= 0)
 	{
-		printf ("OK\n\r");
-		printf ("chunks = %d\n\r",result);
+		printf ("OK.  chunks = %d\n\r",result);
 	}
 	else
 		printf ("Failed\n\r");
@@ -266,7 +265,7 @@ void free_space_filer ()
 }
 
 void stat_file (const string& filename);
-void ls_filer ()
+void ls_filer (bool all)
 {
 	char buffer [FILENAME_BUFFER_SIZE];
 
@@ -275,9 +274,12 @@ void ls_filer ()
 	int numFiles = 0;
 	while (sh > -1)
 	{
-		stat_file (buffer);
-	
-		numFiles++;
+		if (all || buffer [0] != '.')
+		{	
+			stat_file (buffer);
+			numFiles++;
+		}
+
 		bool result = _zebulon_find_next_file (sh, buffer);
 		if (!result) 
 		{
@@ -529,7 +531,10 @@ int Shell::run () const
 				}
 				if (tokens [1] == "ls")
 				{
-					ls_filer ();
+					bool all = false;
+					if (tokens.size () > 2)
+						all = tokens [2] == "all";
+					ls_filer (all);
 				}
 				if (tokens [1] == "index")
 				{
