@@ -2,9 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <bsp.h>
+#include <algorithm>
 #include "../private_include/Utils.h"
 
 using namespace mdf;
+using namespace std;
 
 namespace
 {
@@ -366,21 +368,58 @@ void Filer::do_save ()
 			FATBlocks++;
 	
 		m_FAT.rightsizeFile (FAT, FATBlocks);
-	
+
+
 		p = buffer;
 		m_FAT.serialise (p, false);
 	
-		if (p - buffer > 400)
+		//if (p - buffer > 400)
+		//{
+		//	printf (">> FAT size is now %d bytes\n\r", p - buffer);
+		//	if ((p - buffer) > ide_block_size)
+		//		printf (">>> FAT block is full!!!!\n\r");
+		//}
+
+		list<Chunk::Ptr> chunks = FAT->chunks ();
+		list<Chunk::Ptr>::iterator i = chunks.begin ();
+
+		unsigned int block = (*i)->start;
+
+		file_handle f = fopen (FAT->name (), "wb");
+		if (f == 0) 
 		{
-			printf (">> FAT size is now %d bytes\n\r", p - buffer);
-			if ((p - buffer) > ide_block_size)
-				printf (">>> FAT block is full!!!!\n\r");
+			printf (">>> failed to open FAT!");
+			return ;
+		}
+	
+		while (p < buffer + size)
+		{
+			unsigned int bytesThisTime = min (ide_block_size - sizeof (unsigned int), buffer + size - p);
+			fwrite (f, p, bytesThisTime);
+			p += bytesThisTime;
+;
+			if (bytesThisTime < ide_block_size - sizeof (unsigned int))
+			{
+				char padding [ide_block_size];	
+				memset (&padding, 0, ide_block_size);
+				fwrite (f, (const unsigned char*) padding, ide_block_size - sizeof (unsigned int) - bytesThisTime);
+			}
+			
+			if (block < (*i)->start + (*i)->length)
+				block++;
+			else
+			{
+				i++;
+				if (i == chunks.end ())
+					block = 0;
+				else			
+					block = (*i)->start;
+			}
+
+			fwrite (f, (const unsigned char*) &block, sizeof (block));
 		}
 
-	::ide_result result = __ide_write (1, buffer);	
-		if (result != ::IDE_OK)
-			Utils::printIdeError (result);
-
+		fclose (f);
 		delete buffer;
 	}
 }
