@@ -367,6 +367,7 @@ __putstr (banner);
 
 	theFiler ().load ();
 
+	printf ("\n\r");
 	heap_diag (false);
 	
 	int result = Shell ().run ();
