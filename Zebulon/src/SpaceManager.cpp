@@ -56,10 +56,10 @@ void SpaceManager::deallocate (std::list<Chunk::Ptr>& chunks)
 	m_free.splice (m_free.end (), chunks);
 }
 
-void SpaceManager::serialise (unsigned char*& p) const
+void SpaceManager::serialise (unsigned char*& p, bool sizeOnly) const
 {
-	Serialise::serialise (m_totalSpace, p);
-	Serialise::serialise (m_free, p);
+	Serialise::serialise (m_totalSpace, p, sizeOnly);
+	Serialise::serialise (m_free, p, sizeOnly);
 }
 
 void SpaceManager::deserialise (const unsigned char*& p)

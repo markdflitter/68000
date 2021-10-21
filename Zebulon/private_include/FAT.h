@@ -13,7 +13,7 @@ class FAT
 public:
 	int initialise (int diskSize);
 
-	void serialise (unsigned char*& p) const;
+	void serialise (unsigned char*& p, bool sizeOnly) const;
 	bool deserialise (const unsigned char*& p);
 
 	FileEntry::Ptr findFile (const std::string& name);

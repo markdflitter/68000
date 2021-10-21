@@ -20,7 +20,7 @@ public:
 
 	void index (_zebulon_boot_table_entry btes[9]) const;
 
-	void serialise (unsigned char*& p) const;
+	void serialise (unsigned char*& p, bool sizeOnly) const;
 	bool deserialise (const unsigned char*& p);
 
 	void diag () const;

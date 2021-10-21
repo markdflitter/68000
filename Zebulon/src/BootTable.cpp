@@ -73,9 +73,9 @@ void BootTable::index (_zebulon_boot_table_entry btes[9]) const
 	}
 }
 
-void BootTable::serialise (unsigned char*& p) const
+void BootTable::serialise (unsigned char*& p, bool sizeOnly) const
 {
-	Serialise::serialise (m_entries, p);
+	Serialise::serialise (m_entries, p, sizeOnly);
 }
 
 bool BootTable::deserialise (const unsigned char*& p)

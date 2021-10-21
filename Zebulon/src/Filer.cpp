@@ -326,7 +326,7 @@ void Filer::do_save () const
 	unsigned char block [1024];
 	unsigned char* p = block;
 
-	m_bootTable.serialise (p);
+	m_bootTable.serialise (p, false);
 
 	{
 		::ide_result result = __ide_write (0, block);
@@ -335,7 +335,7 @@ void Filer::do_save () const
 	}
 
 	p = block;
-	m_FAT.serialise (p);
+	m_FAT.serialise (p, false);
 	
 	if (p - block > 400)
 	{

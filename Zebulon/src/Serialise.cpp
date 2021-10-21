@@ -18,9 +18,9 @@ void copyFrom (unsigned char* dest, const unsigned char*& src, size_t numBytes)
 	inc_p (src, numBytes);
 }
 
-void copyTo (unsigned char*& dest, const unsigned char* src, size_t numBytes)
+void copyTo (unsigned char*& dest, const unsigned char* src, size_t numBytes, bool sizeOnly)
 {
-	memcpy (dest, src, numBytes);
+	if (!sizeOnly) memcpy (dest, src, numBytes);
 	inc_p (dest, numBytes);
 }
 
@@ -29,43 +29,43 @@ void copyTo (unsigned char*& dest, const unsigned char* src, size_t numBytes)
 namespace Zebulon
 {
 
-void Serialise::serialise (unsigned long l, unsigned char*& p)
+void Serialise::serialise (unsigned long l, unsigned char*& p, bool sizeOnly)
 {
 	size_t sz = sizeof (l);
-	copyTo (p, (const unsigned char*) &l, sz); 
+	copyTo (p, (const unsigned char*) &l, sz, sizeOnly); 
 }
 
-void Serialise::serialise (const string& s, unsigned char*& p)
+void Serialise::serialise (const string& s, unsigned char*& p, bool sizeOnly)
 {
 	size_t sz = s.length ();
-	serialise (sz, p);	
-	copyTo (p, (const unsigned char*) s.c_str (), sz);
+	serialise (sz, p, sizeOnly);	
+	copyTo (p, (const unsigned char*) s.c_str (), sz, sizeOnly);
 }
 
-void Serialise::serialise (Chunk::Ptr chunk, unsigned char*& p)
+void Serialise::serialise (Chunk::Ptr chunk, unsigned char*& p, bool sizeOnly)
 {
 	size_t sz = sizeof (*chunk);
-	copyTo (p, (const unsigned char*) chunk.get_raw (), sz);
+	copyTo (p, (const unsigned char*) chunk.get_raw (), sz, sizeOnly);
 }
 
-void Serialise::serialise (BootTableEntry::Ptr bte, unsigned char*& p)
+void Serialise::serialise (BootTableEntry::Ptr bte, unsigned char*& p, bool sizeOnly)
 {
 	if (bte.isNull ()) bte = mdf::make_shared (new BootTableEntry ());
 
-	serialise ((unsigned long) bte->empty, p);
-	serialise (bte->shortName, p);
-	serialise ((unsigned long) 0, p);
-	serialise ((unsigned long) bte->length, p);
-	serialise ((unsigned long) bte->loadAddress, p);
-	serialise ((unsigned long) bte->startAddress, p);
-	serialise ((unsigned long) bte->startBlock, p);
+	serialise ((unsigned long) bte->empty, p, sizeOnly);
+	serialise (bte->shortName, p, sizeOnly);
+	serialise ((unsigned long) 0, p, sizeOnly);
+	serialise ((unsigned long) bte->length, p, sizeOnly);
+	serialise ((unsigned long) bte->loadAddress, p, sizeOnly);
+	serialise ((unsigned long) bte->startAddress, p, sizeOnly);
+	serialise ((unsigned long) bte->startBlock, p, sizeOnly);
 }
 
-void Serialise::serialise (FileEntry::Ptr file, unsigned char*& p)
+void Serialise::serialise (FileEntry::Ptr file, unsigned char*& p, bool sizeOnly)
 {
-	serialise (file->name (), p);
-	serialise (file->size (), p);
-	serialise (file->chunks (), p);
+	serialise (file->name (), p, sizeOnly);
+	serialise (file->size (), p, sizeOnly);
+	serialise (file->chunks (), p, sizeOnly);
 }
 
 

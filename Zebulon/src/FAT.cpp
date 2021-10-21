@@ -19,15 +19,15 @@ int FAT::initialise (int diskSize)
 	return result;
 }
 
-void FAT::serialise (unsigned char*& p) const
+void FAT::serialise (unsigned char*& p, bool sizeOnly) const
 {
-	Serialise::serialise (FAT_IDENT, p);
-	Serialise::serialise (FAT_VERSION, p);
-	//Serialise::serialise ((unsigned long) m_lastIndex, p);
+	Serialise::serialise (FAT_IDENT, p, sizeOnly);
+	Serialise::serialise (FAT_VERSION, p, sizeOnly);
+	//Serialise::serialise ((unsigned long) m_lastIndex, p, sizeOnly);
 
-	m_spaceManager.serialise (p);
+	m_spaceManager.serialise (p, sizeOnly);
 
-	Serialise::serialise (m_fileEntries, p);	
+	Serialise::serialise (m_fileEntries, p, sizeOnly);	
 }
 
 bool FAT::deserialise (const unsigned char*& p)
@@ -167,6 +167,11 @@ void FAT::diag () const
 		(*i)->diag ();
 		n++;
 	}
+
+	printf ("\n\r");	
+	unsigned char* p = 0;
+	serialise (p, true);
+	printf ("FAT size %d byte(s)\n\r", (unsigned int) p);
 
 	printf ("\n\r");	
 }

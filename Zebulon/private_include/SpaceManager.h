@@ -16,7 +16,7 @@ public:
 	std::list <Chunk::Ptr> allocate (unsigned long size, bool contiguous = false);
 	void deallocate (std::list<Chunk::Ptr>& chunks);
 
-	void serialise (unsigned char*& p) const;
+	void serialise (unsigned char*& p, bool sizeOnly) const;
 	void deserialise (const unsigned char*& p);
 
 	void diag () const;

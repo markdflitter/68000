@@ -14,42 +14,42 @@ namespace Zebulon
 class Serialise
 {
 public:
-	static void serialise (unsigned long l, unsigned char*& p);
-	static void serialise (const std::string& s, unsigned char*& p);
-	static void serialise (Chunk::Ptr chunk, unsigned char*& p);
-	static void serialise (FileEntry::Ptr file, unsigned char*& p);
-	static void serialise (BootTableEntry::Ptr bte, unsigned char*& p);
-	template <class T> static void serialise (const std::list<T>& list, unsigned char*& p)
+	static void serialise (unsigned long l, unsigned char*& p, bool sizeOnly);
+	static void serialise (const std::string& s, unsigned char*& p, bool sizeOnly);
+	static void serialise (Chunk::Ptr chunk, unsigned char*& p, bool sizeOnly);
+	static void serialise (FileEntry::Ptr file, unsigned char*& p, bool sizeOnly);
+	static void serialise (BootTableEntry::Ptr bte, unsigned char*& p, bool sizeOnly);
+	template <class T> static void serialise (const std::list<T>& list, unsigned char*& p, bool sizeOnly)
 	{
 		size_t num = list.size ();
-		serialise (num, p);
+		serialise (num, p, sizeOnly);
 
 		for (typename std::list<T>::const_iterator i = list.begin (); i != list.end (); i++)
-				serialise (*i, p);
+				serialise (*i, p, sizeOnly);
 	}
 
-	template <class T> static void serialise (const std::vector<T>& v, unsigned char*& p)
+	template <class T> static void serialise (const std::vector<T>& v, unsigned char*& p, bool sizeOnly)
 	{
 		size_t num = v.capacity ();
-		serialise (num, p);
+		serialise (num, p, sizeOnly);
 
 		unsigned char* start = p;
 		for (size_t i = 0; i < num; i++)
 		{
-			serialise (v [i], p);
+			serialise (v [i], p, sizeOnly);
 		}
 	}
 
-	static void serialise (const std::vector<BootTableEntry::Ptr>& v, unsigned char*& p)
+	static void serialise (const std::vector<BootTableEntry::Ptr>& v, unsigned char*& p, bool sizeOnly)
 	{
 		size_t num = v.capacity ();
 		for (size_t i = 0; i < 8; i++)
-			serialise (num, p);
+			serialise (num, p, sizeOnly);
 
 		unsigned char* start = p;
 		for (size_t i = 0; i < num; i++)
 		{
-			serialise (v [i], p);
+			serialise (v [i], p, sizeOnly);
 		}
 	}
 
