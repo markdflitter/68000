@@ -67,10 +67,7 @@ bool FileEntry::extend (SpaceManager& sm, unsigned int blocksToAdd, bool contigu
 		return false;
 	}
 
-	if (m_chunks.size () == 0)
-		m_chunks = allocation;
-	else
-		m_chunks.splice (m_chunks.end (), allocation);
+	m_chunks.splice (m_chunks.end (), allocation);
 	
 	consolidate ();
 	

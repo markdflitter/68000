@@ -120,6 +120,7 @@ string CommandReader::read ()
 		*m_p++ = c;
 	}
 	m_p = m_buf;
+	printf ("\n\r");
 	return addHistoryItem (m_buf);
 }
 

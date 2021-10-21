@@ -442,7 +442,6 @@ int Shell::run () const
 	while (!exit)
 	{
 		string command = commandReader.read ();
-		printf ("\n\r");
 		vector<string> tokens = Utils::tokenize (command);
 
 		if (tokens.size () > 0)
