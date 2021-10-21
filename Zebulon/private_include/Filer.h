@@ -24,7 +24,7 @@ public:
 	bool createFile (const std::string& name, unsigned long initialSize = 0, bool contiguous = false);
 	bool deleteFile (const std::string& name);
 
-	bool extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks = 1);	
+	bool extendFile (FileEntry::Ptr fileEntry, unsigned long totalBlocks);	
 
 	typedef int file_handle;
 	enum {file_not_found = -1};

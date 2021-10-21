@@ -21,7 +21,7 @@ public:
 	bool createFile (const std::string& name, unsigned long initialSize = 0, bool contiguous = false);
 	bool deleteFile (const std::string& name);
 
-	bool extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks = 1);	
+	bool extendFile (FileEntry::Ptr fileEntry, unsigned long totalBlocks);	
 
 	int statFile (const std::string& name, _zebulon_stats* stats);
 

@@ -61,7 +61,6 @@ void FileEntry::extend (std::list<Chunk::Ptr>& newAllocation)
 {
 	m_chunks.splice (m_chunks.end (), newAllocation);
 	consolidate ();
-
 }
 
 void FileEntry::diag () const

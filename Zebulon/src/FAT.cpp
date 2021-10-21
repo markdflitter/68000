@@ -123,15 +123,24 @@ bool FAT::deleteFile (const std::string& name)
 
 bool FAT::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
 {
-	list<Chunk::Ptr> newAllocation = m_spaceManager.allocate (numBlocks);
+	unsigned int allocSize = fileEntry->allocSize ();
+	unsigned int allocBlocks = allocSize / ide_block_size;
+	if (allocSize % ide_block_size != 0)
+		allocBlocks++;
 
-	if ((numBlocks > 0) && (newAllocation.size () == 0))
+	if (numBlocks > allocBlocks)
 	{
-		printf (">>> disk full\n\r");
-		return false;
-	}
+		unsigned int newBlocks = numBlocks - allocBlocks;
+		list<Chunk::Ptr> newAllocation = m_spaceManager.allocate (newBlocks);
 
-	fileEntry->extend (newAllocation);
+		if ((numBlocks > 0) && (newAllocation.size () == 0))
+		{
+			printf (">>> disk full\n\r");
+			return false;
+		}
+	
+		fileEntry->extend (newAllocation);
+	}
 
 	return true;
 }

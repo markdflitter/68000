@@ -133,11 +133,17 @@ bool OpenFile::readCurBlock ()
 {
 	if (!m_bufferLoaded)
 	{
-		//printf ("%d %d\n\r", m_fileEntry->size (), m_fileEntry->allocSize ());
-		if (m_filePointer >= m_fileEntry->allocSize ())
+		unsigned int allocSize = m_fileEntry->allocSize ();
+		
+		//printf ("%d %d\n\r", m_fileEntry->size (), allocSize);
+		if (m_filePointer >= allocSize)
 		{
+			unsigned int allocBlocks = allocSize / ide_block_size;
+			if (allocSize % ide_block_size != 0)
+				allocBlocks++;
+
 			//printf ("extending file\n\r");
-			if (!m_Filer->extendFile (m_fileEntry, 1))
+			if (!m_Filer->extendFile (m_fileEntry, allocBlocks + 1))
 				return false;
 		
 			m_bufferPointer = 0;
