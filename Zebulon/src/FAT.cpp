@@ -94,14 +94,9 @@ bool FAT::createFile (const std::string& name, unsigned long initialSize, bool c
 		return false;
 	}
 
-	list<Chunk::Ptr> allocation = m_spaceManager.allocate (initialSize, contiguous);
-	if ((initialSize > 0) && (allocation.size () == 0))
-	{
-		printf (">>> disk full\n\r");
-		return false;
-	}
-
-	m_fileEntries.push_back (make_shared (new FileEntry (name, allocation)));
+	shared_ptr <FileEntry> newFile = make_shared (new FileEntry (name));
+	if (newFile->extend (m_spaceManager, initialSize, contiguous))
+		m_fileEntries.push_back (newFile);
 
 	return true;
 }
@@ -121,7 +116,7 @@ bool FAT::deleteFile (const std::string& name)
 	return false;
 }
 
-bool FAT::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
+bool FAT::rightsizeFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
 {
 	unsigned int allocSize = fileEntry->allocSize ();
 	unsigned int allocBlocks = allocSize / ide_block_size;
@@ -129,18 +124,9 @@ bool FAT::extendFile (FileEntry::Ptr fileEntry, unsigned long numBlocks)
 		allocBlocks++;
 
 	if (numBlocks > allocBlocks)
-	{
-		unsigned int newBlocks = numBlocks - allocBlocks;
-		list<Chunk::Ptr> newAllocation = m_spaceManager.allocate (newBlocks);
-
-		if ((numBlocks > 0) && (newAllocation.size () == 0))
-		{
-			printf (">>> disk full\n\r");
-			return false;
-		}
-	
-		fileEntry->extend (newAllocation);
-	}
+		return fileEntry->extend (m_spaceManager, numBlocks - allocBlocks, false);
+	else if (allocBlocks > numBlocks)
+		fileEntry->truncate (m_spaceManager, allocBlocks - numBlocks);
 
 	return true;
 }
@@ -191,4 +177,3 @@ _zebulon_free_space FAT::getFreeSpace () const
 }
 
 }
-

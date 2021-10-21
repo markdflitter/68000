@@ -7,8 +7,8 @@ using namespace std;
 namespace Zebulon
 {
 
-FileEntry::FileEntry (const string& name, const list<Chunk::Ptr> chunks)
-	: m_name (name), m_size (0), m_chunks (chunks)
+FileEntry::FileEntry (const string& name)
+	: m_name (name), m_size (0)
 {
 }
 
@@ -57,10 +57,28 @@ void FileEntry::setChunks (const list <Chunk::Ptr>& chunks)
 	m_chunks = chunks;
 }
 
-void FileEntry::extend (std::list<Chunk::Ptr>& newAllocation)
+bool FileEntry::extend (SpaceManager& sm, unsigned int blocksToAdd, bool contiguous)
 {
-	m_chunks.splice (m_chunks.end (), newAllocation);
+	list<Chunk::Ptr> allocation = sm.allocate (blocksToAdd, contiguous);
+
+	if ((blocksToAdd > 0) && (allocation.size () == 0))
+	{
+		printf (">>> disk full\n\r");
+		return false;
+	}
+
+	if (m_chunks.size () == 0)
+		m_chunks = allocation;
+	else
+		m_chunks.splice (m_chunks.end (), allocation);
+	
 	consolidate ();
+	
+	return true;
+}
+
+void FileEntry::truncate (SpaceManager& sm, unsigned int blocksToFree)
+{
 }
 
 void FileEntry::diag () const
@@ -71,6 +89,8 @@ void FileEntry::diag () const
 
 void FileEntry::consolidate ()
 {
+	if (m_chunks.size () < 2) return ;
+
 	std::list<Chunk::Ptr>::iterator prev = m_chunks.begin ();
 	std::list<Chunk::Ptr>::iterator i = prev; i++;
 

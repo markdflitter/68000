@@ -3,7 +3,7 @@
 
 #include <shared_ptr>
 #include <string>
-#include "Chunk.h"
+#include "SpaceManager.h"
 #include <list>
 
 namespace Zebulon
@@ -15,7 +15,7 @@ public:
 	typedef mdf::shared_ptr <FileEntry> Ptr;
 	typedef mdf::shared_ptr <const FileEntry> ConstPtr;
 
-	FileEntry (const std::string& name = "", const std::list<Chunk::Ptr> chunks = std::list<Chunk::Ptr> ());
+	FileEntry (const std::string& name = "");
 
 	std::string name () const;
 	void setName (const std::string& name);
@@ -29,7 +29,8 @@ public:
 	const std::list <Chunk::Ptr>& chunks () const;
 	void setChunks (const std::list <Chunk::Ptr>& chunks);
 
-	void extend (std::list<Chunk::Ptr>& newAllocation);
+	bool extend (SpaceManager& sm, unsigned int blocksToAdd, bool contiguous);
+	void truncate (SpaceManager& sm, unsigned int blocksToFree);
 
 	void diag () const;
 private:

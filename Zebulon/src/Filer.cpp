@@ -54,7 +54,7 @@ void Filer::load ()
 	do_load ();
 }
 
-void Filer::save () const
+void Filer::save ()
 {
 	do_save ();
 }
@@ -108,9 +108,9 @@ bool Filer::deleteFile (const std::string& name)
 	return deletedFile;
 }
 
-bool Filer::extendFile (FileEntry::Ptr fileEntry, unsigned long totalBlocks)
+bool Filer::rightsizeFile (FileEntry::Ptr fileEntry, unsigned long totalBlocks)
 {
-	bool result = m_FAT.extendFile (fileEntry, totalBlocks);
+	bool result = m_FAT.rightsizeFile (fileEntry, totalBlocks);
 	if (result) save ();
 	return result;
 }
@@ -327,7 +327,7 @@ void Filer::do_load ()
 	m_bootTable.deserialise (p);
 }
 
-void Filer::do_save () const
+void Filer::do_save ()
 {
 
 	// the boot table is fixed size, 512 is sufficient
@@ -347,10 +347,26 @@ void Filer::do_save () const
 		unsigned char* p = 0;
 		m_FAT.serialise (p, true);
 		unsigned int size = (unsigned int) p;
-		printf ("\n\rbuffersize = %d\n\r", size);
 
 		unsigned char* buffer = new unsigned char [size];
 
+		FileEntry::Ptr FAT = m_FAT.findFile (".FAT");
+		if (FAT.isNull ())
+		{
+			printf (">>> FAT not found!");
+			return ;
+		}
+
+		unsigned int FATBlocks = size / ide_block_size;
+		if (size % ide_block_size != 0)
+			FATBlocks++;
+		size += FATBlocks * 4;
+		FATBlocks = size / ide_block_size;
+		if (size % ide_block_size != 0)
+			FATBlocks++;
+	
+		m_FAT.rightsizeFile (FAT, FATBlocks);
+	
 		p = buffer;
 		m_FAT.serialise (p, false);
 	
@@ -361,7 +377,7 @@ void Filer::do_save () const
 				printf (">>> FAT block is full!!!!\n\r");
 		}
 
-		::ide_result result = __ide_write (1, buffer);	
+	::ide_result result = __ide_write (1, buffer);	
 		if (result != ::IDE_OK)
 			Utils::printIdeError (result);
 

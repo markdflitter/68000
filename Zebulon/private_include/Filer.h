@@ -17,14 +17,14 @@ public:
 	~Filer ();
 
 	void load ();
-	void save () const;
+	void save ();
 
 	int format (int diskSize);
 
 	bool createFile (const std::string& name, unsigned long initialSize = 0, bool contiguous = false);
 	bool deleteFile (const std::string& name);
 
-	bool extendFile (FileEntry::Ptr fileEntry, unsigned long totalBlocks);	
+	bool rightsizeFile (FileEntry::Ptr fileEntry, unsigned long totalBlocks);	
 
 	typedef int file_handle;
 	enum {file_not_found = -1};
@@ -49,7 +49,7 @@ public:
 	_zebulon_free_space getFreeSpace () const;
 private:
 	void do_load ();
-	void do_save () const;
+	void do_save ();
 
 	OpenFile::Ptr getOpenFile (file_handle file);
 	FileSearch::Ptr getFileSearch (file_search_handle handle);
