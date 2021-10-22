@@ -368,11 +368,6 @@ void Filer::do_save ()
 			FATBlocks++;
 	
 		m_FAT.rightsizeFile (FAT, FATBlocks);
-
-
-		p = buffer;
-		m_FAT.serialise (p, false);
-	
 		//if (p - buffer > 400)
 		//{
 		//	printf (">> FAT size is now %d bytes\n\r", p - buffer);
@@ -391,10 +386,17 @@ void Filer::do_save ()
 			printf (">>> failed to open FAT!");
 			return ;
 		}
+
+		FAT->setSize (FATBlocks * ide_block_size);
+
+		p = buffer;
+		m_FAT.serialise (p, false);
 	
+		p = buffer;
 		while (p < buffer + size)
 		{
 			unsigned int bytesThisTime = min (ide_block_size - sizeof (unsigned int), buffer + size - p);
+			////printf ("%d\n\r", bytesThisTime);			
 			fwrite (f, p, bytesThisTime);
 			p += bytesThisTime;
 ;

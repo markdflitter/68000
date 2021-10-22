@@ -72,7 +72,7 @@ unsigned long OpenFile::write (const unsigned char* data, unsigned long numBytes
 		p = copyToBuffer (p, bytesToCopy);
 		if (m_filePointer > m_fileEntry->size ())
 		{
-			//printf ("setting size to %d\n\r", m_filePointer);	
+			//printf ("setting size to %d from %d\n\r", m_filePointer, m_fileEntry->size ());	
    			m_fileEntry->setSize (m_filePointer);
 			m_fileEntryModified = true;
 		}
