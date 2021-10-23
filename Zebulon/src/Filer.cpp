@@ -71,7 +71,7 @@ int Filer::format (int diskSize)
 	if (!m_FAT.createFile (".BootTable", 1, true))
 		printf (">>> failed to create boot table\n\r");
 
- 	if (!createFile (".FAT", 1, true))
+ 	if (!m_FAT.createFile (".FAT", 1, true))
 		printf (">>> failed to create FAT\n\r");
 
 	do_save ();
@@ -124,7 +124,7 @@ int Filer::fopen (const std::string& name, const std::string& mode)
 	FileEntry::Ptr f = m_FAT.findFile (name);
 	if (f.isNull ())
 	{
-		//printf ("file doesn't exist\n\r");
+		// printf ("file doesn't exist\n\r");
 		if (mode_is (mode, 'w'))
 		{
 			//printf ("create file\n\r");
@@ -143,9 +143,6 @@ int Filer::fopen (const std::string& name, const std::string& mode)
 		{
 			//printf ("truncate file\n\r");
 			f->setSize (0);
-			//printf ("delete and create file\n\r");
-			//m_FAT.deleteFile (name);
-	    	//m_FAT.createFile (name);
 		}
 	}
 
@@ -187,7 +184,7 @@ unsigned long Filer::fwrite (file_handle handle, const unsigned char* data, unsi
 {
 	if (check_read_only (handle))
 	{
-		printf (">> file opened as read-only\n\t");
+		printf (">> file opened as read-only\n\r");
 		return 0;
 	}
 
@@ -301,8 +298,6 @@ _zebulon_free_space Filer::getFreeSpace () const
 void Filer::do_load ()
 {
 	unsigned char block [ide_block_size];
-	const unsigned char* p = block;
-	
 	{
 		::ide_result result = __ide_read (1, block);	
 		if (result != ::IDE_OK) 
@@ -311,12 +306,19 @@ void Filer::do_load ()
 			return ;
 		}
 	}
+
+	unsigned int size = 0;
+	unsigned int next = 0;
+	memcpy (&size, block, sizeof (size));
+	//printf ("FATsize = %d\n\r", size); 
+
+	memcpy (&next, block + sizeof (size), sizeof (next));
+	//printf ("next = %d\n\r", next); 
 	
+	const unsigned char* p = block + sizeof (size) + sizeof (next);
 	if (!m_FAT.deserialise (p))
 		return ;
 
-	p = block;
-	
 	{
 		::ide_result result = __ide_read (0, block);	
 		if (result != ::IDE_OK)
@@ -326,12 +328,12 @@ void Filer::do_load ()
 		}
 	}
 
+	p = block;
 	m_bootTable.deserialise (p);
 }
 
 void Filer::do_save ()
 {
-
 	// the boot table is fixed size, 512 is sufficient
 	{
 		unsigned char block [512];
@@ -348,32 +350,27 @@ void Filer::do_save ()
 	{
 		unsigned char* p = 0;
 		m_FAT.serialise (p, true);
-		unsigned int size = (unsigned int) p;
+		unsigned int FATsize = (unsigned int) p;
+		//printf ("FATsize %d\n\r", FATsize);
 
-		unsigned char* buffer = new unsigned char [size];
+		unsigned char* buffer = new unsigned char [FATsize];
 
 		FileEntry::Ptr FAT = m_FAT.findFile (".FAT");
 		if (FAT.isNull ())
 		{
-			printf (">>> FAT not found!");
+			printf (">>> missing FAT\n\r");
 			return ;
 		}
 
-		unsigned int FATBlocks = size / ide_block_size;
-		if (size % ide_block_size != 0)
+		unsigned int FATBlocks = FATsize / ide_block_size;
+		if (FATsize % ide_block_size != 0)
 			FATBlocks++;
-		size += FATBlocks * 4;
-		FATBlocks = size / ide_block_size;
-		if (size % ide_block_size != 0)
+		unsigned int sizeOnDisk = FATsize + (FATBlocks * 4) + 4;
+		FATBlocks = sizeOnDisk / ide_block_size;
+		if (sizeOnDisk % ide_block_size != 0)
 			FATBlocks++;
-	
+		//printf ("FATBlocks = %d\n\r", FATBlocks);	
 		m_FAT.rightsizeFile (FAT, FATBlocks);
-		//if (p - buffer > 400)
-		//{
-		//	printf (">> FAT size is now %d bytes\n\r", p - buffer);
-		//	if ((p - buffer) > ide_block_size)
-		//		printf (">>> FAT block is full!!!!\n\r");
-		//}
 
 		list<Chunk::Ptr> chunks = FAT->chunks ();
 		list<Chunk::Ptr>::iterator i = chunks.begin ();
@@ -381,44 +378,40 @@ void Filer::do_save ()
 		unsigned int block = (*i)->start;
 
 		file_handle f = fopen (FAT->name (), "wb");
-		if (f == 0) 
+		if (f == file_not_found) 
 		{
-			printf (">>> failed to open FAT!");
+			printf (">>> failed to open FAT\n\r");
 			return ;
 		}
 
-		FAT->setSize (FATBlocks * ide_block_size);
-
+		FAT->setSize (sizeOnDisk);
 		p = buffer;
 		m_FAT.serialise (p, false);
 	
 		p = buffer;
-		while (p < buffer + size)
+		while (p < buffer + FATsize)
 		{
-			unsigned int bytesThisTime = min (ide_block_size - sizeof (unsigned int), buffer + size - p);
-			////printf ("%d\n\r", bytesThisTime);			
-			fwrite (f, p, bytesThisTime);
-			p += bytesThisTime;
-;
-			if (bytesThisTime < ide_block_size - sizeof (unsigned int))
-			{
-				char padding [ide_block_size];	
-				memset (&padding, 0, ide_block_size);
-				fwrite (f, (const unsigned char*) padding, ide_block_size - sizeof (unsigned int) - bytesThisTime);
-			}
-			
-			if (block < (*i)->start + (*i)->length)
+			// write the size, to all blocks for consistency
+			fwrite (f, (const unsigned char*) &FATsize, sizeof (FATsize));
+
+			// link
+			if (block < (*i)->start + (*i)->length -1)
 				block++;
 			else
 			{
-				i++;
+				if (i != chunks.end ()) i++;
 				if (i == chunks.end ())
 					block = 0;
 				else			
 					block = (*i)->start;
 			}
-
 			fwrite (f, (const unsigned char*) &block, sizeof (block));
+	
+			// data
+			unsigned int bytesThisTime = min (ide_block_size - sizeof (FATsize) - sizeof (block), buffer + FATsize - p);
+			//printf ("%d\n\r", bytesThisTime);			
+			fwrite (f, p, bytesThisTime);
+			p += bytesThisTime;
 		}
 
 		fclose (f);
