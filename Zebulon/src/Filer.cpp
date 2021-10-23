@@ -305,7 +305,7 @@ void Filer::do_load ()
 			Utils::printIdeError (result);
 			return ;
 		}
-	}
+		}
 
 	unsigned int size = 0;
 	unsigned int next = 0;
@@ -314,10 +314,47 @@ void Filer::do_load ()
 
 	memcpy (&next, block + sizeof (size), sizeof (next));
 	//printf ("next = %d\n\r", next); 
+
+	{
+		unsigned char* buffer = new unsigned char [size];
+		unsigned int bytesLeft = size;
+		unsigned int bytesThisTime = min (bytesLeft, ide_block_size - sizeof (size) - sizeof (next));
+		unsigned char* p = buffer;
+		memcpy (p, block + sizeof (size) + sizeof (next), bytesThisTime);
+		p += bytesThisTime;
+		size -= bytesThisTime;
+
+		while (next != 0)
+		{
+			//printf ("next = %d\n\r", next);
+			::ide_result result = __ide_read (next, block);	
+			if (result != ::IDE_OK) 
+			{
+				Utils::printIdeError (result);
+				return ;
+			}
+
+			memcpy (&size, block, sizeof (size));
+			//printf ("FATsize = %d\n\r", size); 
+
+			memcpy (&next, block + sizeof (size), sizeof (next));
+			//printf ("next = %d\n\r", next); 
+
+			bytesThisTime = min (bytesLeft, ide_block_size - sizeof (size) - sizeof (next));
+			memcpy (p, block + sizeof (size) + sizeof (next), bytesThisTime);
+			p += bytesThisTime;
+			size -= bytesThisTime;			
+		}
 	
-	const unsigned char* p = block + sizeof (size) + sizeof (next);
-	if (!m_FAT.deserialise (p))
-		return ;
+		const unsigned char* p2 = buffer;
+		if (!m_FAT.deserialise (p2))
+		{
+			delete buffer;
+			return ;
+		}
+
+		delete buffer;
+	}
 
 	{
 		::ide_result result = __ide_read (0, block);	
@@ -328,7 +365,7 @@ void Filer::do_load ()
 		}
 	}
 
-	p = block;
+	const unsigned char* p = block;
 	m_bootTable.deserialise (p);
 }
 

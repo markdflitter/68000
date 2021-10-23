@@ -20,7 +20,7 @@ inline void* increment (void* p, unsigned int len)
 
 inline unsigned int& block_len (void* p)
 {
-	return *(unsigned int*) p;
+	return *((unsigned int*) p);
 }
 
 inline void** next_block (void* p)
@@ -135,6 +135,7 @@ static unsigned int free_count = zero ();
 void* malloc (size_t requestedSize)
 {
 	//printf ("malloc %d\n\r", requestedSize);
+	//if (malloc_count > 100) heap_diag (true);
 
 	//add 4 bytes for length, min size 8, round up to next power of two
 	size_t allocSize = roundUp (max (requestedSize + 4, 8UL));
@@ -174,10 +175,11 @@ void* malloc (size_t requestedSize)
 		//printf ("found block of size %d at 0x%x\n\r", length, bestMatch);
 		if (length >= allocSize + MIN_ALLOC)
 		{
-			//printf ("splitting block\n\r");
+			//printf ("splitting block %d into %d and %d\n\r", length, allocSize, length - allocSize);
 
 			*next_block (bestMatchPrev) = bestMatch + allocSize;
 			block_len (*next_block (bestMatchPrev)) = length - allocSize;
+			//printf ("split len %d\n\r", block_len (*next_block (bestMatchPrev)));	
 			*next_block (*next_block (bestMatchPrev)) = *next_block (bestMatch); 
 		}
 		else
@@ -199,6 +201,9 @@ void* malloc (size_t requestedSize)
 	}
 
 	memset (alloc, 0xaa, allocSize - sizeof (unsigned int));
+	
+	//if (malloc_count > 100) heap_diag (true);
+
 	return (void*) alloc;
 }
 

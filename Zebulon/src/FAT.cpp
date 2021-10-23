@@ -50,10 +50,6 @@ bool FAT::deserialise (const unsigned char*& p)
 		return false;
 	}
 
-	//unsigned long lastIndex;
-	//Serialise::deserialise (lastIndex, p);
-	//m_lastIndex = lastIndex;
-	
 	m_spaceManager.deserialise (p);
 		
 	Serialise::deserialise (m_fileEntries, p);
