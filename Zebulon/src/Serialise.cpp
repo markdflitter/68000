@@ -88,6 +88,8 @@ void Serialise::deserialise (string& s, const unsigned char*& p, size_t maxLengt
 	copyFrom ((unsigned char*) buf, p, sz);
 	
 	s = string (buf);
+
+	delete buf;
 }
 
 void Serialise::deserialise (Chunk::Ptr chunk, const unsigned char*& p)
