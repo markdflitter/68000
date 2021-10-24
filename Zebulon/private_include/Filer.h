@@ -49,7 +49,12 @@ public:
 	_zebulon_free_space getFreeSpace () const;
 private:
 	void do_load ();
+	void do_load_bootTable ();
+	void do_load_FAT ();
+
 	void do_save ();
+	void do_save_bootTable ();
+	void do_save_FAT ();
 
 	OpenFile::Ptr getOpenFile (file_handle file);
 	FileSearch::Ptr getFileSearch (file_search_handle handle);
