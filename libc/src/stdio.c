@@ -44,7 +44,7 @@ int puts (const char* s)
 	return 0;
 }
 
-void bin2hex (int num, char* buf)
+void bin2hex (unsigned int num, char* buf)
 {
 	const char* LUT = "0123456789ABCDEF";
 	if (num < 16)
@@ -56,7 +56,7 @@ void bin2hex (int num, char* buf)
 		return ;
 	}
 
-	int w = num;
+	unsigned int w = num;
 	for (int i = 0; i < 8; i++)
 	{
 		buf [7 - i] = LUT [w & 0xF];

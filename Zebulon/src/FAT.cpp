@@ -163,8 +163,6 @@ void FAT::diag () const
 	unsigned char* p = 0;
 	serialise (p, true);
 	printf ("FAT size %d byte(s)\n\r", (unsigned int) p);
-
-	printf ("\n\r");	
 }
 
 _zebulon_free_space FAT::getFreeSpace () const
