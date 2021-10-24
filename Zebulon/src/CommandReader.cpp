@@ -1,4 +1,6 @@
 #include "../private_include/CommandReader.h"
+#include "../private_include/CommandReader.h"
+#include "../private_include/CommandReader.h"
 #include <stdio.h>
 #include <string.h>
 #include <algorithm>
@@ -121,7 +123,35 @@ string CommandReader::read ()
 	}
 	m_p = m_buf;
 	printf ("\n\r");
-	return addHistoryItem (m_buf);
+
+	return string (m_buf);
+}
+
+string CommandReader::addHistoryItem (const std::string& item)
+{
+	if (item.length () == 0) return item;
+	vector<string> tokens = Utils::tokenize (item);
+	if (tokens.size () > 1 && tokens [0] == "history" && tokens [1] != "show" && tokens [1] != "clear")
+		return item;
+
+	for (list<string>::iterator i = m_history.begin (); i != m_history.end (); i++)
+	{
+		if ((*i) == item)
+		{
+			i = m_history.erase (i);
+			break;
+		}
+	}
+
+	while (m_history.size () >= MAX_HISTORY)
+		m_history.pop_front ();
+
+	m_history.push_back (item);
+	m_pos = m_history.size ();
+
+	saveHistory ();
+
+	return item;
 }
 
 void CommandReader::showHistory () const
@@ -197,32 +227,6 @@ void CommandReader::delChar ()
 		putchar (127);
 	}
 }
-	
-string CommandReader::addHistoryItem (const std::string& item)
-{
-	if (item.length () == 0) return item;
-	vector<string> tokens = Utils::tokenize (item);
-	if (tokens.size () > 1 && tokens [0] == "history" && tokens [1] != "show" && tokens [1] != "clear")
-		return item;
 
-	for (list<string>::iterator i = m_history.begin (); i != m_history.end (); i++)
-	{
-		if ((*i) == item)
-		{
-			i = m_history.erase (i);
-			break;
-		}
-	}
+}	
 
-	while (m_history.size () >= MAX_HISTORY)
-		m_history.pop_front ();
-
-	m_history.push_back (item);
-	m_pos = m_history.size ();
-
-	saveHistory ();
-
-	return item;
-}
-
-}

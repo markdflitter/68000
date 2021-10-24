@@ -570,6 +570,8 @@ int Shell::run () const
 				unsigned char bootslot = atol (tokens [2].c_str ());
 				save (filename, bootslot);
 			}
+
+			commandReader.addHistoryItem (command);		
 		}
 
 		printf ("$ ");	

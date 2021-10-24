@@ -14,6 +14,7 @@ public:
 	void loadHistory ();
 
 	std::string read ();
+ 	std::string addHistoryItem (const std::string& item);
 
 	void showHistory () const;
 	void clearHistory ();
@@ -24,8 +25,6 @@ private:
 
 	void delChar ();
 	std::string getHistoryItem (size_t index) const;
- 	std::string addHistoryItem (const std::string& item);
-
 	char m_buf [255];
 	char* m_p;
 	std::list <std::string> m_history;
