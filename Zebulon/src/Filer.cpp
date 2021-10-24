@@ -305,7 +305,7 @@ void Filer::do_load ()
 			Utils::printIdeError (result);
 			return ;
 		}
-		}
+	}
 
 	unsigned int size = 0;
 	unsigned int next = 0;
@@ -322,7 +322,7 @@ void Filer::do_load ()
 		unsigned char* p = buffer;
 		memcpy (p, block + sizeof (size) + sizeof (next), bytesThisTime);
 		p += bytesThisTime;
-		size -= bytesThisTime;
+		bytesLeft -= bytesThisTime;
 
 		while (next != 0)
 		{
@@ -343,7 +343,7 @@ void Filer::do_load ()
 			bytesThisTime = min (bytesLeft, ide_block_size - sizeof (size) - sizeof (next));
 			memcpy (p, block + sizeof (size) + sizeof (next), bytesThisTime);
 			p += bytesThisTime;
-			size -= bytesThisTime;			
+			bytesLeft -= bytesThisTime;			
 		}
 	
 		const unsigned char* p2 = buffer;
@@ -402,7 +402,7 @@ void Filer::do_save ()
 		unsigned int FATBlocks = FATsize / ide_block_size;
 		if (FATsize % ide_block_size != 0)
 			FATBlocks++;
-		unsigned int sizeOnDisk = FATsize + (FATBlocks * 4) + 4;
+		unsigned int sizeOnDisk = FATsize + (FATBlocks * 8);
 		FATBlocks = sizeOnDisk / ide_block_size;
 		if (sizeOnDisk % ide_block_size != 0)
 			FATBlocks++;
@@ -428,6 +428,7 @@ void Filer::do_save ()
 		p = buffer;
 		while (p < buffer + FATsize)
 		{
+			//printf ("0x%x 0x%x 0x%x 0x%x\n\r", p, buffer, FATsize, buffer + FATsize);	
 			// write the size, to all blocks for consistency
 			fwrite (f, (const unsigned char*) &FATsize, sizeof (FATsize));
 
@@ -450,10 +451,11 @@ void Filer::do_save ()
 			fwrite (f, p, bytesThisTime);
 			p += bytesThisTime;
 		}
-
+		//printf ("done\n\r");
 		fclose (f);
 		delete buffer;
 	}
+	//printf ("exit\n\r");
 }
 
 OpenFile::Ptr Filer::getOpenFile (file_handle file)

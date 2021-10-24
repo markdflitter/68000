@@ -49,7 +49,7 @@ bool FAT::deserialise (const unsigned char*& p)
 		printf (">>> FAT - version mismatch.  Expected %s, got %s\n\r", FAT_VERSION, readVersion.c_str());
 		return false;
 	}
-
+	
 	m_spaceManager.deserialise (p);
 		
 	Serialise::deserialise (m_fileEntries, p);
