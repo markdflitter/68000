@@ -121,8 +121,6 @@ bool Filer::rightsizeFile (FileEntry::Ptr fileEntry, unsigned long totalBlocks)
 
 int Filer::fopen (const std::string& name, const std::string& mode)
 {
-	file_handle result = file_not_found;
-
 	FileEntry::Ptr f = m_FAT.findFile (name);
 	if (f.isNull ())
 	{
@@ -135,7 +133,7 @@ int Filer::fopen (const std::string& name, const std::string& mode)
 		else
 		{
 			//printf ("file not found\n\r");
-			return result;
+			return file_not_found;
 		}			
 	}
 	else
@@ -155,14 +153,19 @@ int Filer::fopen (const std::string& name, const std::string& mode)
 		return file_not_found;
 	}
 
-	m_openFiles.push_back (make_shared(new OpenFile(f, this)));
+	file_handle index = findFirstFreeHandle (m_openFiles);
+	if (index == -1)
+	{
+		m_openFiles.push_back (make_shared (new OpenFile(f, this)));
+		index = m_openFiles.size () - 1;	
+	}
+	else
+		m_openFiles [index] = make_shared (new OpenFile(f, this));
 	
-	result = m_openFiles.size () - 1;
-
 	if (mode_is (mode, 'r'))
-		set_read_only (result);
+		set_read_only (index);
 	
-	return result;
+	return index;
 }
 
 void Filer::fclose (file_handle handle)
@@ -214,6 +217,8 @@ int Filer::statFile (const std::string& name, _zebulon_stats* stats)
 
 Filer::file_search_handle Filer::findFirstFile (char filename [FILENAME_BUFFER_SIZE])
 {
+	int index = -1;
+
 	FileSearch::Ptr fileSearch = m_FAT.findFirstFile ();
 	FileEntry::Ptr fileEntry = fileSearch->next ();
 
@@ -222,12 +227,17 @@ Filer::file_search_handle Filer::findFirstFile (char filename [FILENAME_BUFFER_S
 		memcpy (filename, fileEntry->name ().c_str (), fileEntry->name ().length ());
 		filename [fileEntry->name ().length ()] = '\0';
 
-		m_fileSearches.push_back (fileSearch);
-	
-		return m_fileSearches.size () - 1;
+		index = findFirstFreeHandle (m_fileSearches);
+		if (index == -1)
+		{
+			m_fileSearches.push_back (fileSearch);
+			index = m_fileSearches.size () - 1;	
+		}
+		else
+			m_fileSearches [index] = fileSearch;
 	}
-	else
-		return -1;
+
+	return index;
 }
 
 bool Filer::findNextFile (file_search_handle handle, char filename [FILENAME_BUFFER_SIZE])
@@ -298,6 +308,15 @@ void Filer::diag () const
 _zebulon_free_space Filer::getFreeSpace () const
 {
 	return m_FAT.getFreeSpace ();
+}
+
+template <class T>
+int Filer::findFirstFreeHandle (const T& vec) const
+{
+    for (int index = 0; index < vec.size (); index++)
+		if (vec[index].isNull ()) return index;
+
+	return -1;
 }
 
 void Filer::do_load ()

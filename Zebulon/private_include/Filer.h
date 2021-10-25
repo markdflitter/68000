@@ -48,6 +48,9 @@ public:
 	void diag () const;
 	_zebulon_free_space getFreeSpace () const;
 private:
+	template <class T>
+    	int findFirstFreeHandle (const T& vec) const;
+
 	void do_load ();
 	void do_load_bootTable ();
 	void do_load_FAT ();
