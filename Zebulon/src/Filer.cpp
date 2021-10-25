@@ -400,13 +400,26 @@ void Filer::do_save ()
 
 void Filer::do_save_bootTable ()
 {
+	FileEntry::Ptr bootTable = m_FAT.findFile (".BootTable");
+	if (bootTable.isNull ())
+	{
+		printf (">>> missing boot table\n\r");
+		return ;
+	}
+
 	// the boot table is fixed size, 512 is sufficient
-	unsigned char block [512];
-	unsigned char* p = block;
+	unsigned char buffer [512];
+	unsigned char* p = buffer;
 
 	m_bootTable.serialise (p, false);
 
-	::ide_result result = __ide_write (0, block);
+	bootTable->setSize (p - buffer);
+
+	const list<Chunk::Ptr>& chunks = bootTable->chunks ();
+	list<Chunk::Ptr>::const_iterator i = chunks.begin ();
+	unsigned int block = (*i)->start;
+
+	::ide_result result = __ide_write (0, buffer);
 	if (result != ::IDE_OK)
 		Utils::printIdeError (result);
 }
