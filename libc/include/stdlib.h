@@ -8,6 +8,8 @@ extern "C" void free (void* ptr);
 
 extern "C" void heap_diag (bool detail);
 
+extern "C" void set_heap_trace (unsigned int tr);
+
 extern "C" void abort (void);
 
 extern "C" long atol (const char* str);

@@ -115,7 +115,7 @@ bool Filer::deleteFile (const std::string& name)
 bool Filer::rightsizeFile (FileEntry::Ptr fileEntry, unsigned long totalBlocks)
 {
 	bool result = m_FAT.rightsizeFile (fileEntry, totalBlocks);
-	if (result) save ();
+	//if (result) save ();
 	return result;
 }
 
@@ -154,9 +154,9 @@ int Filer::fopen (const std::string& name, const std::string& mode)
 		printf (">> file not found\n\r");
 		return file_not_found;
 	}
-	
-	m_openFiles.push_back (make_shared(new OpenFile(f, this)));
 
+	m_openFiles.push_back (make_shared(new OpenFile(f, this)));
+	
 	result = m_openFiles.size () - 1;
 
 	if (mode_is (mode, 'r'))
@@ -396,7 +396,6 @@ void Filer::do_save ()
 {
 	do_save_bootTable ();
 	do_save_FAT ();
-
 }
 
 void Filer::do_save_bootTable ()
@@ -418,12 +417,13 @@ void Filer::do_save_FAT ()
 	m_FAT.serialise (p, true);
 	unsigned int FATsize = (unsigned int) p;
 	//printf ("FATsize %d\n\r", FATsize);
-
+	
 	unsigned char* buffer = new unsigned char [FATsize];
 
 	FileEntry::Ptr FAT = m_FAT.findFile (".FAT");
 	if (FAT.isNull ())
 	{
+		delete buffer;	
 		printf (">>> missing FAT\n\r");
 		return ;
 	}
@@ -437,15 +437,16 @@ void Filer::do_save_FAT ()
 		FATBlocks++;
 	//printf ("FATBlocks = %d\n\r", FATBlocks);	
 	m_FAT.rightsizeFile (FAT, FATBlocks);
-
-	list<Chunk::Ptr> chunks = FAT->chunks ();
-	list<Chunk::Ptr>::iterator i = chunks.begin ();
-
+	
+	const list<Chunk::Ptr>& chunks = FAT->chunks ();
+	list<Chunk::Ptr>::const_iterator i = chunks.begin ();
+	
 	unsigned int block = (*i)->start;
 
-	file_handle f = fopen (FAT->name (), "wb");
+	file_handle f = fopen (FAT->name ().c_str (), "wb");
 	if (f == file_not_found) 
 	{
+		delete buffer;	
 		printf (">>> failed to open FAT\n\r");
 		return ;
 	}
@@ -453,7 +454,8 @@ void Filer::do_save_FAT ()
 	FAT->setSize (sizeOnDisk);
 	p = buffer;
 	m_FAT.serialise (p, false);
-	
+	//printf ("serialised %d\n\r", p - buffer);
+
 	p = buffer;
 	while (p < buffer + FATsize)
 	{
@@ -483,6 +485,7 @@ void Filer::do_save_FAT ()
 		fwrite (f, p, bytesThisTime);
 		p += bytesThisTime;
 	}
+
 	fclose (f);
 	delete buffer;
 }

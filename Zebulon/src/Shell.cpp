@@ -349,7 +349,7 @@ void write_file (const string& filename, unsigned long bytes)
 		bytesLeftToWrite -= bytesThisTime;
 
 		buffer++;
-		if (buffers > 1) printf (" buffer %d / %d\n\r", buffer, buffers);
+		if (buffers > 10) printf (" buffer %d / %d\n\r", buffer, buffers);
 	}
 
 	fclose (f);

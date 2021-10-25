@@ -1,5 +1,7 @@
 #ifndef SHAREDPTR
 #define SHAREDPTR
+//#include <stdio.h>
+
 
 namespace mdf
 {
@@ -65,7 +67,7 @@ public:
 		}
 
 	bool isNull () const { return m_t == 0; }
-	void reset () { decrement_count (); m_t = 0; }
+	void reset () { decrement_count (); m_count = 0; m_t = 0; }
 
 	T* operator-> () { return m_t; }
 	const T* operator-> () const { return m_t; }
@@ -75,6 +77,11 @@ public:
 
 	T* get_raw () { return m_t; }
 	const T* get_raw () const { return m_t; }
+
+	int count () const
+	{
+		return m_count ? *m_count : -1;
+	}
 private:
 	void increment_count ()
 	{

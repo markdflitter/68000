@@ -17,7 +17,7 @@ public:
 
 	FileEntry (const std::string& name = "");
 
-	std::string name () const;
+	const std::string& name () const;
 	void setName (const std::string& name);
 
 	unsigned long size () const;

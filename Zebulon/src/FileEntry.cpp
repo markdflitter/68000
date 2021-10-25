@@ -12,7 +12,7 @@ FileEntry::FileEntry (const string& name)
 {
 }
 
-string FileEntry::name () const
+const string& FileEntry::name () const
 {
 	return m_name;
 }
