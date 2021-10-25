@@ -99,7 +99,7 @@ void printHelp (void)
 	printf ("filer format\t\t\t - format the filing system\n\r");
 	printf ("filer diag\t\t\t - print filing system diagnostics\n\r");
 	printf ("filer space\t\t\t - print filing system free space\n\r");
-	printf ("filer ls {all}\t\t - list {all} files\n\r");
+	printf ("filer ls {all}\t\t\t - list {all} files\n\r");
 	printf ("filer index\t\t\t - print boot table\n\r");
 	printf ("filer file read <filename>\t - read file\n\r");
 	printf ("filer file write <filename>\t - write file\n\r");
