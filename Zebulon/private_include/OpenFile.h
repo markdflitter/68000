@@ -3,12 +3,11 @@
 
 #include <shared_ptr>
 #include "FileEntry.h"
+#include "FilerGuard.h"
 #include <bsp.h>
 
 namespace Zebulon
 {
-
-class Filer;
 
 class OpenFile
 {
@@ -16,7 +15,7 @@ public:
 	typedef mdf::shared_ptr <OpenFile> Ptr;
 	typedef mdf::shared_ptr <OpenFile> ConstPtr;
 
-	OpenFile (FileEntry::Ptr file, Filer* filer);
+	OpenFile (FileEntry::Ptr file, FilerGuard::Ptr filerGuard);
 	~OpenFile ();
 
 	unsigned long read (unsigned char* data, unsigned long numBytes);	
@@ -38,13 +37,12 @@ private:
 	unsigned char* m_bufferPointer;
 	
 	FileEntry::Ptr m_fileEntry;
-	Filer* m_Filer;
+	FilerGuard::Ptr m_filerGuard;
 
 	unsigned long m_filePointer;
 	unsigned long m_curBlock;
 	bool m_bufferModified;
 	bool m_bufferLoaded;
-	bool m_fileEntryModified;
 };
 
 }

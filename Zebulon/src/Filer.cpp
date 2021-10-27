@@ -76,16 +76,12 @@ int Filer::format (int diskSize)
  	if (!m_FAT.createFile (".FAT", 1, true))
 		printf (">>> failed to create FAT\n\r");
 
-	do_save ();
-
 	return result;
 }
 
 bool Filer::createFile (const std::string& name, unsigned long initialSize, bool contiguous)
 {
-	bool result = m_FAT.createFile (name, initialSize, contiguous);
-	if (result) save ();
-	return result;
+	return m_FAT.createFile (name, initialSize, contiguous);
 }
 
 bool Filer::deleteFile (const std::string& name)
@@ -108,15 +104,12 @@ bool Filer::deleteFile (const std::string& name)
 	}
 
 	bool deletedFile = m_FAT.deleteFile (name);
-	if (removedBootTableEntry || deletedFile) save ();
-	return deletedFile;
+	return removedBootTableEntry || deletedFile;
 }
 
 bool Filer::rightsizeFile (FileEntry::Ptr fileEntry, unsigned long totalBlocks)
 {
-	bool result = m_FAT.rightsizeFile (fileEntry, totalBlocks);
-	//if (result) save ();
-	return result;
+	return m_FAT.rightsizeFile (fileEntry, totalBlocks);
 }
 
 int Filer::fopen (const std::string& name, const std::string& mode)
@@ -154,13 +147,14 @@ int Filer::fopen (const std::string& name, const std::string& mode)
 	}
 
 	file_handle index = findFirstFreeHandle (m_openFiles);
+	OpenFile::Ptr file = make_shared (new OpenFile(f, guard ()));
 	if (index == -1)
 	{
-		m_openFiles.push_back (make_shared (new OpenFile(f, this)));
+		m_openFiles.push_back (file);
 		index = m_openFiles.size () - 1;	
 	}
 	else
-		m_openFiles [index] = make_shared (new OpenFile(f, this));
+		m_openFiles [index] = file;
 	
 	if (mode_is (mode, 'r'))
 		set_read_only (index);
@@ -283,7 +277,6 @@ bool Filer::boot (unsigned int slot, const std::string& filename, unsigned int l
 	{
 		unsigned int startBlock = (*i)->start;
 		result = m_bootTable.addEntry (slot, filename, loadAddress, startAddress, length, startBlock);
-		if (result) do_save ();	
 		break;
 	}
 

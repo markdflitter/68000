@@ -161,7 +161,7 @@ void trap3 ()
 			if (__ide_ident (info) == ::IDE_OK)
 			{
 				int numSectors = info.totalNumOfUserSectors;
-				*((int*) tp.pResult) = theFiler ().format (numSectors);
+				*((int*) tp.pResult) = theFiler ().guard ()->format (numSectors);
 			}
 			else *((int*) tp.pResult) = -1;
 			break;
@@ -199,8 +199,8 @@ void trap5 ()
 	switch (tp.opcode)
 	{
 		case file_stat: *((int*) tp.pResult) = theFiler ().statFile ((const char*) tp.a1, (_zebulon_stats*) tp.a2); break;
-		case file_create: *((bool*) tp.pResult) = theFiler ().createFile ((const char*) tp.a1, (unsigned long) tp.a2, (bool) tp.a3); break;
-			case file_delete: *((unsigned int*) tp.pResult) = theFiler ().deleteFile ((const char*) tp.a1); break;
+		case file_create: *((bool*) tp.pResult) = theFiler ().guard ()->createFile ((const char*) tp.a1, (unsigned long) tp.a2, (bool) tp.a3); break;
+			case file_delete: *((unsigned int*) tp.pResult) = theFiler ().guard ()->deleteFile ((const char*) tp.a1); break;
 		default: break;
 	}
 }
@@ -229,7 +229,7 @@ void trap7 ()
 
 	switch (tp.opcode)
 	{
-		case boot_boot: *((bool*) tp.pResult) = theFiler ().boot ((unsigned int) tp.a1, string ((char*) tp.a2), (unsigned int) tp.a3, (unsigned int) tp.a4, (unsigned int) tp.a5); break;
+		case boot_boot: *((bool*) tp.pResult) = theFiler ().guard ()->boot ((unsigned int) tp.a1, string ((char*) tp.a2), (unsigned int) tp.a3, (unsigned int) tp.a4, (unsigned int) tp.a5); break;
 		case boot_index: theFiler ().index ((_zebulon_boot_table_entry*) tp.a1); break;
 		default: break;
 	}

@@ -1,5 +1,4 @@
 #include "../private_include/OpenFile.h"
-#include "../private_include/Filer.h"
 #include <string.h>
 #include <bsp.h>
 #include <stdio.h>
@@ -9,12 +8,11 @@ using namespace std;
 namespace Zebulon
 {
 
-OpenFile::OpenFile (FileEntry::Ptr fileEntry, Filer* filer)
+OpenFile::OpenFile (FileEntry::Ptr fileEntry, FilerGuard::Ptr filerGuard)
 	: m_fileEntry (fileEntry),
-	  m_Filer (filer),
+	  m_filerGuard (filerGuard),
 	  m_bufferPointer (0),
-	  m_bufferModified (false),
-	  m_fileEntryModified (false)
+	  m_bufferModified (false)
 {
 	setFilePointer (0);
 }
@@ -22,10 +20,6 @@ OpenFile::OpenFile (FileEntry::Ptr fileEntry, Filer* filer)
 OpenFile::~OpenFile ()
 {
 	flush ();
-	if (m_fileEntryModified) 
-	{
-		m_Filer->save ();
-	}
 }
 
 unsigned long OpenFile::read (unsigned char* data, unsigned long numBytes)	
@@ -74,7 +68,7 @@ unsigned long OpenFile::write (const unsigned char* data, unsigned long numBytes
 		{
 			//printf ("setting size to %d from %d\n\r", m_filePointer, m_fileEntry->size ());	
    			m_fileEntry->setSize (m_filePointer);
-			m_fileEntryModified = true;
+			m_filerGuard->markModified ();
 		}
 		bytesLeftToRead -= bytesToCopy;
 	}
@@ -143,9 +137,8 @@ bool OpenFile::readCurBlock ()
 				allocBlocks++;
 
 			//printf ("extending file\n\r");
-			if (!m_Filer->rightsizeFile (m_fileEntry, allocBlocks + 1))
+			if (!m_filerGuard->rightsizeFile (m_fileEntry, allocBlocks + 1))
 				return false;
-			m_fileEntryModified = true;
 
 			m_bufferPointer = 0;
 			setFilePointer (m_filePointer);
