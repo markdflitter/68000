@@ -217,6 +217,8 @@ void free (void* f)
 	if (trace > 0) printf ("free p 0x%x\n\r", f);
 	if (trace > 1) {printf ("before free: "); heap_diag (trace > 2);}
 
+	if (f == 0) return;
+
 	char* p = (char*) f;
 	p -= sizeof (unsigned int);
 	char* sentinel = freeptr;

@@ -295,13 +295,13 @@ void Filer::index (_zebulon_boot_table_entry btes[9])
 	m_bootTable.index (btes);
 }
 
-const unsigned int FATBlockIdent = 0xDEEFACED;
-const unsigned int ThisFATBlockIdent = FATBlockIdent + (atol (MAJOR) << 8) + atol (MINOR);
+const unsigned int FATIdent = 0xDEEFACED;
+const unsigned int ThisFATIdent = FATIdent + (atol (MAJOR) << 8) + atol (MINOR);
 
 void Filer::diag () const
 {
 	m_FAT.diag ();
-	printf ("FAT block ident is 0x%x\n\r\n\r", ThisFATBlockIdent);
+	printf ("FAT block ident is 0x%x\n\r\n\r", ThisFATIdent);
 	m_bootTable.diag ();
 }
 
@@ -341,72 +341,57 @@ void Filer::do_load_bootTable ()
 
 void Filer::do_load_FAT ()
 {	
-	unsigned char block [ide_block_size];
-	::ide_result result = __ide_read (1, block);	
-	if (result != ::IDE_OK) 
+	unsigned char ide_block [ide_block_size];
+	unsigned int blockNum = 1;
+
+	unsigned char* buffer = 0;
+	unsigned char* p = 0;
+	unsigned int bytesLeft = 0;
+
+	do
 	{
-		Utils::printIdeError (result);
-		return ;
-	}
-	
-	unsigned int fatBlockIdent = 0;
-	unsigned int size = 0;
-	unsigned int next = 0;
-	memcpy (&fatBlockIdent, block, sizeof (ThisFATBlockIdent));
-	//printf ("fatBlockIdent = 0x%x\n\r", fatBlockIdent); 
-	if (fatBlockIdent != ThisFATBlockIdent)
-	{
-		printf (">>> bad FAT block ident, expected 0x%x, got 0x%x\n\r", fatBlockIdent, ThisFATBlockIdent);
-		return ;
-	}
-
-	memcpy (&size, block + sizeof (ThisFATBlockIdent), sizeof (size));
-	//printf ("FATsize = %d\n\r", size); 
-
-	memcpy (&next, block + sizeof (ThisFATBlockIdent) + sizeof (size), sizeof (next));
-	//printf ("next = %d\n\r", next); 
-
-	unsigned char* buffer = new unsigned char [size];
-	unsigned int bytesLeft = size;
-	unsigned int bytesThisTime = min (bytesLeft, ide_block_size - sizeof (size) - sizeof (next) - sizeof (ThisFATBlockIdent));
-	unsigned char* p = buffer;
-	memcpy (p, block + sizeof (size) + sizeof (next) + sizeof (ThisFATBlockIdent), bytesThisTime);
-	p += bytesThisTime;
-	bytesLeft -= bytesThisTime;
-
-	while (next != 0)
-	{
-		//printf ("next = %d\n\r", next);
-		::ide_result result = __ide_read (next, block);	
+		::ide_result result = __ide_read (blockNum, ide_block);	
 		if (result != ::IDE_OK) 
 		{
 			Utils::printIdeError (result);
-			delete buffer;
-			return ;
+			break ;
 		}
 
-		memcpy (&fatBlockIdent, block, sizeof (fatBlockIdent));
-		//printf ("fatBlockIdent = 0x%x\n\r", fatBlockIdent); 
-		if (fatBlockIdent != ThisFATBlockIdent)
+		unsigned int FATIdent = 0;
+		memcpy (&FATIdent, ide_block, sizeof (ThisFATIdent));
+		//printf ("FATIdent = 0x%x\n\r", FATIdent); 
+		if (FATIdent != ThisFATIdent)
+		{	
+			printf (">>> bad FAT ident, expected 0x%x, got 0x%x\n\r", FATIdent, ThisFATIdent);
+			break ;
+		}
+
+		unsigned int FATSize = 0;
+		memcpy (&FATSize, ide_block + sizeof (ThisFATIdent), sizeof (FATSize));
+		//printf ("FATSize = %d\n\r", FATSize); 
+
+		memcpy (&blockNum, ide_block + sizeof (ThisFATIdent) + sizeof (FATSize), sizeof (blockNum));
+		//printf ("next block num = %d\n\r", blockNum); 
+
+		// special case for first block, set things up
+		if (buffer == 0)
 		{
-			printf (">>> bad FAT block ident, expected 0x%x, got 0x%x\n\r", fatBlockIdent, ThisFATBlockIdent);
-			return ;
+			buffer = new unsigned char [FATSize];
+			p = buffer;
+			bytesLeft = FATSize;
 		}
 
-		memcpy (&size, block + sizeof (ThisFATBlockIdent), sizeof (size));
-		//printf ("FATsize = %d\n\r", size); 
-
-		memcpy (&next, block + sizeof (size) + sizeof (ThisFATBlockIdent), sizeof (next));
-		//printf ("next = %d\n\r", next); 
-
-		bytesThisTime = min (bytesLeft, ide_block_size - sizeof (size) - sizeof (next) - sizeof (ThisFATBlockIdent));
-		memcpy (p, block + sizeof (ThisFATBlockIdent) + sizeof (size) + sizeof (next), bytesThisTime);
+		unsigned int bytesThisTime = min (bytesLeft, ide_block_size - sizeof (FATSize) - sizeof (blockNum) - sizeof (ThisFATIdent));
+		memcpy (p, ide_block + sizeof (FATSize) + sizeof (blockNum) + sizeof (ThisFATIdent), bytesThisTime);
 		p += bytesThisTime;
-		bytesLeft -= bytesThisTime;			
+		bytesLeft -= bytesThisTime;	
+	} while (blockNum != 0);
+
+	if (blockNum == 0)
+	{
+		const unsigned char* p = buffer;
+		m_FAT.deserialise (p);
 	}
-	
-	const unsigned char* p2 = buffer;
-	m_FAT.deserialise (p2);
 
 	delete buffer;
 }
@@ -443,6 +428,9 @@ void Filer::do_save_bootTable ()
 		Utils::printIdeError (result);
 }
 
+namespace
+{
+
 unsigned int numBlocks (unsigned int numBytes)
 {
 	unsigned int result = numBytes / ide_block_size;
@@ -451,16 +439,18 @@ unsigned int numBlocks (unsigned int numBytes)
 	return result;
 }
 
+}
+
 void Filer::do_save_FAT ()
 {
 	// work out the size in blocks
 	unsigned char* p = 0;
 	m_FAT.serialise (p, true);
-	unsigned int FATsize = (unsigned int) p;
-	//printf ("FATsize %d\n\r", FATsize);
+	unsigned int FATSize = (unsigned int) p;
+	//printf ("FATSize %d\n\r", FATsize);
 
-	unsigned int FATBlocks = numBlocks (FATsize);
-	unsigned int sizeOnDisk = FATsize + (FATBlocks * (sizeof (unsigned int) + sizeof (unsigned int) + sizeof (unsigned int)));
+	unsigned int FATBlocks = numBlocks (FATSize);
+	unsigned int sizeOnDisk = FATSize + (FATBlocks * (sizeof (unsigned int) + sizeof (unsigned int) + sizeof (unsigned int)));
 	FATBlocks = numBlocks (sizeOnDisk);
 	//printf ("FATBlocks = %d\n\r", FATBlocks);	
 
@@ -481,7 +471,7 @@ void Filer::do_save_FAT ()
 	m_FAT.rightsizeFile (FAT, FATBlocks);
 	FAT->setSize (sizeOnDisk);
 
-	unsigned char* buffer = new unsigned char [FATsize];
+	unsigned char* buffer = new unsigned char [FATSize];
 	p = buffer;
 	m_FAT.serialise (p, false);
 	//printf ("serialised %d\n\r", p - buffer);
@@ -491,13 +481,13 @@ void Filer::do_save_FAT ()
 	unsigned int block = (*i)->start;
 
 	p = buffer;
-	while (p < buffer + FATsize)
+	while (p < buffer + FATSize)
 	{
 		// write the ident, to all blocks for consistency
-		fwrite (f, (const unsigned char*) &ThisFATBlockIdent, sizeof (ThisFATBlockIdent));
+		fwrite (f, (const unsigned char*) &ThisFATIdent, sizeof (ThisFATIdent));
 
 		// write the size, to all blocks for consistency
-		fwrite (f, (const unsigned char*) &FATsize, sizeof (FATsize));
+		fwrite (f, (const unsigned char*) &FATSize, sizeof (FATSize));
 
 		// write the link
 		if (block < (*i)->start + (*i)->length - 1)
@@ -513,7 +503,7 @@ void Filer::do_save_FAT ()
 		fwrite (f, (const unsigned char*) &block, sizeof (block));
 	
 		// write the data
-		unsigned int bytesThisTime = min (ide_block_size - sizeof (FATsize) - sizeof (block) - sizeof (ThisFATBlockIdent), buffer + FATsize - p);
+		unsigned int bytesThisTime = min (ide_block_size - sizeof (FATSize) - sizeof (block) - sizeof (ThisFATIdent), buffer + FATSize - p);
 		//printf ("%d\n\r", bytesThisTime);			
 		fwrite (f, p, bytesThisTime);
 		p += bytesThisTime;
