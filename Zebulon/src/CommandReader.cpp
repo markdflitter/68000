@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <algorithm>
+#include <vector>
+#include <stdlib.h>
 #include "../private_include/Utils.h"
 #include "../private_include/version.h"
 
@@ -12,25 +14,24 @@ using namespace std;
 namespace 
 {
 
-string getStr (char*& p)
+string getStr (FILE* f)
 {
-	int count = 0;
-	while (*p != '\n')
-	{
-		count++;
-		p++;
-	}
+	vector<char> v;
+	v.reserve (255);
 
-	char buffer [255];
-	memcpy (buffer, p - count, count);
-	buffer [count] = '\0';
+	char ch;
+	while (!feof (f) && (fread (&ch, 1, 1, f) == 1) && (ch != '\n'))
+		v.push_back (ch);
 
-	p += 2;
-	return string (buffer);
+	// skip the following /r
+	fread (&ch, 1, 1, f);
+
+	v [v.size ()] = '\0';	
+
+	return string (v.data ());
 }
 
 }
-
 namespace Zebulon
 {
 
@@ -54,36 +55,23 @@ void CommandReader::loadHistory ()
 		return ;
 	}
 
-	//first buffer special case
-	char buffer [block_size];
-	memset (buffer, 0, block_size);
-	char* p = buffer;
-
-	unsigned int bytesRead = fread (buffer, 1, block_size, f);
-	if (!feof (f))
-	{
-		printf (">>> history file is more than 1 block, clearing\n\r");
-		saveHistory ();
-		return ;
-	}
-
-	string readIdent = getStr (p);
+	string readIdent = getStr (f);
 	if (readIdent != HISTORY_IDENT)
 	{
 		printf (">>> HISTORY - ident mismatch.  Expected %s, got %s\n\r", HISTORY_IDENT, readIdent.c_str ());
 		return ;
 	}
 
-	string readVersion = getStr (p);
+	string readVersion = getStr (f);
 	if (readVersion != HISTORY_VERSION)
 	{
 		printf (">>> HISTORY - version mismatch.  Expected %s, got %s\n\r", HISTORY_VERSION, readVersion.c_str ());
 		return ;
 	}
 
-	for (; p < buffer + bytesRead; )
+	while (!feof (f))
 	{
-		string item = getStr (p);
+		string item = getStr (f);
 		m_history.push_back (item);
 		m_pos = m_history.size ();
 	}

@@ -10,6 +10,7 @@ class string
 {
 public:
 	string ();
+	string (char c);
 	string (const char* s);
 	string (const string& other);
 	string (size_t n, char c);

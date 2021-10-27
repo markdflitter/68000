@@ -15,6 +15,12 @@ public:
 		reserve (2);
 	}
 	
+	~vector ()
+	{
+		delete[] m_Ts;
+	}
+
+	
 	void push_back (const T& t)
 	{
 		if (m_size == m_capacity)
@@ -89,6 +95,9 @@ public:
 	bool empty () const {return m_size == 0;}
 	size_t size () const {return m_size;}
 	size_t capacity () const {return m_capacity;}
+
+	T* data () {return m_Ts;}
+	const T* data () const {return m_Ts;}
 private:
 	mutable size_t m_size;
 	mutable size_t m_capacity;

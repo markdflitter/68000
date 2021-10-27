@@ -10,6 +10,12 @@ string::string () : m_s (new char [1])
 	m_s [0] = '\0';
 }
 
+string::string (char c) : m_s (new char [2])
+{
+	m_s [0] = c;
+	m_s [1] = '\0';
+}
+
 string::string (const char* s) : m_s (0)
 {
 	assign (s);
