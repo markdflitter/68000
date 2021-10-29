@@ -40,9 +40,9 @@ T max (const T& t1, const T& t2)
 	return t1 > t2 ? t1 : t2; 
 }
 
-unsigned long printBuffer (char* buffer, size_t bufferLen, unsigned long startAddress)
+unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned long startAddress)
 {
-	char* p = buffer;
+	unsigned char* p = buffer;
 	
 	unsigned long address = startAddress;
 
@@ -82,7 +82,7 @@ unsigned long printBuffer (char* buffer, size_t bufferLen, unsigned long startAd
 }
 
 
-inline void dump_memory (char* p, unsigned int length)
+inline void dump_memory (unsigned char* p, unsigned int length)
 {
 	printBuffer (p, length, (unsigned long) p);
 	char buf [255];
@@ -106,7 +106,7 @@ char* initialiseHeap ()
 	//empty block
 	block_len (*next_block (p)) = MAX_HEAP_SIZE - sentinelBlockSize;
 	 *next_block (*next_block (p)) = 0;
-   	dump_memory (&__end[0], 16);
+   	dump_memory ((unsigned char*) &__end[0], 16);
 
 	return p;
 }
@@ -268,7 +268,7 @@ void heap_diag (bool detail)
 				printf ("free");
 			printf (" block 0x%x -> 0x%x, length %d byte(s)\n\r", p, p + length, length);
 		
-			dump_memory (p, 16);
+			dump_memory ((unsigned char*) p, 16);
 			p = (char*) *next_block (p);
 		}
 	}
