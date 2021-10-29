@@ -33,4 +33,6 @@ SECTIONS
 	} > RAM
 
 	__end = . ;
+	
+	__stack = 0x2FFFFC;
 }

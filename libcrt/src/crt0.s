@@ -1,8 +1,9 @@
 .global __main
+.global __stack
 .global start
 start:
 			MOVE.B #4,0xE00001
-			MOVEA.L #0x2FFFFC,%SP
+			MOVEA.L #__stack,%SP
 			MOVE.B #5,0xE00001
 
 			JSR __main
