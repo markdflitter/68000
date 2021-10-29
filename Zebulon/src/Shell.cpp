@@ -97,9 +97,8 @@ void printHelp (void)
 	printf ("disk write <block> <pattern>\t - write pattern to specified block on disk\n\r");
 	printf ("disk soak\t\t\t - soak test the disk\n\r");
 	printf ("filer format\t\t\t - format the filing system\n\r");
-	printf ("filer diag\t\t\t - print filing system diagnostics\n\r");
 	printf ("filer space\t\t\t - print filing system free space\n\r");
-	printf ("filer ls {filer} {-a}\t - list files\n\r");
+	printf ("filer ls {filter} {-a}\t\t - list files\n\r");
 	printf ("filer index\t\t\t - print boot table\n\r");
 	printf ("filer file read <filename>\t - read file\n\r");
 	printf ("filer file write <filename>\t - write file\n\r");
@@ -264,8 +263,9 @@ void free_space_filer ()
 	printf ("total free: %d out of %d (%d%%)\n\r", fs.freeSpace, fs.totalSpace, ((unsigned int) (100 * double(fs.freeSpace) / fs.totalSpace)));
 }
 
-void stat_file (const string& filename);
-void ls_filer (bool all, const std::string& filter)
+typedef void (*f) (const string& filename);
+
+size_t visit (bool all, const string& filter, f op)
 {
 	char buffer [FILENAME_BUFFER_SIZE];
 
@@ -278,7 +278,7 @@ void ls_filer (bool all, const std::string& filter)
 
 		if ((all || buffer [0] != '.') && (strncmp (buffer, filter.c_str (), len) == 0))
 		{	
-			stat_file (buffer);
+			op (buffer);
 			numFiles++;
 		}
 
@@ -289,7 +289,21 @@ void ls_filer (bool all, const std::string& filter)
 			break;
 		}
 	}
+	return numFiles;
+}
+
+void stat_file (const string& filename);
+void ls_filer (bool all, const std::string& filter)
+{
+	size_t numFiles = visit (all, filter, &stat_file);
 	printf (" %d file(s)\n\r", numFiles);
+}
+
+void delete_file (const string& filename);
+void delete_files (const std::string& filter)
+{
+	size_t numFiles = visit (true, filter, &delete_file);
+	printf (" deleted %d file(s)\n\r", numFiles);
 }
 
 void index_filer ()
@@ -522,10 +536,6 @@ int Shell::run () const
 				{
 					format_filer ();
 				}
-				if (tokens [1] == "diag")
-				{
-					diag_filer ();
-				}
 				if (tokens [1] == "space")
 				{
 					free_space_filer ();
@@ -566,9 +576,10 @@ int Shell::run () const
 						{
 							stat_file (filename);
 						}
-						if (tokens [2] == "delete")
+						if (tokens [2] == "delete" && tokens.size () > 3)
 						{
-							delete_file (filename);
+							string filter = tokens [3];
+							delete_files (filter);
 						}
 					}
 				}
