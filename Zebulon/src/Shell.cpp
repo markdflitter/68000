@@ -99,7 +99,7 @@ void printHelp (void)
 	printf ("filer format\t\t\t - format the filing system\n\r");
 	printf ("filer diag\t\t\t - print filing system diagnostics\n\r");
 	printf ("filer space\t\t\t - print filing system free space\n\r");
-	printf ("filer ls {all}\t\t\t - list {all} files\n\r");
+	printf ("filer ls {filer} {-a}\t - list files\n\r");
 	printf ("filer index\t\t\t - print boot table\n\r");
 	printf ("filer file read <filename>\t - read file\n\r");
 	printf ("filer file write <filename>\t - write file\n\r");
@@ -265,7 +265,7 @@ void free_space_filer ()
 }
 
 void stat_file (const string& filename);
-void ls_filer (bool all)
+void ls_filer (bool all, const std::string& filter)
 {
 	char buffer [FILENAME_BUFFER_SIZE];
 
@@ -274,7 +274,9 @@ void ls_filer (bool all)
 	int numFiles = 0;
 	while (sh > -1)
 	{
-		if (all || buffer [0] != '.')
+		size_t len = min (strlen (buffer), filter.length ());
+
+		if ((all || buffer [0] != '.') && (strncmp (buffer, filter.c_str (), len) == 0))
 		{	
 			stat_file (buffer);
 			numFiles++;
@@ -531,9 +533,16 @@ int Shell::run () const
 				if (tokens [1] == "ls")
 				{
 					bool all = false;
+					string filter = "";
 					if (tokens.size () > 2)
-						all = tokens [2] == "all";
-					ls_filer (all);
+					{
+						for (int i = 2; i < tokens.size (); ++i)
+							if (tokens [i] == "-a")
+								all = true;
+							else
+								filter = tokens [i];
+					}
+					ls_filer (all, filter);
 				}
 				if (tokens [1] == "index")
 				{
