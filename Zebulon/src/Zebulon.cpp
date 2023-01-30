@@ -138,7 +138,7 @@ void trap2 ()
 			break;
 		}
 
-		case ide_read_block  : result = __ide_read ((unsigned int) tp.a1, (unsigned char*) tp.a2); break;
+		case ide_read_block  : result = __ide_read ((unsigned int) tp.a1, (unsigned char*) tp.a2, _zebulon_time, _zebulon_time () + diskTimeoutInMS); break;
 		case ide_write_block : result = __ide_write ((unsigned int) tp.a1, (unsigned char*) tp.a2); break;
 		default: break;
 	}

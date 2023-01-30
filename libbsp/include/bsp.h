@@ -70,10 +70,10 @@ const size_t ide_block_size = 512;
 typedef unsigned int (*get_time_fn_ptr) ();
 
 enum ide_result {IDE_OK = 0x0, IDE_AMNF = 0x1, IDE_TK0NF = 0x2, IDE_ABRT = 0x4, IDE_MCR = 0x8,
-				IDE_IDNF = 0x10, IDE_MC = 0x20, IDE_UNC = 0x40, IDE_BBK = 0x80, IDE_TIMEDOUT = 0x100};
+				IDE_IDNF = 0x10, IDE_MC = 0x20, IDE_UNC = 0x40, IDE_BBK = 0x80, IDE_TIMEOUT = 0x100};
 extern "C" ide_result __ide_ident (DiskInfo& result, get_time_fn_ptr get_time, unsigned int timeout_time);
 extern "C" ide_result __ide_write (unsigned long LBA, unsigned char data [ide_block_size], get_time_fn_ptr get_time = 0, unsigned int timeout_time = 0);
-extern "C" ide_result __ide_read (unsigned long LBA, unsigned char data [ide_block_size], get_time_fn_ptr get_time = 0, unsigned int timeout_time = 0);
+extern "C" ide_result __ide_read (unsigned long LBA, unsigned char data [ide_block_size], get_time_fn_ptr get_time, unsigned int timeout_time);
 
 extern "C" void __set_display (unsigned int num);
 

@@ -31,7 +31,9 @@ public:
 			printf (">>>  uncorrectable data error\n\r");
 		if (error == ::IDE_BBK)
 			printf (">>>  bad block\n\r");
-	}
+		if (error == ::IDE_TIMEOUT)
+			printf (">>>  timeout\n\r");
+		}
 
 	static std::string pad (const std::string& str, char c, size_t length)
 	{

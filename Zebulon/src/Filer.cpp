@@ -6,9 +6,12 @@
 #include <algorithm>
 #include "../private_include/Utils.h"
 #include "../private_include/version.h"
+#include <ZebulonAPI.h>
 
 using namespace mdf;
 using namespace std;
+
+static unsigned int diskTimeoutInMS = 5;
 
 namespace
 {
@@ -42,7 +45,7 @@ bool check_read_only (int& handle)
 namespace Zebulon
 {
 
-Filer::Filer ()
+Filer::Filer () : m_initialised (false)
 {
 	printf ("Filer::Filer()\n\r");
 }
@@ -65,6 +68,12 @@ void Filer::save ()
 
 int Filer::format (int diskSize)
 {
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		return 0;
+	}
+
 	m_openFiles.clear ();
 	m_fileSearches.clear ();
   	m_bootTable.clear ();
@@ -114,6 +123,12 @@ bool Filer::rightsizeFile (FileEntry::Ptr fileEntry, unsigned long totalBlocks)
 
 int Filer::fopen (const std::string& name, const std::string& mode)
 {
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		return file_not_found;
+	}
+
 	FileEntry::Ptr f = m_FAT.findFile (name);
 	if (f.isNull ())
 	{
@@ -164,6 +179,12 @@ int Filer::fopen (const std::string& name, const std::string& mode)
 
 void Filer::fclose (file_handle handle)
 {
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		return ;
+	}
+
 	check_read_only (handle);
 	if (!getOpenFile (handle).isNull ())
 		m_openFiles [handle].reset ();	
@@ -171,6 +192,12 @@ void Filer::fclose (file_handle handle)
 
 bool Filer::feof (file_handle handle)
 {
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		return true;
+	}
+
 	check_read_only (handle);
 	OpenFile::Ptr of = getOpenFile (handle);
 	if (!of.isNull ())
@@ -181,6 +208,12 @@ bool Filer::feof (file_handle handle)
 
 unsigned long Filer::fwrite (file_handle handle, const unsigned char* data, unsigned long numBytes)
 {
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		return 0;
+	}
+
 	if (check_read_only (handle))
 	{
 		printf (">> file opened as read-only\n\r");
@@ -196,6 +229,12 @@ unsigned long Filer::fwrite (file_handle handle, const unsigned char* data, unsi
 
 unsigned long Filer::fread (file_handle handle, unsigned char* data, unsigned long numBytes)
 {
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		return 0;
+	}
+
 	check_read_only (handle);
 	OpenFile::Ptr of = getOpenFile (handle);
 	if (!of.isNull ())
@@ -206,12 +245,23 @@ unsigned long Filer::fread (file_handle handle, unsigned char* data, unsigned lo
 
 int Filer::statFile (const std::string& name, _zebulon_stats* stats)	
 {
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		return -1;
+	}
+
 	return m_FAT.statFile (name, stats);
 }
 
 Filer::file_search_handle Filer::findFirstFile (char filename [FILENAME_BUFFER_SIZE])
 {
 	int index = -1;
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		return index;
+	}
 
 	FileSearch::Ptr fileSearch = m_FAT.findFirstFile ();
 	FileEntry::Ptr fileEntry = fileSearch->next ();
@@ -236,6 +286,12 @@ Filer::file_search_handle Filer::findFirstFile (char filename [FILENAME_BUFFER_S
 
 bool Filer::findNextFile (file_search_handle handle, char filename [FILENAME_BUFFER_SIZE])
 {
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		return false;
+	}
+
 	FileSearch::Ptr fs = getFileSearch (handle);
 	if (fs.isNull ())
 	{
@@ -257,6 +313,12 @@ bool Filer::findNextFile (file_search_handle handle, char filename [FILENAME_BUF
 
 void Filer::closeFind (file_search_handle handle)
 {
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		return ;
+	}
+
 	if (!getFileSearch (handle).isNull ())
 		m_fileSearches [handle].reset ();
 }
@@ -285,6 +347,13 @@ bool Filer::boot (unsigned int slot, const std::string& filename, unsigned int l
 
 void Filer::index (_zebulon_boot_table_entry btes[9])
 {
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		memset (btes, 0, sizeof (_zebulon_boot_table_entry) * 9);
+		return ;
+	}
+
 	m_bootTable.index (btes);
 }
 
@@ -293,6 +362,12 @@ const unsigned int ThisFATIdent = FATIdent + (atol (MAJOR) << 8) + atol (MINOR);
 
 void Filer::diag () const
 {
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		return ;
+	}
+
 	m_FAT.diag ();
 	printf ("FAT block ident is 0x%x\n\r\n\r", ThisFATIdent);
 	m_bootTable.diag ();
@@ -300,6 +375,12 @@ void Filer::diag () const
 
 _zebulon_free_space Filer::getFreeSpace () const
 {
+	if (!m_initialised)
+	{
+		printf (">>> filer not initialised\n\r");
+		return _zebulon_free_space();
+	}
+
 	return m_FAT.getFreeSpace ();
 }
 
@@ -314,26 +395,29 @@ int Filer::findFirstFreeHandle (const T& vec) const
 
 void Filer::do_load ()
 {
-	do_load_bootTable ();
-	do_load_FAT ();
+	m_initialised = do_load_bootTable () && do_load_FAT ();
 }
 
-void Filer::do_load_bootTable ()
+bool Filer::do_load_bootTable ()
 {
 	unsigned char ide_block [ide_block_size];
-	::ide_result result = __ide_read (0, ide_block);	
+	::ide_result result = __ide_read (0, ide_block, _zebulon_time, _zebulon_time() + diskTimeoutInMS);	
 	if (result != ::IDE_OK) 
 	{
 		Utils::printIdeError (result);
-		return ;
+		return false;
 	}
 	
 	const unsigned char* p = ide_block;
 	m_bootTable.deserialise (p);
+	
+	return true;
 }
 
-void Filer::do_load_FAT ()
+bool Filer::do_load_FAT ()
 {	
+	bool result = true;
+	
 	unsigned char ide_block [ide_block_size];
 	unsigned int blockNum = 1;
 
@@ -343,10 +427,11 @@ void Filer::do_load_FAT ()
 
 	do
 	{
-		::ide_result result = __ide_read (blockNum, ide_block);	
-		if (result != ::IDE_OK) 
+		::ide_result ide_result = __ide_read (blockNum, ide_block, _zebulon_time, _zebulon_time () + diskTimeoutInMS);	
+		if (ide_result != ::IDE_OK) 
 		{
-			Utils::printIdeError (result);
+			Utils::printIdeError (ide_result);
+			result = false;
 			break ;
 		}
 
@@ -387,6 +472,7 @@ void Filer::do_load_FAT ()
 	}
 
 	delete buffer;
+	return result;
 }
 
 void Filer::do_save ()

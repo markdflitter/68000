@@ -2,8 +2,11 @@
 #include <string.h>
 #include <bsp.h>
 #include <stdio.h>
+#include "../private_include/Utils.h"
 
 using namespace std;
+
+static unsigned int diskTimeoutInMS = 50;
 
 namespace Zebulon
 {
@@ -146,7 +149,13 @@ bool OpenFile::readCurBlock ()
 		else
 		{	
 			//printf ("buffer not loaded - reading block %d\n\r", m_curBlock);	
-			__ide_read (m_curBlock, m_buffer);
+			::ide_result result = __ide_read (m_curBlock, m_buffer, _zebulon_time, _zebulon_time () + diskTimeoutInMS);
+			if (result != ::IDE_OK) 
+			{	
+				Utils::printIdeError (result);
+				return false;
+			}
+
 		}
 		m_bufferLoaded = true;
 	}
