@@ -90,19 +90,19 @@ IDE& the_ide ()
 	return i;
 }
 
-ide_result __ide_ident (DiskInfo& diskInfo)
+ide_result __ide_ident (DiskInfo& diskInfo, get_time_fn_ptr get_time, unsigned int timeout_time)
 {
-	return (ide_result) the_ide ().ident (diskInfo);
+	return (ide_result) the_ide ().ident (diskInfo, get_time, timeout_time);
 }
 
-ide_result __ide_write (unsigned long LBA, unsigned char data [ide_block_size])
+ide_result __ide_write (unsigned long LBA, unsigned char data [ide_block_size], get_time_fn_ptr get_time, unsigned int timeout_time)
 {
-	return (ide_result) the_ide ().write (LBA, data);
+	return (ide_result) the_ide ().write (LBA, data, get_time, timeout_time);
 }
 
-ide_result __ide_read (unsigned long LBA, unsigned char data [ide_block_size])
+ide_result __ide_read (unsigned long LBA, unsigned char data [ide_block_size], get_time_fn_ptr get_time, unsigned int timeout_time)
 {
-	return (ide_result) the_ide ().read (LBA, data);
+	return (ide_result) the_ide ().read (LBA, data, get_time, timeout_time);
 }
 
 Display& the_display ()

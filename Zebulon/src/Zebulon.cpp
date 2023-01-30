@@ -23,9 +23,9 @@ const char* banner =
 
 extern char __vector_table[];
 
-static unsigned int ticks = 0;
+static volatile unsigned int ticks = 0;
 static double tickIntervalInMs = 0.0;
-
+static unsigned int diskTimeoutInMS = 50;
 
 Filer& theFiler ()
 {
@@ -121,7 +121,6 @@ void convert_disk_info (::DiskInfo* source, Zebulon::DiskInfo* target)
 	target->multiwordDmaModesActive = source->multiwordDmaModesActive;
 }
 
-
 // ident / read_block / write_block
 void trap2 () __attribute__ ((interrupt));
 void trap2 ()
@@ -134,7 +133,7 @@ void trap2 ()
 		case ide_ident  :
 		{
 			::DiskInfo info;
-			result = __ide_ident (info);
+			result = __ide_ident (info, _zebulon_time, _zebulon_time () + diskTimeoutInMS);
 			convert_disk_info (&info, (Zebulon::DiskInfo*) tp.a1);
 			break;
 		}
@@ -158,12 +157,13 @@ void trap3 ()
 		case filer_format:
 		{
 			::DiskInfo info;
-			if (__ide_ident (info) == ::IDE_OK)
+			if (__ide_ident (info, _zebulon_time, _zebulon_time () + diskTimeoutInMS) == ::IDE_OK)
 			{
 				int numSectors = info.totalNumOfUserSectors;
 				*((int*) tp.pResult) = theFiler ().guard ()->format (numSectors);
 			}
-			else *((int*) tp.pResult) = -1;
+			else 
+				*((int*) tp.pResult) = -1;
 			break;
 		}
 		case filer_diag: theFiler().diag (); break;
@@ -349,19 +349,30 @@ __putstr (banner);
 	v.setVector (39, &trap7);
 	v.setVector (40, &trap8);
 
-
 	// detailed diagnostics
 	printf ("installed TRAPs\n\r");
 
-	::DiskInfo info;
-	if (__ide_ident (info) == ::IDE_OK)
+    unsigned int ticksNow = ticks;
+    printf ("waiting for timer to stabilise\n\r");
+    while (ticks == ticksNow) 
+      ; 
+    printf ("timer stabilised at %d\n\r", _zebulon_time ());
+
 	{
-		double capacity = ((double) info.totalNumOfUserSectors) * ide_block_size / 1000000000;
-		printf ("identified %s (%d Gb)\n\r", info.modelNumber, (unsigned long) capacity);
-		printf (" serial number\t\t: %s\n\r",info.serialNumber);
-		printf (" firmware revision\t: %s\n\r",info.firmwareRevision);
+		::DiskInfo info;
+		unsigned int result = __ide_ident (info, _zebulon_time, _zebulon_time () + diskTimeoutInMS);
+
+	    if (result == ::IDE_OK)
+		{
+			double capacity = ((double) info.totalNumOfUserSectors) * ide_block_size / 1000000000;
+			printf ("identified %s (%d Gb)\n\r", info.modelNumber, (unsigned long) capacity);
+			printf (" serial number\t\t: %s\n\r",info.serialNumber);
+			printf (" firmware revision\t: %s\n\r",info.firmwareRevision);
+		}
+		else
+      		printf (">>> ident error 0x%x\n\r", result);
 	}
-	
+
 	//test_heap ();
 	//return 0;
 
@@ -369,7 +380,7 @@ __putstr (banner);
 
 	printf ("\n\r");
 	heap_diag (false);
-	
+
 	int result = Shell ().run ();
 
 	__disable_interrupts ();

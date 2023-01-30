@@ -11,12 +11,12 @@ public:
 	IDE (unsigned int baseAddress = 0xA00000);
 
 	enum Result {OK = 0x0, AMNF = 0x1, TK0NF = 0x2, ABRT = 0x4, MCR = 0x8,
-				IDNF = 0x10, MC = 0x20, UNC = 0x40, BBK = 0x80};
+				IDNF = 0x10, MC = 0x20, UNC = 0x40, BBK = 0x80, TIMEDOUT = 0x100};
 
-	Result ident (DiskInfo& result);
+	Result ident (DiskInfo& result, get_time_fn_ptr get_time, unsigned int timeout_time);
 
-	Result write (unsigned long LBA, unsigned char data [ide_block_size]);
-	Result read (unsigned long LBA, unsigned char data [ide_block_size]);
+	Result write (unsigned long LBA, unsigned char data [ide_block_size], get_time_fn_ptr get_time, unsigned int timeout_time);
+	Result read (unsigned long LBA, unsigned char data [ide_block_size], get_time_fn_ptr get_time, unsigned int timeout_time);
 private:
 	MC68230 m_controller;
 
@@ -29,16 +29,12 @@ private:
 	bool hasError ();
 	Result error ();
 
-	void wait (unsigned char what);
-	void waitNot (unsigned char what);
-
-	void waitDriveReady ();
-	void waitNotBusy ();
-	void waitDRQ ();
+	bool wait (unsigned char what, get_time_fn_ptr get_time, unsigned int timeout_time);
+	bool waitNot (unsigned char what, get_time_fn_ptr get_time, unsigned int timeout_time);
 
 	unsigned char readStatus ();
 
-	void sendCommand (unsigned char command);
+	bool sendCommand (unsigned char command, get_time_fn_ptr get_time, unsigned int timeout_time);
 
 	void setLBA (unsigned long LBA);
 

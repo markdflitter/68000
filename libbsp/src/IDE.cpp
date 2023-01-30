@@ -195,16 +195,20 @@ IDE::Result IDE::error ()
 		return BBK;
 }
 
-void IDE::wait (unsigned char what)
+bool IDE::wait (unsigned char what, get_time_fn_ptr get_time, unsigned int timeout_time)
 {
 	while ((readStatus () & what) == 0x0)
-		;
+		if (get_time && (get_time () > timeout_time)) return false;
+
+    return true;
 }
 
-void IDE::waitNot (unsigned char what)
+bool IDE::waitNot (unsigned char what, get_time_fn_ptr get_time, unsigned int timeout_time)
 {
 	while ((readStatus () & what) != 0x0)
-		;
+		if (get_time && (get_time () > timeout_time)) return false;
+
+  return true;
 }
 
 unsigned char IDE::readStatus ()
@@ -212,10 +216,11 @@ unsigned char IDE::readStatus ()
 	return readRegister (STATUS_REGISTER);
 }
 
-void IDE::sendCommand (unsigned char command)
+bool IDE::sendCommand (unsigned char command, get_time_fn_ptr get_time, unsigned int timeout_time)
 {
-	waitNot (BUSY);
+	if (!waitNot (BUSY, get_time, timeout_time)) return false;
 	writeRegister (COMMAND_REGISTER, command);
+	return true;
 }
 
 IDE::RegisterAccess IDE::accessRegister (unsigned char reg)
@@ -223,19 +228,19 @@ IDE::RegisterAccess IDE::accessRegister (unsigned char reg)
 	return RegisterAccess (m_controller, reg);
 }
 
-IDE::Result IDE::ident (DiskInfo& result)
+IDE::Result IDE::ident (DiskInfo& result, get_time_fn_ptr get_time, unsigned int timeout_time)
 {
 	writeRegister (DRIVE_SELECT_REGISTER, MASTER);
-	wait (DRDY);
+	if (!wait (DRDY, get_time, timeout_time)) return TIMEDOUT;
 
-	sendCommand (IDENT_COMMAND);
-	waitNot (BUSY);
+	if (!sendCommand (IDENT_COMMAND, get_time, timeout_time)) return TIMEDOUT;
+	if (!waitNot (BUSY, get_time, timeout_time)) return TIMEDOUT;
 
 	if (hasError ())
 	{
 		return error ();
 	}
-	wait (DRQ);
+	if (!wait (DRQ, get_time, timeout_time)) return TIMEDOUT;
 
 	unsigned short response [256];
 	for (int i = 0; i < 256; i++)
@@ -298,7 +303,7 @@ IDE::Result IDE::ident (DiskInfo& result)
 	result.singlewordDmaModesActive = response [62] >> 8;
 	result.multiwordDmaModesSupported = response [63] & 0xFF;
 	result.multiwordDmaModesActive = response [63] >> 8;
-	
+
 	return OK;
 }
 
@@ -312,20 +317,20 @@ void IDE::setLBA (unsigned long LBA)
 }
 
 
-IDE::Result  IDE::write (unsigned long LBA, unsigned char data [ide_block_size])
+IDE::Result  IDE::write (unsigned long LBA, unsigned char data [ide_block_size], get_time_fn_ptr get_time, unsigned int timeout_time)
 {
 	writeRegister (DRIVE_SELECT_REGISTER, MASTER);
-	wait (DRDY);
+	if (!wait (DRDY, get_time, timeout_time)) return TIMEDOUT;
 	//printf ("DRDY\n\r");
 
 	setLBA (LBA);
 
-	waitNot (BUSY);
+	if (!waitNot (BUSY, get_time, timeout_time)) return TIMEDOUT;
 	//printf ("not BUSY1\n\r");
 
-	sendCommand (WRITE_SECTORS_WITH_RETRY);
+	if (!sendCommand (WRITE_SECTORS_WITH_RETRY, get_time, timeout_time)) return TIMEDOUT;
 
-	waitNot (BUSY);
+	if (!waitNot (BUSY, get_time, timeout_time)) return TIMEDOUT;
 	//printf ("not BUSY2\n\r");
 
 	if (hasError ())
@@ -335,7 +340,7 @@ IDE::Result  IDE::write (unsigned long LBA, unsigned char data [ide_block_size])
 
 	//printf ("wait DRQ\n\r");
 
-	wait (DRQ);
+	if (!wait (DRQ, get_time, timeout_time)) return TIMEDOUT;
 
 	//printf ("DRQ\n\r");
 
@@ -347,7 +352,7 @@ IDE::Result  IDE::write (unsigned long LBA, unsigned char data [ide_block_size])
 		writeData (w);
 	}
 
-	waitNot (BUSY);
+	if (!waitNot (BUSY, get_time, timeout_time)) return TIMEDOUT;
 	//printf ("not BUSY3\n\r");
 
 	if (hasError ())
@@ -358,23 +363,23 @@ IDE::Result  IDE::write (unsigned long LBA, unsigned char data [ide_block_size])
 	return OK;
 }
 
-IDE::Result IDE::read (unsigned long LBA, unsigned char data [ide_block_size])
+IDE::Result IDE::read (unsigned long LBA, unsigned char data [ide_block_size], get_time_fn_ptr get_time, unsigned int timeout_time)
 {
 	writeRegister (DRIVE_SELECT_REGISTER, MASTER);
-	wait (DRDY);
+	if (!wait (DRDY, get_time, timeout_time)) return TIMEDOUT;
 
 	setLBA (LBA);
 
-	sendCommand (READ_SECTORS_WITH_RETRY);
+	if (!sendCommand (READ_SECTORS_WITH_RETRY, get_time, timeout_time)) return TIMEDOUT;
 
-	waitNot (BUSY);
+	if (!waitNot (BUSY, get_time, timeout_time)) return TIMEDOUT;
 
 	if (hasError ())
 	{
 		return error ();
 	}
 
-	wait (DRQ);
+	if (!wait (DRQ, get_time, timeout_time)) return TIMEDOUT;
 
 	for (int i = 0; i < ide_block_size; i = i + 2)
 	{
