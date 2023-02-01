@@ -11,7 +11,7 @@
 using namespace mdf;
 using namespace std;
 
-static unsigned int diskTimeoutInMS = 5;
+static unsigned int diskTimeoutInMS = 50;
 
 namespace
 {
