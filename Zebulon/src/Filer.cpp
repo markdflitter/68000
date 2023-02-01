@@ -7,11 +7,10 @@
 #include "../private_include/Utils.h"
 #include "../private_include/version.h"
 #include <ZebulonAPI.h>
+#include "../private_include/Constants.h"
 
 using namespace mdf;
 using namespace std;
-
-static unsigned int diskTimeoutInMS = 50;
 
 namespace
 {

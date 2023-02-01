@@ -3,10 +3,9 @@
 #include <bsp.h>
 #include <stdio.h>
 #include "../private_include/Utils.h"
+#include "../private_include/Constants.h"
 
 using namespace std;
-
-static unsigned int diskTimeoutInMS = 50;
 
 namespace Zebulon
 {
