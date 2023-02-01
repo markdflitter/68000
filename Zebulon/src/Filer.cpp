@@ -501,7 +501,7 @@ void Filer::do_save_bootTable ()
 	list<Chunk::Ptr>::const_iterator i = chunks.begin ();
 	unsigned int blockNum = (*i)->start;
 
-	::ide_result result = __ide_write (blockNum, ide_block);
+	::ide_result result = __ide_write (blockNum, ide_block, _zebulon_time, _zebulon_time () + diskTimeoutInMS);
 	if (result != ::IDE_OK)
 		Utils::printIdeError (result);
 }
@@ -582,7 +582,7 @@ void Filer::do_save_FAT ()
 		memcpy (ide_block + sizeof (ThisFATIdent) + sizeof (FATSize) + sizeof (nextBlockNum), p, bytesThisTime);
 		p += bytesThisTime;
 
-		::ide_result result = __ide_write (blockNum, ide_block);
+		::ide_result result = __ide_write (blockNum, ide_block, _zebulon_time, _zebulon_time () + diskTimeoutInMS);
 		if (result != ::IDE_OK)
 			Utils::printIdeError (result);
 

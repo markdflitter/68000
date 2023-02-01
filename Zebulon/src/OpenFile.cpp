@@ -120,8 +120,11 @@ void OpenFile::writeCurBlock ()
 	if (m_bufferModified && (m_curBlock > 0))
 	{
 		//printf ("buffer modified - writing block %d\n\r", m_curBlock);	
-		__ide_write (m_curBlock, m_buffer);
-		m_bufferModified = false;
+		::ide_result result = __ide_write (m_curBlock, m_buffer, _zebulon_time, _zebulon_time () + diskTimeoutInMS);
+		if (result != ::IDE_OK)
+			Utils::printIdeError (result);
+		else
+			m_bufferModified = false;
 	}
 }
 

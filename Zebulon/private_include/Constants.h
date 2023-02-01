@@ -1,1 +1,1 @@
-const unsigned int diskTimeoutInMS = 50;
+const unsigned int diskTimeoutInMS = 100;

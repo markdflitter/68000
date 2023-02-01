@@ -13,7 +13,7 @@ namespace Zebulon
 class Utils
 {
 public:
-	static void printIdeError (::ide_result error)
+	static void printIdeError (unsigned int error)
 	{
 		if (error == ::IDE_AMNF)
 			printf (">>>  address mark not found\n\r");

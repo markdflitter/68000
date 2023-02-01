@@ -183,7 +183,7 @@ void disk_ident ()
 		printf ("multi word DMA modes active\t\t: %d\n\r",info.multiwordDmaModesActive);
 	}
 	else
-		printf (">>> ident error 0x%x\n\r", result);
+		Utils::printIdeError(result);
 }
 
 
@@ -198,7 +198,7 @@ void disk_read (unsigned long block)
 	if (result == Zebulon::IDE_OK)
 		printBuffer (buffer, block_size, 0, false);
 	else
-		printf (">>> read error 0x%x\n\r", result);
+		Utils::printIdeError(result);
 }
 
 void disk_write (unsigned long block, unsigned char pattern)
@@ -212,7 +212,7 @@ void disk_write (unsigned long block, unsigned char pattern)
 	if (result == Zebulon::IDE_OK)
 		printf ("OK\n\r");
 	else
-		printf (">>> write error 0x%x\n\r", result);
+		Utils::printIdeError(result);
 }
 
 void disk_soak ()
