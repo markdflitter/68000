@@ -1,5 +1,4 @@
 #include "../private_include/Shell.h"
-#include <stdio.h>
 #include <vector>
 #include <string>
 #include <time.h>
@@ -105,6 +104,7 @@ void printHelp (void)
 	printf ("filer file stat <filename>\t - stat file\n\r");
 	printf ("filer file delete <filename>\t - delete file\n\r");
 	printf ("save <filename> <boot slot>\t - save file and make it bootable\n\r");
+	printf ("download <filename>\t\t - download text file and save to disk\n\r");
 }
 
 void diag_heap (bool full)
@@ -183,7 +183,7 @@ void disk_ident ()
 		printf ("multi word DMA modes active\t\t: %d\n\r",info.multiwordDmaModesActive);
 	}
 	else
-		Utils::printIdeError(result);
+		printf (">>> ident error 0x%x\n\r", result);
 }
 
 
@@ -198,7 +198,7 @@ void disk_read (unsigned long block)
 	if (result == Zebulon::IDE_OK)
 		printBuffer (buffer, block_size, 0, false);
 	else
-		Utils::printIdeError(result);
+		printf (">>> read error 0x%x\n\r", result);
 }
 
 void disk_write (unsigned long block, unsigned char pattern)
@@ -212,7 +212,7 @@ void disk_write (unsigned long block, unsigned char pattern)
 	if (result == Zebulon::IDE_OK)
 		printf ("OK\n\r");
 	else
-		Utils::printIdeError(result);
+		printf (">>> write error 0x%x\n\r", result);
 }
 
 void disk_soak ()
@@ -438,6 +438,58 @@ void save (const string& filename, unsigned char bootslot)
 	fclose (f);
 }
 
+void download (const string& filename)
+{
+	printf ("downloading to file '%s\n\r", filename.c_str ());
+
+	int dld = _zebulon_dldch ();
+    unsigned int fileSize = 0;
+
+	printf ("waiting for start character...\n\r");
+	while (dld != '|')
+		dld = _zebulon_dldch ();
+    dld = _zebulon_dldch ();  //cr
+    dld = _zebulon_dldch ();  //lf
+ 	
+	printf ("reading file size...\n\r");
+	while (dld != '|')
+	{
+		if (dld >= '0' && dld <= '9')
+		{
+        	fileSize *= 10;
+			fileSize += dld - '0';
+		}
+		dld = _zebulon_dldch ();
+	}
+	printf ("file size %d\n\r", fileSize);
+	
+    dld = _zebulon_dldch ();  //cr
+    dld = _zebulon_dldch ();  //lf
+ 
+	printf ("starting download...\n\r");
+	char* buffer = new char [fileSize];
+	char* p = buffer;
+    unsigned int bytesLeft = fileSize;
+
+	while (bytesLeft-- > 0)
+	{
+		*p++ = _zebulon_dldch ();
+		if ((bytesLeft % 1000) == 0) printf (".");
+		//_zebulon_set_display (*(p-1) & 0xF);
+}
+
+	printf ("\n\rdownload complete\n\r");
+
+	FILE* f = fopen (filename.c_str (), "w");
+	if (f == 0) return ;
+
+	fwrite ((unsigned char*) buffer, 1, fileSize, f);
+	fclose (f);
+
+	delete[] buffer;
+}
+
+
 }
 
 int Shell::run () const
@@ -590,6 +642,12 @@ int Shell::run () const
 				unsigned char bootslot = atol (tokens [2].c_str ());
 				save (filename, bootslot);
 			}
+			if (tokens [0] == "download" && tokens.size () > 1)
+			{
+				string filename = tokens [1];
+				download (filename);
+			}
+
 
 			commandReader.addHistoryItem (command);		
 		}

@@ -22,6 +22,7 @@ private:
 			UART (unsigned int baseAaddress);
 			void writeChar (char c);
 			char readChar () const;
+			void setCSRA (unsigned char value);
 		private:
 			static const char TX_READY = 0x4;
 			static const char RX_READY = 0x1;

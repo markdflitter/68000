@@ -6,8 +6,8 @@
 #include <bsp.h>
 extern char __end[];
 
-// 64K is yer lot
-#define MAX_HEAP_SIZE 0x10000
+// 256K is yer lot
+#define MAX_HEAP_SIZE 0x40000
 #define MIN_ALLOC 8
 
 namespace

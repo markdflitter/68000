@@ -6,7 +6,7 @@
 namespace Zebulon
 {
 	enum TRAP {trap_time = 0, trap_serial_IO = 1, trap_ide = 2, trap_filer = 3, trap_c_IO = 4, trap_file = 5, trap_file_search = 6, trap_boot = 7, trap_display = 8};
-	enum serial_IO_operations {serial_IO_write_char = 1, serial_IO_read_char = 2};
+	enum serial_IO_operations {serial_IO_write_char = 1, serial_IO_read_char = 2, serial_IO_dld_char = 3};
 	enum ide_operations {ide_ident = 0, ide_write_block = 1, ide_read_block = 2};
 	enum filer_operations {filer_format = 0, filer_diag = 1, filer_free_space = 2, filer_heap_diag = 3};
 	enum c_IO_operations {c_IO_fopen = 0, c_IO_fclose = 1, c_IO_feof = 2, c_IO_fread = 3, c_IO_fwrite = 4};
@@ -36,6 +36,14 @@ inline int _zebulon_getch ()
 	trap (trap_serial_IO, trap_params (serial_IO_read_char, &result));
 	return result;
 }
+
+inline int _zebulon_dldch ()
+{
+	volatile int result;
+	trap (trap_serial_IO, trap_params (serial_IO_dld_char, &result));
+	return result;
+}
+
 
 const unsigned int block_size = 512;
 

@@ -50,6 +50,12 @@ char __getch ()
 	return the_duart ().readChar (DUART::channelA);
 }
 
+char __dldch ()
+{
+	return the_duart ().readChar (DUART::channelB);
+}
+
+
 void __set_interrupt_vector (unsigned int vector)
 {
 	return the_duart ().setInterruptVector (vector);

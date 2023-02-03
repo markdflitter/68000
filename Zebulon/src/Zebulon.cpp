@@ -7,7 +7,6 @@
 #include <string.h>
 #include "../private_include/Filer.h"
 #include <stdlib.h>
-#include "../private_include/Constants.h"
 
 using namespace std;
 using namespace Zebulon;
@@ -26,6 +25,7 @@ extern char __vector_table[];
 
 static volatile unsigned int ticks = 0;
 static double tickIntervalInMs = 0.0;
+static unsigned int diskTimeoutInMS = 50;
 
 Filer& theFiler ()
 {
@@ -63,7 +63,8 @@ void trap1 ()
 	{
 		case serial_IO_write_char : __putch ((char) *((int*) tp.pResult)); break;
 		case serial_IO_read_char  : *((int*) tp.pResult) = __getch (); break;
-		default: break;
+		case serial_IO_dld_char  : *((int*) tp.pResult) = __dldch (); break;
+			default: break;
 	}
 }
 
@@ -138,8 +139,8 @@ void trap2 ()
 			break;
 		}
 
-		case ide_read_block  : result = __ide_read ((unsigned int) tp.a1, (unsigned char*) tp.a2, _zebulon_time, _zebulon_time () + diskTimeoutInMS); break;
-		case ide_write_block : result = __ide_write ((unsigned int) tp.a1, (unsigned char*) tp.a2, _zebulon_time, _zebulon_time () + diskTimeoutInMS); break;
+		case ide_read_block  : result = __ide_read ((unsigned int) tp.a1, (unsigned char*) tp.a2); break;
+		case ide_write_block : result = __ide_write ((unsigned int) tp.a1, (unsigned char*) tp.a2); break;
 		default: break;
 	}
 
