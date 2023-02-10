@@ -50,9 +50,9 @@ char __getch ()
 	return the_duart ().readChar (DUART::channelA);
 }
 
-char __dldch ()
+char* __dldch (unsigned int* fileSize)
 {
-	return the_duart ().readChar (DUART::channelB);
+	return the_duart ().download (DUART::channelB, fileSize);
 }
 
 

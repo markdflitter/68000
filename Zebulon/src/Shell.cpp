@@ -440,45 +440,11 @@ void save (const string& filename, unsigned char bootslot)
 
 void download (const string& filename)
 {
-	printf ("downloading to file '%s\n\r", filename.c_str ());
+	printf ("downloading to file %s\n\r", filename.c_str ());
 
-	int dld = _zebulon_dldch ();
-    unsigned int fileSize = 0;
-
-	printf ("waiting for start character...\n\r");
-	while (dld != '|')
-		dld = _zebulon_dldch ();
-    dld = _zebulon_dldch ();  //cr
-    dld = _zebulon_dldch ();  //lf
- 	
-	printf ("reading file size...\n\r");
-	while (dld != '|')
-	{
-		if (dld >= '0' && dld <= '9')
-		{
-        	fileSize *= 10;
-			fileSize += dld - '0';
-		}
-		dld = _zebulon_dldch ();
-	}
-	printf ("file size %d\n\r", fileSize);
-	
-    dld = _zebulon_dldch ();  //cr
-    dld = _zebulon_dldch ();  //lf
- 
-	printf ("starting download...\n\r");
-	char* buffer = new char [fileSize];
-	char* p = buffer;
-    unsigned int bytesLeft = fileSize;
-
-	while (bytesLeft-- > 0)
-	{
-		*p++ = _zebulon_dldch ();
-		if ((bytesLeft % 1000) == 0) printf (".");
-		//_zebulon_set_display (*(p-1) & 0xF);
-}
-
-	printf ("\n\rdownload complete\n\r");
+	unsigned int fileSize = 0;
+	char* buffer = _zebulon_dldch (fileSize);
+ 	printf ("download complete\n\r");
 
 	FILE* f = fopen (filename.c_str (), "w");
 	if (f == 0) return ;

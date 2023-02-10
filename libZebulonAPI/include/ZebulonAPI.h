@@ -37,11 +37,13 @@ inline int _zebulon_getch ()
 	return result;
 }
 
-inline int _zebulon_dldch ()
+inline char* _zebulon_dldch (unsigned int& fileSize)
 {
-	volatile int result;
-	trap (trap_serial_IO, trap_params (serial_IO_dld_char, &result));
-	return result;
+	volatile char* result;
+	unsigned int fs;
+	trap (trap_serial_IO, trap_params (serial_IO_dld_char, &result, &fs));
+	fileSize = fs;
+	return (char*) result;
 }
 
 

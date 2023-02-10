@@ -63,8 +63,8 @@ void trap1 ()
 	{
 		case serial_IO_write_char : __putch ((char) *((int*) tp.pResult)); break;
 		case serial_IO_read_char  : *((int*) tp.pResult) = __getch (); break;
-		case serial_IO_dld_char  : *((int*) tp.pResult) = __dldch (); break;
-			default: break;
+		case serial_IO_dld_char  : *((char**) tp.pResult) = __dldch ((unsigned int*) tp.a1); break;
+		default: break;
 	}
 }
 
@@ -335,8 +335,8 @@ __putstr (banner);
 	__enable_interrupts ();
    	{
 		char buf [200];
-		sprintfn (buf, 200, "enabled main timer: tick interval %duS\n\r", d);
-		__putstr (buf);
+	    sprintfn (buf, 200, "enabled main timer: tick interval %duS\n\r", d);
+	 	__putstr (buf);
 	}
 
 	// install traps
