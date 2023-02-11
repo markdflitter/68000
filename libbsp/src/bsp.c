@@ -1,4 +1,3 @@
-#include "../include/bsp.h"
 #include "../private_include/DUART.h"
 #include "../private_include/IDE.h"
 #include "../private_include/Display.h"
@@ -50,11 +49,10 @@ char __getch ()
 	return the_duart ().readChar (DUART::channelA);
 }
 
-char* __dldch (unsigned int* fileSize)
+char __dldch ()
 {
-	return the_duart ().download (DUART::channelB, fileSize);
+    return the_duart ().readChar (DUART::channelB);
 }
-
 
 void __set_interrupt_vector (unsigned int vector)
 {

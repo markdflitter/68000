@@ -11,6 +11,7 @@
 #include <timer.h>
 #include <algorithm>
 #include "../private_include/CommandReader.h"
+#include <bsp.h>
 
 using namespace std;
 using namespace Zebulon;
@@ -442,17 +443,22 @@ void download (const string& filename)
 {
 	printf ("downloading to file %s\n\r", filename.c_str ());
 
-	unsigned int fileSize = 0;
-	char* buffer = _zebulon_dldch (fileSize);
- 	printf ("download complete\n\r");
+	_zebulon_download_result result = _zebulon_download_download ();
+	if (result.size > 0)
+	{
+ 		printf ("download complete, writing file...\n\r");
 
-	FILE* f = fopen (filename.c_str (), "w");
-	if (f == 0) return ;
+		FILE* f = fopen (filename.c_str (), "w");
+		if (f == 0) return ;
 
-	fwrite ((unsigned char*) buffer, 1, fileSize, f);
-	fclose (f);
+		fwrite ((unsigned char*) result.buffer, 1, result.size, f);
+		fclose (f);
+		printf ("done\n\r");	
+	}
+	else
+		printf (">>> download error\n\r");
 
-	delete[] buffer;
+	_zebulon_download_free (result);
 }
 
 
@@ -613,7 +619,6 @@ int Shell::run () const
 				string filename = tokens [1];
 				download (filename);
 			}
-
 
 			commandReader.addHistoryItem (command);		
 		}

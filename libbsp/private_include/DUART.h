@@ -1,5 +1,6 @@
 #ifndef DUART_H
 #define DUART_H
+#include "../private_include/rw.h"
 
 class DUART
 {
@@ -16,15 +17,12 @@ public:
 	enum eChannel {channelA = 0, channelB	= 1};
 	void writeChar (eChannel channel, char c);
 	char readChar (eChannel channel) const;
-
-	char* download (eChannel channel, unsigned int* fileSize) const;
 private:
   	class UART {
 		public:
 			UART (unsigned int baseAaddress);
 			void writeChar (char c);
-			inline char readChar () const;
-			char* download (unsigned int* fileSize) const;
+			char readChar () const;
 		private:
 			static const char TX_READY = 0x4;
 			static const char RX_READY = 0x1;
@@ -53,8 +51,7 @@ private:
 			};
 
 			bool spaceToSend () const;
-			inline bool charReady () const;
-
+			bool charReady () const; 
 			Registers* m_registers;
 		};
 

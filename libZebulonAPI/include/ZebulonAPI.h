@@ -5,7 +5,7 @@
 
 namespace Zebulon
 {
-	enum TRAP {trap_time = 0, trap_serial_IO = 1, trap_ide = 2, trap_filer = 3, trap_c_IO = 4, trap_file = 5, trap_file_search = 6, trap_boot = 7, trap_display = 8};
+	enum TRAP {trap_time = 0, trap_serial_IO = 1, trap_ide = 2, trap_filer = 3, trap_c_IO = 4, trap_file = 5, trap_file_search = 6, trap_boot = 7, trap_display = 8, trap_download = 9};
 	enum serial_IO_operations {serial_IO_write_char = 1, serial_IO_read_char = 2, serial_IO_dld_char = 3};
 	enum ide_operations {ide_ident = 0, ide_write_block = 1, ide_read_block = 2};
 	enum filer_operations {filer_format = 0, filer_diag = 1, filer_free_space = 2, filer_heap_diag = 3};
@@ -14,7 +14,7 @@ namespace Zebulon
 	enum file_search_operations {file_search_find_first = 0, file_search_find_next = 1, file_search_close = 2};
 	enum boot_operations {boot_boot = 0, boot_index = 1};
 	enum display_operations {display_set = 0};
-
+	enum download_operations {download_download = 0, download_free = 1};
 
 inline unsigned int _zebulon_time ()
 {
@@ -37,14 +37,13 @@ inline int _zebulon_getch ()
 	return result;
 }
 
-inline char* _zebulon_dldch (unsigned int& fileSize)
+inline char _zebulon_dldch ()
 {
-	volatile char* result;
-	unsigned int fs;
-	trap (trap_serial_IO, trap_params (serial_IO_dld_char, &result, &fs));
-	fileSize = fs;
-	return (char*) result;
+	volatile int result;
+	trap (trap_serial_IO, trap_params (serial_IO_dld_char, &result));
+	return result;
 }
+
 
 
 const unsigned int block_size = 512;
@@ -160,7 +159,7 @@ struct _zebulon_free_space
 	unsigned long freeSpace;
 };
 
-inline _zebulon_free_space  _zebulon_filer_free_space ()
+inline _zebulon_free_space _zebulon_filer_free_space ()
 {
 	volatile _zebulon_free_space fs;
 	trap (trap_filer, trap_params (filer_free_space, &fs));
@@ -310,6 +309,35 @@ inline void _zebulon_set_display (unsigned int num)
 	trap (trap_display, trap_params (display_set, 0, (void*) num));
 }
 
+struct _zebulon_download_result
+{
+	_zebulon_download_result () : buffer (0), size (0) {}
+
+	_zebulon_download_result (const _zebulon_download_result& other)
+		: buffer(other.buffer), size (other.size)
+	{
+	}
+
+	_zebulon_download_result (const volatile _zebulon_download_result& other)
+		: buffer(other.buffer), size (other.size)
+	{
+	}
+
+    char* buffer;
+    unsigned int size;
+};
+
+inline _zebulon_download_result _zebulon_download_download ()
+{
+	volatile _zebulon_download_result result;
+	trap (trap_download, trap_params (download_download, &result));
+	return result;
+}
+
+inline void _zebulon_download_free (_zebulon_download_result result)
+{
+	trap (trap_download, trap_params (download_free, &result));
+}
 
 }
 #endif

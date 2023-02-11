@@ -63,7 +63,7 @@ void trap1 ()
 	{
 		case serial_IO_write_char : __putch ((char) *((int*) tp.pResult)); break;
 		case serial_IO_read_char  : *((int*) tp.pResult) = __getch (); break;
-		case serial_IO_dld_char  : *((char**) tp.pResult) = __dldch ((unsigned int*) tp.a1); break;
+		case serial_IO_dld_char   : *((int*) tp.pResult) = __dldch (); break;
 		default: break;
 	}
 }
@@ -244,7 +244,87 @@ void trap8 ()
 
 	switch (tp.opcode)
 	{
-		case display_set: __set_display ((unsigned int) tp.a1);
+		case display_set: __set_display ((unsigned int) tp.a1); break;
+		default: break;
+	}
+}
+
+void do_download_download (_zebulon_download_result* result)
+{
+	if (!result) return;
+
+	result->size = 0;
+	result->buffer = 0;
+
+	int size = 0;
+
+	int downloaded_char = __dldch ();
+	
+	while (downloaded_char != '|')
+		downloaded_char = __dldch ();
+    downloaded_char = __dldch ();
+    downloaded_char = __dldch ();
+ 	
+	while (downloaded_char != '|')
+	{
+		if (downloaded_char >= '0' && downloaded_char <= '9')
+		{
+        	size *= 10;
+			size += downloaded_char - '0';
+		}
+		downloaded_char = __dldch ();
+	}
+
+	printf ("expecting %d bytes\n\r",size);
+
+    downloaded_char = __dldch ();
+    downloaded_char = __dldch ();
+ 
+	char* buffer = new char [size];
+	char* p = buffer;
+    unsigned int bytesLeft = size;
+
+	int counter = 0;
+	while (bytesLeft)
+	{
+			*p++ = __dldch ();
+			--bytesLeft;
+
+			if (counter++ == 512)
+			{
+				__putch ('.');
+				counter = 0;
+				__set_display (*(p-1) & 0xF);
+			}
+	}
+
+	result->size = size;
+	result->buffer = buffer;
+
+	printf ("\n\r");
+}
+
+void do_download_free (_zebulon_download_result* result)
+{
+  if (result && result->buffer)
+  {
+	delete[] result->buffer;
+	result->buffer = 0;
+	result->size = 0;
+  }
+}
+
+
+// download operations
+void trap9 () __attribute__ ((interrupt));
+void trap9 ()
+{
+	trap_params tp = untrap ();
+
+	switch (tp.opcode)
+	{
+		case download_download: do_download_download ((_zebulon_download_result*) tp.pResult); break;
+		case download_free: do_download_free ((_zebulon_download_result*) tp.pResult); break;
 		default: break;
 	}
 }
@@ -349,6 +429,7 @@ __putstr (banner);
 	v.setVector (38, &trap6);
 	v.setVector (39, &trap7);
 	v.setVector (40, &trap8);
+	v.setVector (41, &trap9);
 
 	// detailed diagnostics
 	printf ("installed TRAPs\n\r");
