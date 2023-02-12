@@ -28,22 +28,6 @@ char* gets (char* s)
 	return buf;
 }
 
-int putchar (int c)
-{
-	Zebulon::_zebulon_putch (c);
-	return 0;
-}
-
-
-int puts (const char* s)
-{
-	while (*s != 0)
-	{
-		putchar (*s++);
-	}
-	return 0;
-}
-
 void bin2hex (unsigned int num, char* buf)
 {
 	const char* LUT = "0123456789ABCDEF";
