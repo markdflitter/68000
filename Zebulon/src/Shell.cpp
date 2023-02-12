@@ -106,6 +106,7 @@ void printHelp (void)
 	printf ("filer file delete <filename>\t - delete file\n\r");
 	printf ("save <filename> <boot slot>\t - save file and make it bootable\n\r");
 	printf ("download <filename>\t\t - download text file and save to disk\n\r");
+	printf ("run <filename>\t\t\t - run an external program\n\r");
 }
 
 void diag_heap (bool full)
@@ -461,6 +462,126 @@ void download (const string& filename)
 	_zebulon_download_free (result);
 }
 
+inline char read_char (FILE* f)
+{
+	char c;
+	fread (&c, 1, 1, f);
+	return c;
+}
+
+unsigned int hex2bin (char c)
+{
+  switch (c)
+	{
+	case '0': return 0;
+	case '1': return 1;
+	case '2': return 2;
+	case '3': return 3;
+	case '4': return 4;
+	case '5': return 5;
+	case '6': return 6;
+	case '7': return 7;
+	case '8': return 8;
+	case '9': return 9;
+	case 'A': return 10;
+	case 'B': return 11;
+	case 'C': return 12;
+	case 'D': return 13;
+	case 'E': return 14;
+	case 'F': return 15;
+	default : return 0;
+	}
+}
+
+unsigned int read2 (FILE* f)
+{
+  	unsigned int result = 16 * hex2bin (read_char (f));
+  	result += hex2bin (read_char (f));
+
+	return result;
+}
+
+unsigned int read6 (FILE* f)
+{
+  	unsigned int result = read2 (f);
+	result *= 256;
+	result += read2 (f);
+	result *= 256;
+	result += read2 (f);
+
+	return result;
+}
+
+
+void do_run (const string& filename)
+{
+	//printf ("running file '%s'\n\r", filename.c_str ());
+
+	FILE* f = fopen (filename.c_str (), "rb");
+	if (f == 0) return ;
+	
+	unsigned long start_address = 0;	
+	while (!feof (f))
+	{
+		char c = read_char (f);
+
+		if (c == 'S')
+		{
+			char type = read_char (f);
+			switch (type)
+			{
+				case '2':
+					{
+						//printf ("found S-record of type 2\n\r");
+						unsigned int length = read2 (f) - 4;
+						//printf ("length %d 0x%x\n\r", length, length);
+
+						unsigned int address = read6 (f);
+						//printf ("address 0x%x\n\r", address);
+						if (address > 0x270000)
+						{
+							//printf ("address is legal, copying data\n\r");
+							unsigned char* p = (unsigned char*) address;
+							
+							while (length--)
+							{
+								unsigned char byte = read2 (f);
+								*p++ = byte;
+							}
+						}
+
+						unsigned int cs = read2 (f);
+						//printf ("checksum 0x%x\n\r",cs);
+						break;
+					}
+				case '8':
+					{
+						//printf ("found S-record of type 8\n\r");
+						unsigned int length = read2 (f) - 4;
+						//printf ("length %d, 0x%x\n\r", length, length);
+
+						start_address = read6 (f);
+						//printf ("address 0x%x\n\r", start_address);
+					
+						unsigned int cs = read2 (f);
+						
+						break;
+					}
+				default: break ; //printf ("ignoring S-record of unknown type %c\n\r", type);
+			}
+		}
+		//else printf ("ignoring unexpected char %c\n\r", c);
+	}
+
+	fclose (f);
+
+	if (start_address)
+	{
+		asm volatile ("movel %0,%%a0\n\t"
+					  "jsr (%%a0)\n\t" : : "m" (start_address) : "a0");
+	}
+}
+
 
 }
 
@@ -619,7 +740,13 @@ int Shell::run () const
 				string filename = tokens [1];
 				download (filename);
 			}
+			if (tokens [0] == "run" && tokens.size () > 1)
+			{
+				string filename = tokens [1];
+				do_run (filename);
+			}
 
+	
 			commandReader.addHistoryItem (command);		
 		}
 
