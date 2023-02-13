@@ -462,54 +462,68 @@ void download (const string& filename)
 	_zebulon_download_free (result);
 }
 
-inline char read_char (FILE* f)
+inline bool read_char (FILE* f, char& c)
 {
-	char c;
-	fread (&c, 1, 1, f);
-	return c;
+	return fread (&c, 1, 1, f) == 1;
 }
 
-unsigned int hex2bin (char c)
+unsigned char hex2bin (char c)
 {
-  switch (c)
+  	switch (c)
 	{
-	case '0': return 0;
-	case '1': return 1;
-	case '2': return 2;
-	case '3': return 3;
-	case '4': return 4;
-	case '5': return 5;
-	case '6': return 6;
-	case '7': return 7;
-	case '8': return 8;
-	case '9': return 9;
-	case 'A': return 10;
-	case 'B': return 11;
-	case 'C': return 12;
-	case 'D': return 13;
-	case 'E': return 14;
-	case 'F': return 15;
-	default : return 0;
+		case '0': return 0;
+		case '1': return 1;
+		case '2': return 2;
+		case '3': return 3;
+		case '4': return 4;
+		case '5': return 5;
+		case '6': return 6;
+		case '7': return 7;
+		case '8': return 8;
+		case '9': return 9;
+		case 'A': return 10;
+		case 'B': return 11;
+		case 'C': return 12;
+		case 'D': return 13;
+		case 'E': return 14;
+		case 'F': return 15;
+		default : return 0;
 	}
 }
 
-unsigned int read2 (FILE* f)
+bool read2 (FILE* f, unsigned char& result)
 {
-  	unsigned int result = 16 * hex2bin (read_char (f));
-  	result += hex2bin (read_char (f));
+	char c1,c2;
+	bool success = read_char (f, c1);
+	success = success && read_char (f, c2);
+	
+	if (success) result = 16 * hex2bin (c1) + hex2bin (c2);
 
-	return result;
+	return success;
 }
 
-unsigned int read6 (FILE* f)
-{
-  	unsigned int result = read2 (f);
-	result *= 256;
-	result += read2 (f);
-	result *= 256;
-	result += read2 (f);
 
-	return result;
+bool read4 (FILE* f, unsigned int& result)
+{
+	unsigned char c1, c2;
+	bool success = read2 (f, c1);
+	success = success && read2 (f, c2);
+		
+	if (success) result = (((unsigned int) c1) * 256) + c2;
+
+	return success;
+}
+
+bool read6 (FILE* f, unsigned int& result)
+{
+	unsigned char c1, c2, c3;
+	bool success = read2 (f, c1);
+	success = success && read2 (f, c2);
+	success = success && read2 (f, c3);
+		
+	if (success) result = (((unsigned int) c1) * 256 * 256) + (((unsigned int) c2) * 256) + c3;
+
+	return success;
 }
 
 
@@ -518,59 +532,82 @@ void do_run (const string& filename)
 	//printf ("running file '%s'\n\r", filename.c_str ());
 
 	FILE* f = fopen (filename.c_str (), "rb");
-	if (f == 0) return ;
-	
-	unsigned long start_address = 0;	
-	while (!feof (f))
+	if (f == 0) 
 	{
-		char c = read_char (f);
+		printf (">>> failed to run file %s\n\r",filename.c_str ());
+		return ;
+	}
+
+	unsigned long start_address = 0;	
+	while (true)
+	{
+		char c;
+		if (!read_char (f, c)) break;
 
 		if (c == 'S')
 		{
-			char type = read_char (f);
-			switch (type)
+			char type;
+			if (!read_char (f,type)) break;
+			//printf ("found S-record of type '%c'\n\r", type);
+
+			if (type == '0' || type == '2' || type == '8')
 			{
-				case '2':
-					{
-						//printf ("found S-record of type 2\n\r");
-						unsigned int length = read2 (f) - 4;
-						//printf ("length %d 0x%x\n\r", length, length);
+				unsigned char length;
+				if (!read2 (f, length)) break;
 
-						unsigned int address = read6 (f);
-						//printf ("address 0x%x\n\r", address);
-						if (address > 0x270000)
-						{
-							//printf ("address is legal, copying data\n\r");
-							unsigned char* p = (unsigned char*) address;
-							
-							while (length--)
-							{
-								unsigned char byte = read2 (f);
-								*p++ = byte;
-							}
-						}
+				unsigned int address;
+			
+				if (type == '0')
+				{
+					if (!read4 (f, address)) break;
+					length -= 3;			
+				}
+				else if (type == '2' || type == '8')
+				{
+					if (!read6 (f, address)) break;
+					length -= 4;
+				}
 
-						unsigned int cs = read2 (f);
-						//printf ("checksum 0x%x\n\r",cs);
-						break;
-					}
-				case '8':
-					{
-						//printf ("found S-record of type 8\n\r");
-						unsigned int length = read2 (f) - 4;
-						//printf ("length %d, 0x%x\n\r", length, length);
-
-						start_address = read6 (f);
-						//printf ("address 0x%x\n\r", start_address);
-					
-						unsigned int cs = read2 (f);
+				//printf ("length %d 0x%x\n\r", length, length);
+				//printf ("address 0x%x\n\r", address);
 						
-						break;
+				if (type == '0')
+				{
+					while (length--)
+					{
+						unsigned char byte;
+						if (!read2 (f, byte)) break;
+						//printf ("%c",byte);
 					}
-				default: break ; //printf ("ignoring S-record of unknown type %c\n\r", type);
+					//printf ("\n\r");
+				}
+
+				if (type == '2')
+				{
+					if (address > 0x270000)
+					{
+						//printf ("address is legal, copying data\n\r");
+						unsigned char* p = (unsigned char*) address;
+							
+						while (length--)
+						{
+							unsigned char byte;
+							if (!read2 (f, byte)) break;
+							*p++ = byte;
+						}
+					}	
+				}
+
+				if (type == '8') start_address = address;
+
+				unsigned char cs;
+				if (!read2 (f,cs)) break;
+				//printf ("checksum 0x%x\n\r",cs);
 			}
+				else printf ("ignoring S-record of unknown type '%c'\n\r", type);
 		}
-		//else printf ("ignoring unexpected char %c\n\r", c);
+		else
+			if (c != 0x0d && c != 0x0a) printf ("ignoring unexpected char 0x%x\n\r", c);
 	}
 
 	fclose (f);
@@ -580,6 +617,8 @@ void do_run (const string& filename)
 		asm volatile ("movel %0,%%a0\n\t"
 					  "jsr (%%a0)\n\t" : : "m" (start_address) : "a0");
 	}
+	else
+		printf (">>> failed to run file %s\n\r",filename.c_str ());
 }
 
 
