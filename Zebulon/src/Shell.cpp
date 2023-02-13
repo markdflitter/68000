@@ -491,35 +491,38 @@ unsigned char hex2bin (char c)
 	}
 }
 
-bool read2 (FILE* f, unsigned char& result)
+bool read2 (FILE* f, unsigned char& result, unsigned char& checksum)
 {
 	char c1,c2;
 	bool success = read_char (f, c1);
 	success = success && read_char (f, c2);
 	
-	if (success) result = 16 * hex2bin (c1) + hex2bin (c2);
-
+	if (success)
+	{
+		result = 16 * hex2bin (c1) + hex2bin (c2);
+		checksum += result;
+	}
 	return success;
 }
 
 
-bool read4 (FILE* f, unsigned int& result)
+bool read4 (FILE* f, unsigned int& result, unsigned char& checksum)
 {
 	unsigned char c1, c2;
-	bool success = read2 (f, c1);
-	success = success && read2 (f, c2);
+	bool success = read2 (f, c1, checksum);
+	success = success && read2 (f, c2, checksum);
 		
 	if (success) result = (((unsigned int) c1) * 256) + c2;
 
 	return success;
 }
 
-bool read6 (FILE* f, unsigned int& result)
+bool read6 (FILE* f, unsigned int& result, unsigned char& checksum)
 {
 	unsigned char c1, c2, c3;
-	bool success = read2 (f, c1);
-	success = success && read2 (f, c2);
-	success = success && read2 (f, c3);
+	bool success = read2 (f, c1, checksum);
+	success = success && read2 (f, c2, checksum);
+	success = success && read2 (f, c3, checksum);
 		
 	if (success) result = (((unsigned int) c1) * 256 * 256) + (((unsigned int) c2) * 256) + c3;
 
@@ -538,7 +541,8 @@ void do_run (const string& filename)
 		return ;
 	}
 
-	unsigned long start_address = 0;	
+	unsigned long start_address = 0;
+	bool allOK = true;	
 	while (true)
 	{
 		char c;
@@ -552,19 +556,20 @@ void do_run (const string& filename)
 
 			if (type == '0' || type == '2' || type == '8')
 			{
+				unsigned char checksum = 0;
 				unsigned char length;
-				if (!read2 (f, length)) break;
+				if (!read2 (f, length, checksum)) break;
 
 				unsigned int address;
 			
 				if (type == '0')
 				{
-					if (!read4 (f, address)) break;
+					if (!read4 (f, address, checksum)) break;
 					length -= 3;			
 				}
 				else if (type == '2' || type == '8')
 				{
-					if (!read6 (f, address)) break;
+					if (!read6 (f, address, checksum)) break;
 					length -= 4;
 				}
 
@@ -576,7 +581,7 @@ void do_run (const string& filename)
 					while (length--)
 					{
 						unsigned char byte;
-						if (!read2 (f, byte)) break;
+						if (!read2 (f, byte, checksum)) break;
 						//printf ("%c",byte);
 					}
 					//printf ("\n\r");
@@ -592,7 +597,7 @@ void do_run (const string& filename)
 						while (length--)
 						{
 							unsigned char byte;
-							if (!read2 (f, byte)) break;
+							if (!read2 (f, byte, checksum)) break;
 							*p++ = byte;
 						}
 					}	
@@ -601,8 +606,15 @@ void do_run (const string& filename)
 				if (type == '8') start_address = address;
 
 				unsigned char cs;
-				if (!read2 (f,cs)) break;
+	
+				unsigned char oldChecksum = checksum;
+				if (!read2 (f, cs, checksum)) break;
 				//printf ("checksum 0x%x\n\r",cs);
+				if (checksum != 0xFF)
+				{
+					printf (">>> checksum error, expected 0x%x, got 0x%x\n\r", (~cs & 0xff), oldChecksum);
+					allOK = false;				
+				}			
 			}
 				else printf ("ignoring S-record of unknown type '%c'\n\r", type);
 		}
@@ -612,7 +624,7 @@ void do_run (const string& filename)
 
 	fclose (f);
 
-	if (start_address)
+	if (allOK && start_address)
 	{
 		asm volatile ("movel %0,%%a0\n\t"
 					  "jsr (%%a0)\n\t" : : "m" (start_address) : "a0");
