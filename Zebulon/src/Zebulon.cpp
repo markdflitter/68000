@@ -395,7 +395,8 @@ void test_heap ()
 
 int main ()
 {
-__putstr (banner);	
+	//set_heap_trace(2);
+	__putstr (banner);	
 
 	unsigned char* vectorBaseAddress = (unsigned char*) &__vector_table[0];
 	{
