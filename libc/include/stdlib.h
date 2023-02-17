@@ -1,5 +1,5 @@
 #ifndef STDLIB_H
-#define STDLIN_H
+#define STDLIB_H
 
 #include "size_t.h"
 

@@ -1,9 +1,9 @@
 #include "../include/stdlib.h"
 #include "../include/ctype.h"
-#include "../include/stdio.h"
 #include "../include/string.h"
-
+#include "../include/stdio.h"
 #include <bsp.h>
+
 extern char __heap_start[];
 extern char __heap_end[];
 
@@ -39,6 +39,7 @@ T max (const T& t1, const T& t2)
 	return t1 > t2 ? t1 : t2; 
 }
 
+#ifdef DEBUG
 unsigned long printBuffer (unsigned char* buffer, size_t bufferLen, unsigned long startAddress)
 {
 	unsigned char* p = buffer;
@@ -87,7 +88,7 @@ inline void dump_memory (unsigned char* p, unsigned int length)
 	char buf [255];
 	sprintf (buf, "\n\r"); __putstr (buf);
 }
-
+#endif
 
 struct heap
 {
@@ -111,8 +112,10 @@ heap initialiseHeap ()
 	char* e = &__heap_end[0];
 	unsigned int heap_size = e - p;
 
+#ifdef DEBUG
 	char buf [255];
 	sprintf (buf, "HEAP_INIT: start 0x%x end 0x%x size 0x%x (%d) byte(s)\n\r", p, p + heap_size, heap_size, heap_size); __putstr (buf);
+#endif
 
 	memset (p, 0xff, heap_size);
 
@@ -124,7 +127,10 @@ heap initialiseHeap ()
 	//empty block
 	block_len (*next_block (p)) = heap_size - sentinelBlockSize;
 	 *next_block (*next_block (p)) = 0;
-   	dump_memory ((unsigned char*) &__heap_end[0], 16);
+
+#ifdef DEBUG
+	dump_memory ((unsigned char*) &__heap_end[0], 16);
+#endif
 
 	return heap (p, heap_size);
 }
@@ -140,24 +146,31 @@ size_t roundUp (size_t input)
 
 }
 
+#ifdef DEBUG
 void set_heap_trace (unsigned int tr)
 {
   the_heap.trace = tr;
 }
+#endif
 
 void* malloc (size_t requestedSize)
 {
+#ifdef DEBUG
 	if (the_heap.trace > 0) printf ("malloc %d\n\r", requestedSize);
 	if (the_heap.trace > 1) heap_diag (the_heap.trace > 2);
+#endif
 
 	//add 4 bytes for length, min size 8, round up to next power of two
 	size_t allocSize = roundUp (max (requestedSize + 4, 8UL));
+#ifdef DEBUG
 	//printf ("allocSize %d\n\r", allocSize);
+#endif
 
 	char* prev = the_heap.freeptr;
 	char* p = (char*) *next_block (prev);
+#ifdef DEBUG
 	//printf ("p 0x%x\n\r", p);
-
+#endif
 	char* bestMatchPrev = 0;
 	char* bestMatch = 0;
 
@@ -166,10 +179,14 @@ void* malloc (size_t requestedSize)
 		unsigned int length = block_len (p);
 		if (length >= allocSize)
 		{
+#ifdef DEBUG
 			//printf ("found match\n\r");
+#endif
 			if ((bestMatch == 0) || (length < *((unsigned int*) bestMatch)))
 			{
+#ifdef DEBUG	
 				//printf ("found best match\n\r");
+#endif
 				bestMatchPrev = prev;
 				bestMatch = p;
 			}
@@ -182,35 +199,46 @@ void* malloc (size_t requestedSize)
 
 	if (bestMatch) 
 	{
+#ifdef DEBUG
 		//printf ("processing best match\n\r");
+#endif
 		alloc = bestMatch;
 		unsigned int length = block_len (bestMatch);
+#ifdef DEBUG
 		//printf ("found block of size %d at 0x%x\n\r", length, bestMatch);
+#endif
 		if (length >= allocSize + MIN_ALLOC)
 		{
+#ifdef DEBUG	
 			//printf ("splitting block %d into %d and %d\n\r", length, allocSize, length - allocSize);
-
+#endif
 			*next_block (bestMatchPrev) = bestMatch + allocSize;
 			block_len (*next_block (bestMatchPrev)) = length - allocSize;
+#ifdef DEBUG
 			//printf ("split len %d\n\r", block_len (*next_block (bestMatchPrev)));	
+#endif
 			*next_block (*next_block (bestMatchPrev)) = *next_block (bestMatch); 
 		}
 		else
 		{
-			//printf ("block is just fine\n\r");			
+#ifdef DEBUG
+			//printf ("block is just fine\n\r");
+#endif
 			*next_block (bestMatchPrev) = *next_block (bestMatch);
 		}
 	
+#ifdef DEBUG
 		the_heap.malloc_count++;
 		if (the_heap.trace) printf ("[%d] malloc %d -> %d 0x%x\n\r", the_heap.malloc_count, requestedSize, allocSize, alloc);
 		if (the_heap.trace > 1) heap_diag (the_heap.trace > 2);
+#endif
 
 		block_len (bestMatch) = allocSize;
 		alloc += sizeof (unsigned int);
 	}
 	else
 	{
-		printf (">>> heap full - aborting\n\r");
+		puts (">>> heap full - aborting\n\r");
 		abort ();
 	}
 
@@ -221,27 +249,33 @@ void* malloc (size_t requestedSize)
 
 void free (void* f)
 {
+#ifdef DEBUG
 	if (the_heap.trace > 0) printf ("free p 0x%x\n\r", f);
 	if (the_heap.trace > 1) {printf ("before free: "); heap_diag (the_heap.trace > 2);}
+#endif
 
 	if (f == 0) return;
 
 	char* p = (char*) f;
 	p -= sizeof (unsigned int);
 	char* sentinel = the_heap.freeptr;
+#ifdef DEBUG
 	//printf ("sentinel 0x%x\n\r", sentinel);
+#endif
 
 	*next_block (p) = *next_block (sentinel);
 	*next_block (sentinel) = p;
 
 	the_heap.free_count++;
+#ifdef DEBUG
 	if (the_heap.trace > 0) printf ("[%d] free 0x%x, size %d\n\r", the_heap.free_count, p, block_len (p));
 	if (the_heap.trace > 1) {printf ("after free: "); heap_diag (the_heap.trace > 2); printf ("\n\rdone\n\r");}
+#endif
 }
-
 
 void heap_diag (bool detail)
 {
+#ifdef DEBUG
 	unsigned int totalFree = 0;
 
 	{
@@ -279,6 +313,7 @@ void heap_diag (bool detail)
 			p = (char*) *next_block (p);
 		}
 	}
+#endif
 }
 
 void abort (void)
@@ -289,6 +324,7 @@ void abort (void)
 	while (1)
 		;
 }
+
 
 int atoi (const char* str)
 {
@@ -359,7 +395,6 @@ long readhex (const char* c)
 	return result;
 }
 
-
 long atol (const char* str)
 {
 	const char* c = str;
@@ -373,5 +408,3 @@ long atol (const char* str)
 	else
 		return readdec (c);
 }
-
-
