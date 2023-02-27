@@ -35,20 +35,21 @@ LINK_LINE := -lgcc -lc -lmdf -lcpp -lfundamentals -lbsp -lc -lbsp -lgcc -Wl,--wh
 
 #top level build targets
 TOP_LEVEL_TARGET := Zebulon
-DEPENDENCIES := libfundamentals libbsp libZebulonAPI libc libitanium libcpp libmdf libstart libcrt
+DEPENDENCIES := libfundamentals libbsp libZebulonAPI libc libitanium libcpp libmdf libstart libcrt libcrt-app
+APP_DEPENDENCIES := libc libstart
 
 #find the source files and which object files they produce
 SRC_FILES := $(wildcard $(SRC_DIRECTORY)/*.c $(SRC_DIRECTORY)/*.cpp $(SRC_DIRECTORY)/*.s)
 
 #current build target
-BUILD_TARGET := $(notdir $(CURDIR))
-ifeq (,$(findstring lib,$(BUILD_TARGET)))
-	BUILD_TARGET := $(BUILD_TARGET).S68
+A_BUILD_TARGET = $(notdir $(CURDIR))
+ifeq (,$(findstring lib,$(A_BUILD_TARGET)))
+	B_BUILD_TARGET = $(A_BUILD_TARGET).S68
 
 	LINK_FILES := $(wildcard $(SRC_DIRECTORY)/*.ld)
 else
-	BUILD_TARGET := $(BUILD_TARGET).a
-	INSTALLED_TARGET := $(addprefix $(INSTALLED_LIB_DIRECTORY)/, $(BUILD_TARGET))
+	B_BUILD_TARGET = $(A_BUILD_TARGET).a
+	INSTALLED_TARGET := $(addprefix $(INSTALLED_LIB_DIRECTORY)/, $(B_BUILD_TARGET))
 
 	HEADER_FILES := $(wildcard $(SRC_INCLUDE_DIRECTORY)/*)
 	INSTALLED_HEADER_FILES := $(addprefix $(INSTALLED_INCLUDE_DIRECTORY)/, $(notdir $(HEADER_FILES)))
@@ -59,7 +60,7 @@ else
 	OBJECT_FILES := $(OBJECT_FILES:$(SRC_DIRECTORY)/%.s=%.o)
 	OBJECT_FILES := $(addprefix $(OBJECT_DIRECTORY)/, $(OBJECT_FILES))
 endif
-BUILD_TARGET := $(addprefix $(BUILD_DIRECTORY)/, $(BUILD_TARGET))
+BUILD_TARGET = $(addprefix $(BUILD_DIRECTORY)/, $(B_BUILD_TARGET))
 
 VERSION_FILE := $(SRC_PRIVATE_INCLUDE_DIRECTORY)/version.h
 NEXT_VERSION = $(shell expr $$(awk '/\#define BUILD_NUM/' $(VERSION_FILE) | tr -cd "[0-9]") + 1)
@@ -80,21 +81,29 @@ copy:
 all: $(TOP_LEVEL_TARGET)
 	make -C $(TOP_LEVEL_TARGET) _all
 
-$(TOP_LEVEL_TARGET): build_dependencies
+$(TOP_LEVEL_TARGET): build_dependencies build_app_dependencies
 
 build_dependencies:
 	$(foreach file, $(DEPENDENCIES), make -C $(file) _all && make -C $(file) _install;)
 
-clean: clean_dependencies
+build_app_dependencies:
+	$(foreach file, $(APP_DEPENDENCIES), make -C $(file) _app_all && make -C $(file) _install_app;)
+
+clean: clean_dependencies clean_app_dependencies
 	make -C $(TOP_LEVEL_TARGET) _clean
 
 clean_dependencies:
 	$(foreach file, $(DEPENDENCIES), make -C $(file) _clean;)
 
+clean_app_dependencies:
+	$(foreach file, $(APP_DEPENDENCIES), make -C $(file) _clean;)
+
 #sub level rules
 .PHONY: _all _create_build_directories _build _install
 
 _all: _create_build_directories _build
+
+_app_all: _create_build_directories _build_app
 
 _create_build_directories: $(OBJECT_DIRECTORY)
 
@@ -103,11 +112,20 @@ $(OBJECT_DIRECTORY):
 
 _build: $(BUILD_TARGET)
 
+APP_SUFFIX = -app
+_build_app: APP_FLAGS = -D APP
+NEW_BUILD_TARGET = $(addsuffix $(APP_SUFFIX).a,$(basename $(BUILD_TARGET)))
+C_BUILD_TARGET = $(A_BUILD_TARGET)$(APP_SUFFIX).a
+INSTALLED_APP_TARGET := $(addprefix $(INSTALLED_LIB_DIRECTORY)/, $(C_BUILD_TARGET))
+
+_build_app: $(NEW_BUILD_TARGET)
+
 %.a: $(OBJECT_FILES)
+	$(warning $@)
 	$(AR) $(ARFLAGS) $@ $(OBJECT_FILES)
 
 $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.c
-	$(CC) $< -o $@ $(LIBCFLAGS)
+	$(CC) $< -o $@ $(LIBCFLAGS) $(APP_FLAGS)
 
 $(OBJECT_DIRECTORY)/%.o : $(SRC_DIRECTORY)/%.cpp
 	$(CC) $< -o $@ -I $(INSTALLED_INCLUDE_DIRECTORY) $(LIBCFLAGS)
@@ -132,6 +150,12 @@ $(INSTALLED_INCLUDE_DIRECTORY)/%: $(SRC_INCLUDE_DIRECTORY)/%
 	$(CP) $^ $@
 
 $(INSTALLED_TARGET): $(BUILD_TARGET)
+	$(RM) $@
+	$(CP) $^ $@
+
+_install_app: $(INSTALLED_APP_TARGET)
+
+$(INSTALLED_APP_TARGET): $(NEW_BUILD_TARGET)
 	$(RM) $@
 	$(CP) $^ $@
 

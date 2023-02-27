@@ -1,6 +1,5 @@
 #include "../private_include/DUART.h"
 #include "../private_include/rw.h"
-#include <stdio.h>
 #include <bsp.h>
 
 DUART::UART::UART (unsigned int baseAddress) :

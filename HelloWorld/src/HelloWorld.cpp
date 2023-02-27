@@ -2,10 +2,9 @@
 
 int main (void)
 {
-	asm volatile ("moveb #9,0xE00001");
+	puts ("HelloWorld\n\r");
 	char* p = new char;
 	*p = 'x';
-	puts ("HelloWorld\n\r");
 	delete p;
 }
 

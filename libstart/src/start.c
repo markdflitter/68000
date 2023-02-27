@@ -1,5 +1,6 @@
 #include "../include/start.h"
 #include <bsp.h>
+#include <stdio.h>
 
 extern int main (void);
 
@@ -25,19 +26,33 @@ void call_static_constructors ()
 
 extern "C" int __main (void)
 {
+#ifndef APP
 	asm ("moveb #6, 0xE00001");
-	clear_bss();
-	asm ("moveb #7, 0xE00001");
+#endif
 
+	clear_bss();
+
+#ifndef APP
+	asm ("moveb #7, 0xE00001");
+#endif
+
+#ifndef APP
 	__init ();
 	asm ("moveb #8, 0xE00001");
 	__putstr ("bsp initialised\n\r");
+#endif
 
+#ifndef APP
 	__putstr ("calling static constructors\n\r\n\r");
+#endif
+
   	call_static_constructors ();
+
+#ifndef APP
 	asm ("moveb #9, 0xE00001");
-	
 	__putstr ("handing off to main()\n\r");
+#endif
+
 	return main ();
 }
 
